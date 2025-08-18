@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="text-center mb-5">
+            <h1 class="display-4 text-primary">
+                <i class="fas fa-graduation-cap"></i> ULC TurnIn
+            </h1>
+            <p class="lead">Plateforme de remise de devoirs</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-user-graduate fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Étudiants</h5>
+                        <p class="card-text">Soumettez vos devoirs et suivez vos notes</p>
+                        <a href="{{ url_for('login') }}" class="btn btn-primary">Se connecter</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chalkboard-teacher fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Enseignants</h5>
+                        <p class="card-text">Gérez vos devoirs et évaluez les soumissions</p>
+                        <a href="{{ url_for('login') }}" class="btn btn-success">Se connecter</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Comptes de démonstration</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Étudiant :</strong><br>
+                        Utilisateur : <code>student</code><br>
+                        Mot de passe : <code>password</code>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Enseignant :</strong><br>
+                        Utilisateur : <code>teacher</code><br>
+                        Mot de passe : <code>password</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
