@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header text-center">
+                <h5><i class="fas fa-user"></i> Photo de profil</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if user_data.get('photo') %}
+                    <img src="{{ url_for('static', filename='photos/' + user_data.photo) }}" 
+                         class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-secondary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                         style="width: 150px; height: 150px;">
+                        <i class="fas fa-user fa-4x text-white"></i>
+                    </div>
+                {% endif %}
+                
+                <form method="POST" action="{{ url_for('upload_photo', username=username) }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input type="file" class="form-control form-control-sm" name="photo" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-upload"></i> Mettre à jour
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>
+                    <i class="fas fa-{% if user_data.role == 'student' %}user-graduate{% elif user_data.role == 'teacher' %}chalkboard-teacher{% else %}user-shield{% endif %}"></i>
+                    Profil de {{ username }}
+                </h5>
+                <div>
+                    {% if user_data.role == 'admin' %}
+                        <span class="badge bg-danger">Administrateur</span>
+                    {% elif user_data.role == 'teacher' %}
+                        <span class="badge bg-success">Enseignant</span>
+                    {% else %}
+                        <span class="badge bg-primary">Étudiant</span>
+                    {% endif %}
+                    <a href="{{ url_for('edit_user', username=username) }}" class="btn btn-warning btn-sm ms-2">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Nom d'utilisateur:</strong></td>
+                                <td>{{ username }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CIP:</strong></td>
+                                <td>{{ user_data.get('cip', 'N/A') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Nom:</strong></td>
+                                <td>{{ user_data.get('nom', 'N/A') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Post-nom:</strong></td>
+                                <td>{{ user_data.get('postnom', 'N/A') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Prénom:</strong></td>
+                                <td>{{ user_data.get('prenom', 'N/A') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Sexe:</strong></td>
+                                <td>{{ 'Masculin' if user_data.get('sexe') == 'M' else 'Féminin' if user_data.get('sexe') == 'F' else 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Date de naissance:</strong></td>
+                                <td>{{ user_data.get('date_naissance', 'N/A') }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            {% if user_data.role == 'student' %}
+                            <tr>
+                                <td><strong>Promotion:</strong></td>
+                                <td><span class="badge bg-info">{{ user_data.get('promotion', 'N/A') }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Faculté:</strong></td>
+                                <td><span class="badge bg-secondary">{{ user_data.get('faculte', 'N/A') }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Adresse:</strong></td>
+                                <td>{{ user_data.get('adresse', 'N/A') }}</td>
+                            </tr>
+                            {% elif user_data.role == 'teacher' %}
+                            <tr>
+                                <td><strong>Grade:</strong></td>
+                                <td><span class="badge bg-success">{{ user_data.get('grade', 'N/A') }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Département:</strong></td>
+                                <td><span class="badge bg-secondary">{{ user_data.get('departement', 'N/A') }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Bureau:</strong></td>
+                                <td>{{ user_data.get('bureau', 'N/A') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cours dispensés:</strong></td>
+                                <td>{{ user_data.get('cours_dispenses', 'N/A') }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td><strong>Téléphone:</strong></td>
+                                <td>{{ user_data.get('telephone', 'N/A') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>{{ user_data.get('email', 'N/A') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Changement mot de passe:</strong></td>
+                                <td>
+                                    {% if user_data.get('must_change_password') %}
+                                        <span class="badge bg-warning">Requis</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Effectué</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour à la liste
+    </a>
+</div>
+{% endblock %}

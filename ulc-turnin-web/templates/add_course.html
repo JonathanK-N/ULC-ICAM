@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <h4><i class="fas fa-plus"></i> Ajouter un cours</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="title" class="form-label">Titre du cours *</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="credits" class="form-label">Crédits *</label>
+                            <input type="number" class="form-control" id="credits" name="credits" min="1" max="10" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Promotions ciblées</label>
+                            <div class="form-text mb-2">Laissez vide pour toutes les promotions</div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="promotions" value="L1" id="promo_l1">
+                                <label class="form-check-label" for="promo_l1">Licence 1</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="promotions" value="L2" id="promo_l2">
+                                <label class="form-check-label" for="promo_l2">Licence 2</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="promotions" value="L3" id="promo_l3">
+                                <label class="form-check-label" for="promo_l3">Licence 3</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="promotions" value="M1" id="promo_m1">
+                                <label class="form-check-label" for="promo_m1">Master 1</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="promotions" value="M2" id="promo_m2">
+                                <label class="form-check-label" for="promo_m2">Master 2</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Facultés ciblées</label>
+                            <div class="form-text mb-2">Laissez vide pour toutes les facultés</div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="facultes" value="Informatique" id="fac_info">
+                                <label class="form-check-label" for="fac_info">Informatique</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="facultes" value="Médecine" id="fac_med">
+                                <label class="form-check-label" for="fac_med">Médecine</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="facultes" value="Droit" id="fac_droit">
+                                <label class="form-check-label" for="fac_droit">Droit</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="facultes" value="Économie" id="fac_eco">
+                                <label class="form-check-label" for="fac_eco">Économie</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="facultes" value="Ingénierie" id="fac_ing">
+                                <label class="form-check-label" for="fac_ing">Ingénierie</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="facultes" value="Sciences" id="fac_sci">
+                                <label class="form-check-label" for="fac_sci">Sciences</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('teacher_courses') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Créer le cours
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-file-csv"></i> Importer des utilisateurs via CSV</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Format du fichier CSV :</h6>
+                    <p>Le fichier doit contenir les colonnes suivantes dans cet ordre :</p>
+                    <code>username,name,role,password</code>
+                    <br><br>
+                    <strong>Exemple :</strong><br>
+                    <code>etudiant1,Jean Dupont,student,motdepasse123</code><br>
+                    <code>prof1,Marie Martin,teacher,profpass456</code>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Sélectionner le fichier CSV</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
+                        <div class="form-text">
+                            Seuls les fichiers .csv sont acceptés
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-upload"></i> Importer
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4">
+                    <h6>Télécharger un modèle CSV :</h6>
+                    <a href="data:text/csv;charset=utf-8,username%2Cname%2Crole%2Cpassword%0Aetudiant1%2CJean%20Dupont%2Cstudent%2Cmotdepasse123%0Aprof1%2CMarie%20Martin%2Cteacher%2Cprofpass456" 
+                       download="modele_utilisateurs.csv" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-download"></i> Télécharger modèle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

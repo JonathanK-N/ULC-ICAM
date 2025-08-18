@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-user-graduate"></i> Ajouter un étudiant</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">Nom d'utilisateur *</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="cip" class="form-label">CIP *</label>
+                            <input type="text" class="form-control" id="cip" name="cip" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="nom" class="form-label">Nom *</label>
+                            <input type="text" class="form-control" id="nom" name="nom" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="postnom" class="form-label">Post-nom</label>
+                            <input type="text" class="form-control" id="postnom" name="postnom">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="prenom" class="form-label">Prénom *</label>
+                            <input type="text" class="form-control" id="prenom" name="prenom" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="sexe" class="form-label">Sexe *</label>
+                            <select class="form-select" id="sexe" name="sexe" required>
+                                <option value="">Sélectionner</option>
+                                <option value="M">Masculin</option>
+                                <option value="F">Féminin</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="date_naissance" class="form-label">Date de naissance *</label>
+                            <input type="date" class="form-control" id="date_naissance" name="date_naissance" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="promotion" class="form-label">Promotion *</label>
+                            <select class="form-select" id="promotion" name="promotion" required>
+                                <option value="">Sélectionner</option>
+                                <option value="L1">Licence 1</option>
+                                <option value="L2">Licence 2</option>
+                                <option value="L3">Licence 3</option>
+                                <option value="M1">Master 1</option>
+                                <option value="M2">Master 2</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="faculte" class="form-label">Faculté *</label>
+                            <select class="form-select" id="faculte" name="faculte" required>
+                                <option value="">Sélectionner</option>
+                                <option value="Informatique">Informatique</option>
+                                <option value="Médecine">Médecine</option>
+                                <option value="Droit">Droit</option>
+                                <option value="Économie">Économie</option>
+                                <option value="Ingénierie">Ingénierie</option>
+                                <option value="Sciences">Sciences</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="telephone" class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="telephone" name="telephone">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label">Mot de passe temporaire *</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="adresse" class="form-label">Adresse</label>
+                        <textarea class="form-control" id="adresse" name="adresse" rows="2"></textarea>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        L'étudiant devra changer son mot de passe à sa première connexion
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Ajouter Étudiant
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

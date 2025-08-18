@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chalkboard-teacher"></i> Tableau de bord enseignant</h2>
+    <a href="{{ url_for('teacher_courses') }}" class="btn btn-primary">
+        <i class="fas fa-book"></i> Mes Cours
+    </a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ assignments|length }}</h4>
+                        <p>Devoirs</p>
+                    </div>
+                    <i class="fas fa-tasks fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ submissions|length }}</h4>
+                        <p>Soumissions</p>
+                    </div>
+                    <i class="fas fa-file-upload fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>2</h4>
+                        <p>Étudiants</p>
+                    </div>
+                    <i class="fas fa-users fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-file-upload"></i> Soumissions récentes</h5>
+    </div>
+    <div class="card-body">
+        {% if submissions %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Étudiant</th>
+                        <th>Devoir</th>
+                        <th>Fichier</th>
+                        <th>Date de soumission</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in submissions %}
+                    <tr>
+                        <td>{{ submission.student }}</td>
+                        <td>
+                            {% for assignment in assignments %}
+                                {% if assignment.id == submission.assignment_id %}
+                                    {{ assignment.title }}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{ submission.filename }}</td>
+                        <td>{{ submission.submitted_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted">
+            <i class="fas fa-inbox fa-3x mb-3"></i>
+            <h5>Aucune soumission pour le moment</h5>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

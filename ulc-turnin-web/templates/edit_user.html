@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h4><i class="fas fa-edit"></i> Modifier le profil de {{ username }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% if user_data.role == 'student' %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="cip" class="form-label">CIP</label>
+                            <input type="text" class="form-control" id="cip" name="cip" value="{{ user_data.get('cip', '') }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="promotion" class="form-label">Promotion</label>
+                            <select class="form-select" id="promotion" name="promotion">
+                                <option value="">Sélectionner</option>
+                                <option value="L1" {% if user_data.get('promotion') == 'L1' %}selected{% endif %}>Licence 1</option>
+                                <option value="L2" {% if user_data.get('promotion') == 'L2' %}selected{% endif %}>Licence 2</option>
+                                <option value="L3" {% if user_data.get('promotion') == 'L3' %}selected{% endif %}>Licence 3</option>
+                                <option value="M1" {% if user_data.get('promotion') == 'M1' %}selected{% endif %}>Master 1</option>
+                                <option value="M2" {% if user_data.get('promotion') == 'M2' %}selected{% endif %}>Master 2</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="nom" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="nom" name="nom" value="{{ user_data.get('nom', '') }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="postnom" class="form-label">Post-nom</label>
+                            <input type="text" class="form-control" id="postnom" name="postnom" value="{{ user_data.get('postnom', '') }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="prenom" class="form-label">Prénom</label>
+                            <input type="text" class="form-control" id="prenom" name="prenom" value="{{ user_data.get('prenom', '') }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="sexe" class="form-label">Sexe</label>
+                            <select class="form-select" id="sexe" name="sexe">
+                                <option value="">Sélectionner</option>
+                                <option value="M" {% if user_data.get('sexe') == 'M' %}selected{% endif %}>Masculin</option>
+                                <option value="F" {% if user_data.get('sexe') == 'F' %}selected{% endif %}>Féminin</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="date_naissance" class="form-label">Date de naissance</label>
+                            <input type="date" class="form-control" id="date_naissance" name="date_naissance" value="{{ user_data.get('date_naissance', '') }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="faculte" class="form-label">Faculté</label>
+                            <select class="form-select" id="faculte" name="faculte">
+                                <option value="">Sélectionner</option>
+                                <option value="Informatique" {% if user_data.get('faculte') == 'Informatique' %}selected{% endif %}>Informatique</option>
+                                <option value="Médecine" {% if user_data.get('faculte') == 'Médecine' %}selected{% endif %}>Médecine</option>
+                                <option value="Droit" {% if user_data.get('faculte') == 'Droit' %}selected{% endif %}>Droit</option>
+                                <option value="Économie" {% if user_data.get('faculte') == 'Économie' %}selected{% endif %}>Économie</option>
+                                <option value="Ingénierie" {% if user_data.get('faculte') == 'Ingénierie' %}selected{% endif %}>Ingénierie</option>
+                                <option value="Sciences" {% if user_data.get('faculte') == 'Sciences' %}selected{% endif %}>Sciences</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="telephone" class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="telephone" name="telephone" value="{{ user_data.get('telephone', '') }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user_data.get('email', '') }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="adresse" class="form-label">Adresse</label>
+                        <textarea class="form-control" id="adresse" name="adresse" rows="2">{{ user_data.get('adresse', '') }}</textarea>
+                    </div>
+
+                    {% elif user_data.role == 'teacher' %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="cip" class="form-label">CIP</label>
+                            <input type="text" class="form-control" id="cip" name="cip" value="{{ user_data.get('cip', '') }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="grade" class="form-label">Grade</label>
+                            <select class="form-select" id="grade" name="grade">
+                                <option value="">Sélectionner</option>
+                                <option value="Prof." {% if user_data.get('grade') == 'Prof.' %}selected{% endif %}>Professeur</option>
+                                <option value="Dr." {% if user_data.get('grade') == 'Dr.' %}selected{% endif %}>Docteur</option>
+                                <option value="Ass." {% if user_data.get('grade') == 'Ass.' %}selected{% endif %}>Assistant</option>
+                                <option value="CT" {% if user_data.get('grade') == 'CT' %}selected{% endif %}>Chef de Travaux</option>
+                                <option value="Ing." {% if user_data.get('grade') == 'Ing.' %}selected{% endif %}>Ingénieur</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="nom" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="nom" name="nom" value="{{ user_data.get('nom', '') }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="postnom" class="form-label">Post-nom</label>
+                            <input type="text" class="form-control" id="postnom" name="postnom" value="{{ user_data.get('postnom', '') }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="prenom" class="form-label">Prénom</label>
+                            <input type="text" class="form-control" id="prenom" name="prenom" value="{{ user_data.get('prenom', '') }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="sexe" class="form-label">Sexe</label>
+                            <select class="form-select" id="sexe" name="sexe">
+                                <option value="">Sélectionner</option>
+                                <option value="M" {% if user_data.get('sexe') == 'M' %}selected{% endif %}>Masculin</option>
+                                <option value="F" {% if user_data.get('sexe') == 'F' %}selected{% endif %}>Féminin</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="date_naissance" class="form-label">Date de naissance</label>
+                            <input type="date" class="form-control" id="date_naissance" name="date_naissance" value="{{ user_data.get('date_naissance', '') }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="bureau" class="form-label">Bureau</label>
+                            <input type="text" class="form-control" id="bureau" name="bureau" value="{{ user_data.get('bureau', '') }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="departement" class="form-label">Département</label>
+                            <select class="form-select" id="departement" name="departement">
+                                <option value="">Sélectionner</option>
+                                <option value="Informatique" {% if user_data.get('departement') == 'Informatique' %}selected{% endif %}>Informatique</option>
+                                <option value="Médecine" {% if user_data.get('departement') == 'Médecine' %}selected{% endif %}>Médecine</option>
+                                <option value="Droit" {% if user_data.get('departement') == 'Droit' %}selected{% endif %}>Droit</option>
+                                <option value="Économie" {% if user_data.get('departement') == 'Économie' %}selected{% endif %}>Économie</option>
+                                <option value="Ingénierie" {% if user_data.get('departement') == 'Ingénierie' %}selected{% endif %}>Ingénierie</option>
+                                <option value="Sciences" {% if user_data.get('departement') == 'Sciences' %}selected{% endif %}>Sciences</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="telephone" class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="telephone" name="telephone" value="{{ user_data.get('telephone', '') }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ user_data.get('email', '') }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="cours_dispenses" class="form-label">Cours dispensés</label>
+                        <textarea class="form-control" id="cours_dispenses" name="cours_dispenses" rows="3">{{ user_data.get('cours_dispenses', '') }}</textarea>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('user_profile', username=username) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save"></i> Sauvegarder
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
