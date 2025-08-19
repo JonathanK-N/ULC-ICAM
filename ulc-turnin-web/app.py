@@ -12,19 +12,41 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 # Créer le dossier uploads s'il n'existe pas
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Données simulées (remplacer par une base de données)
-users = {
-    'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur UNIKIN'},
-    'student': {'password': 'password', 'role': 'student', 'name': 'Étudiant Test', 'faculte': 'Sciences', 'promotion': 'G2'},
-    'teacher': {'password': 'password', 'role': 'teacher', 'name': 'Professeur Test', 'departement': 'Informatique'}
-}
+# Import des données de test
+try:
+    from generate_test_data import generer_donnees_test
+    test_profs, test_etuds, test_cours, test_assignments, test_devoirs = generer_donnees_test()
+    
+    # Initialiser avec les données de test
+    users = {'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur Cognito Web'}}
+    
+    # Ajouter les professeurs
+    for prof in test_profs:
+        users[prof['username']] = prof
+    
+    # Ajouter les étudiants
+    for etud in test_etuds:
+        users[etud['username']] = etud
+        
+except ImportError:
+    # Données par défaut si le script de test n'est pas disponible
+    users = {
+        'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur Cognito Web'},
+        'student': {'password': 'password', 'role': 'student', 'name': 'Étudiant Test', 'faculte': 'Sciences', 'promotion': 'L2'},
+        'teacher': {'password': 'password', 'role': 'teacher', 'name': 'Professeur Test', 'departement': 'Mathématiques-Informatique'}
+    }
 
 # Système congolais: G1, G2, G3 (Graduat) + L4, L5 (Licence)
-assignments = [
-    {'id': 1, 'title': 'TP Algorithmique', 'course': 'Algorithmique et Programmation', 'due_date': '2024-02-15', 'description': 'Exercices sur les structures de données', 'files': [], 'auto_correct': False, 'plagiarism_check': True},
-    {'id': 2, 'title': 'Projet Base de Données', 'course': 'Système de Gestion de BD', 'due_date': '2024-02-20', 'description': 'Conception d\'une base de données', 'files': [], 'auto_correct': False, 'plagiarism_check': True}
-]
-next_assignment_id = 3
+# Initialiser les devoirs avec les données de test
+try:
+    assignments = test_devoirs
+    next_assignment_id = len(test_devoirs) + 1
+except NameError:
+    assignments = [
+        {'id': 1, 'title': 'TP Algorithmique', 'course': 'Algorithmique et Programmation', 'due_date': '2024-02-15', 'description': 'Exercices sur les structures de données', 'files': [], 'auto_correct': False, 'plagiarism_check': True},
+        {'id': 2, 'title': 'Projet Base de Données', 'course': 'Système de Gestion de BD', 'due_date': '2024-02-20', 'description': 'Conception d\'une base de données', 'files': [], 'auto_correct': False, 'plagiarism_check': True}
+    ]
+    next_assignment_id = 3
 
 submissions = []
 
@@ -32,12 +54,30 @@ submissions = []
 correction_results = {}  # {submission_id: {'score': 85, 'feedback': 'Bon travail'}}
 plagiarism_results = {}  # {submission_id: {'similarity': 15, 'sources': []}}
 
+# Gestion des groupes pour les devoirs
+group_assignments = {}  # {assignment_id: {'groups': [[student1, student2], [student3, student4]], 'type': 'manual/auto'}}
+student_groups = {}     # {assignment_id: {student_username: group_id}}
+next_group_id = 1
+
 # Gestion des cours
 courses = []
 next_course_id = 1
 
 # Inscriptions des étudiants aux cours
 course_enrollments = {}  # {course_id: [student_usernames]}
+
+# Initialiser les inscriptions avec des données de test
+try:
+    # Inscrire automatiquement des étudiants aux cours selon leur faculté
+    for course in admin_courses:
+        course_enrollments[course['id']] = []
+        for username, user in users.items():
+            if user['role'] == 'student' and user.get('faculte') == course['faculte']:
+                # Inscrire selon la promotion
+                if user.get('promotion') in course['promotions']:
+                    course_enrollments[course['id']].append(username)
+except NameError:
+    pass
 
 # Configuration système (modifiable par l'admin)
 system_config = {
@@ -47,18 +87,18 @@ system_config = {
     'grades': ['Prof. Ordinaire', 'Prof. Associé', 'Prof. Extraordinaire', 'CT', 'Ass.', 'Attaché']
 }
 
-# Gestion des cours par l'admin
-admin_courses = [
-    {'id': 1, 'name': 'Algorithmique et Programmation', 'code': 'INFO101', 'credits': 6, 'faculte': 'Sciences', 'departement': 'Mathématiques-Informatique', 'promotions': ['L1']},
-    {'id': 2, 'name': 'Base de Données', 'code': 'INFO201', 'credits': 4, 'faculte': 'Sciences', 'departement': 'Mathématiques-Informatique', 'promotions': ['L2']}
-]
-next_course_admin_id = 3
-
-# Attribution des cours aux professeurs
-course_assignments = {
-    1: ['teacher'],  # course_id: [teacher_usernames]
-    2: ['teacher']
-}
+# Initialiser les cours avec les données de test
+try:
+    admin_courses = test_cours
+    next_course_admin_id = len(test_cours) + 1
+    course_assignments = test_assignments
+except NameError:
+    admin_courses = [
+        {'id': 1, 'name': 'Algorithmique et Programmation', 'code': 'INFO101', 'credits': 6, 'faculte': 'Sciences', 'departement': 'Mathématiques-Informatique', 'promotions': ['L1']},
+        {'id': 2, 'name': 'Base de Données', 'code': 'INFO201', 'credits': 4, 'faculte': 'Sciences', 'departement': 'Mathématiques-Informatique', 'promotions': ['L2']}
+    ]
+    next_course_admin_id = 3
+    course_assignments = {1: ['teacher'], 2: ['teacher']}
 
 @app.route('/')
 def index():
@@ -71,36 +111,60 @@ def login():
 @app.route('/login/student', methods=['GET', 'POST'])
 def student_login():
     if request.method == 'POST':
-        username = request.form['username']
+        identifier = request.form['identifier']  # CIP ou email
         password = request.form['password']
         
-        if username in users and users[username]['password'] == password and users[username]['role'] == 'student':
-            session['user'] = username
-            session['role'] = users[username]['role']
-            session['name'] = users[username]['name']
-            if users[username].get('must_change_password', False):
+        # Chercher l'utilisateur par CIP ou email
+        user_found = None
+        username_found = None
+        
+        for username, user_data in users.items():
+            if (user_data['role'] == 'student' and 
+                (user_data.get('cip') == identifier or user_data.get('email') == identifier)):
+                if user_data['password'] == password:
+                    user_found = user_data
+                    username_found = username
+                    break
+        
+        if user_found:
+            session['user'] = username_found
+            session['role'] = user_found['role']
+            session['name'] = user_found['name']
+            if user_found.get('must_change_password', False):
                 return redirect(url_for('change_password'))
             return redirect(url_for('dashboard'))
         else:
-            flash('Identifiants incorrects ou accès non autorisé')
+            flash('CIP/Email ou mot de passe incorrect')
     
     return render_template('student_login.html')
 
 @app.route('/login/teacher', methods=['GET', 'POST'])
 def teacher_login():
     if request.method == 'POST':
-        username = request.form['username']
+        identifier = request.form['identifier']  # CIP ou email
         password = request.form['password']
         
-        if username in users and users[username]['password'] == password and users[username]['role'] == 'teacher':
-            session['user'] = username
-            session['role'] = users[username]['role']
-            session['name'] = users[username]['name']
-            if users[username].get('must_change_password', False):
+        # Chercher l'utilisateur par CIP ou email
+        user_found = None
+        username_found = None
+        
+        for username, user_data in users.items():
+            if (user_data['role'] == 'teacher' and 
+                (user_data.get('cip') == identifier or user_data.get('email') == identifier)):
+                if user_data['password'] == password:
+                    user_found = user_data
+                    username_found = username
+                    break
+        
+        if user_found:
+            session['user'] = username_found
+            session['role'] = user_found['role']
+            session['name'] = user_found['name']
+            if user_found.get('must_change_password', False):
                 return redirect(url_for('change_password'))
             return redirect(url_for('dashboard'))
         else:
-            flash('Identifiants incorrects ou accès non autorisé')
+            flash('CIP/Email ou mot de passe incorrect')
     
     return render_template('teacher_login.html')
 
@@ -131,11 +195,37 @@ def dashboard():
         return redirect(url_for('login'))
     
     if session['role'] == 'student':
-        return render_template('student_dashboard.html', assignments=assignments)
+        return render_template('student_dashboard.html', assignments=assignments, student_groups=student_groups)
     elif session['role'] == 'teacher':
-        return render_template('teacher_dashboard.html', assignments=assignments, submissions=submissions)
+        # Calculer les statistiques pour le professeur
+        teacher_assignments = [a for a in assignments if a.get('teacher') == session['user']]
+        teacher_submissions = [s for s in submissions if any(a['id'] == s['assignment_id'] and a.get('teacher') == session['user'] for a in assignments)]
+        
+        # Calculer les statistiques par devoir
+        assignment_stats = {}
+        for assignment in teacher_assignments:
+            enrolled_count = len(course_enrollments.get(assignment.get('course_id', 0), []))
+            submitted_count = len([s for s in submissions if s['assignment_id'] == assignment['id']])
+            assignment_stats[assignment['id']] = {
+                'enrolled': enrolled_count,
+                'submitted': submitted_count
+            }
+        
+        # Compter les étudiants uniques dans tous les cours du professeur
+        all_students = set()
+        for course_id, teachers in course_assignments.items():
+            if session['user'] in teachers:
+                all_students.update(course_enrollments.get(course_id, []))
+        
+        return render_template('teacher_dashboard.html', 
+                             teacher_assignments=teacher_assignments,
+                             teacher_assignments_count=len(teacher_assignments),
+                             total_submissions=len(teacher_submissions),
+                             total_students=len(all_students),
+                             teacher_courses_count=sum(1 for teachers in course_assignments.values() if session['user'] in teachers),
+                             assignment_stats=assignment_stats)
     else:
-        return render_template('admin_dashboard.html', users=users, assignments=assignments, submissions=submissions)
+        return render_template('admin_dashboard.html', users=users, assignments=assignments, submissions=submissions, admin_courses=admin_courses)
 
 @app.route('/submit/<int:assignment_id>', methods=['GET', 'POST'])
 def submit_assignment(assignment_id):
@@ -613,6 +703,32 @@ def teacher_assigned_courses():
     
     return render_template('teacher_assigned_courses.html', courses=teacher_courses)
 
+@app.route('/admin/assignments')
+def admin_assignments():
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    return render_template('admin_assignments.html', assignments=assignments, users=users)
+
+@app.route('/admin/submissions')
+def admin_submissions():
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    return render_template('admin_submissions.html', submissions=submissions, assignments=assignments, users=users, correction_results=correction_results, plagiarism_results=plagiarism_results)
+
+@app.route('/admin/students')
+def admin_students():
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    students = {k: v for k, v in users.items() if v['role'] == 'student'}
+    return render_template('admin_students.html', students=students)
+
+@app.route('/admin/teachers')
+def admin_teachers():
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    teachers = {k: v for k, v in users.items() if v['role'] == 'teacher'}
+    return render_template('admin_teachers.html', teachers=teachers, course_assignments=course_assignments, admin_courses=admin_courses)
+
 @app.route('/teacher/assignments')
 def teacher_assignments():
     if 'user' not in session or session['role'] != 'teacher':
@@ -653,8 +769,17 @@ def create_assignment():
             'files': uploaded_files,
             'auto_correct': 'auto_correct' in request.form,
             'plagiarism_check': 'plagiarism_check' in request.form,
-            'max_score': int(request.form.get('max_score', 100))
+            'max_score': int(request.form.get('max_score', 100)),
+            'is_group_work': 'is_group_work' in request.form,
+            'group_formation': request.form.get('group_formation', 'manual'),
+            'group_size': int(request.form.get('group_size', 2)) if request.form.get('group_size') else 2,
+            'results_release_date': request.form.get('results_release_date', ''),
+            'results_published': False
         }
+        
+        # Générer les groupes automatiquement si nécessaire
+        if assignment['is_group_work'] and assignment['group_formation'] == 'auto':
+            generate_automatic_groups(next_assignment_id, assignment['course_id'], assignment['group_size'])
         
         assignments.append(assignment)
         next_assignment_id += 1
@@ -675,6 +800,28 @@ def download_assignment_file(filename):
         return redirect(url_for('login'))
     
     return send_from_directory(os.path.join('uploads', 'assignments'), filename)
+
+@app.route('/download_file/<filename>')
+def download_file(filename):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    # Vérifier que le professeur a le droit de télécharger ce fichier
+    if session['role'] == 'teacher':
+        # Trouver la soumission correspondante
+        submission = next((s for s in submissions if s['filename'] == filename), None)
+        if submission:
+            # Vérifier que le devoir appartient au professeur
+            assignment = next((a for a in assignments if a['id'] == submission['assignment_id']), None)
+            if assignment and assignment.get('teacher') == session['user']:
+                return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    
+    # Admin peut tout télécharger
+    elif session['role'] == 'admin':
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    
+    flash('Accès non autorisé à ce fichier')
+    return redirect(url_for('dashboard'))
 
 @app.route('/teacher/assignment_results/<int:assignment_id>')
 def assignment_results(assignment_id):
@@ -728,6 +875,227 @@ def simulate_auto_correction(content, assignment, submission_id):
         'auto_generated': True
     }
     return correction_results[submission_id]
+
+def generate_automatic_groups(assignment_id, course_id, group_size):
+    """Générer automatiquement des groupes pour un devoir"""
+    if not course_id or course_id not in course_enrollments:
+        return
+    
+    enrolled_students = course_enrollments[course_id]
+    import random
+    random.shuffle(enrolled_students)
+    
+    groups = []
+    for i in range(0, len(enrolled_students), group_size):
+        group = enrolled_students[i:i+group_size]
+        if group:  # Ajouter le groupe même s'il est incomplet
+            groups.append(group)
+    
+    group_assignments[assignment_id] = {
+        'groups': groups,
+        'type': 'auto'
+    }
+    
+    # Mapper les étudiants à leurs groupes
+    student_groups[assignment_id] = {}
+    for group_id, group in enumerate(groups):
+        for student in group:
+            student_groups[assignment_id][student] = group_id
+
+def get_course_students(course_id):
+    """Récupérer les étudiants inscrits à un cours"""
+    if course_id not in course_enrollments:
+        return []
+    
+    students_data = []
+    for student_username in course_enrollments[course_id]:
+        if student_username in users and users[student_username]['role'] == 'student':
+            students_data.append({
+                'username': student_username,
+                'name': users[student_username]['name'],
+                'cip': users[student_username].get('cip', 'N/A')
+            })
+    return students_data
+
+@app.route('/student/join_group/<int:assignment_id>', methods=['GET', 'POST'])
+def join_group(assignment_id):
+    if 'user' not in session or session['role'] != 'student':
+        return redirect(url_for('login'))
+    
+    assignment = next((a for a in assignments if a['id'] == assignment_id), None)
+    if not assignment or not assignment.get('is_group_work'):
+        flash('Devoir non trouvé ou pas un travail de groupe')
+        return redirect(url_for('dashboard'))
+    
+    if request.method == 'POST':
+        selected_students = request.form.getlist('group_members')
+        selected_students.append(session['user'])  # Ajouter l'étudiant actuel
+        
+        # Créer le groupe
+        if assignment_id not in group_assignments:
+            group_assignments[assignment_id] = {'groups': [], 'type': 'manual'}
+        if assignment_id not in student_groups:
+            student_groups[assignment_id] = {}
+        
+        group_id = len(group_assignments[assignment_id]['groups'])
+        group_assignments[assignment_id]['groups'].append(selected_students)
+        
+        for student in selected_students:
+            student_groups[assignment_id][student] = group_id
+        
+        flash('Groupe formé avec succès')
+        return redirect(url_for('dashboard'))
+    
+    # Récupérer les étudiants du cours
+    course_students = get_course_students(assignment['course_id']) if assignment.get('course_id') else []
+    
+    # Exclure les étudiants déjà dans un groupe
+    available_students = []
+    for student in course_students:
+        if assignment_id not in student_groups or student['username'] not in student_groups[assignment_id]:
+            if student['username'] != session['user']:  # Exclure l'étudiant actuel
+                available_students.append(student)
+    
+    return render_template('join_group.html', assignment=assignment, available_students=available_students)
+
+@app.route('/teacher/manage_groups/<int:assignment_id>')
+def manage_groups(assignment_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    assignment = next((a for a in assignments if a['id'] == assignment_id and a['teacher'] == session['user']), None)
+    if not assignment:
+        flash('Devoir non trouvé')
+        return redirect(url_for('teacher_assignments'))
+    
+    groups_info = group_assignments.get(assignment_id, {'groups': [], 'type': 'manual'})
+    course_students = get_course_students(assignment['course_id']) if assignment.get('course_id') else []
+    
+    return render_template('manage_groups.html', assignment=assignment, groups_info=groups_info, course_students=course_students, student_groups=student_groups, users=users)
+
+@app.route('/teacher/submissions')
+def teacher_submissions():
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    teacher_submissions = [s for s in submissions if any(a['id'] == s['assignment_id'] and a.get('teacher') == session['user'] for a in assignments)]
+    return render_template('teacher_submissions.html', submissions=teacher_submissions, assignments=assignments, users=users)
+
+@app.route('/teacher/students')
+def teacher_students():
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    # Récupérer tous les étudiants des cours du professeur
+    teacher_students = set()
+    teacher_courses = []
+    for course_id, teachers in course_assignments.items():
+        if session['user'] in teachers:
+            course = next((c for c in admin_courses if c['id'] == course_id), None)
+            if course:
+                teacher_courses.append(course)
+                teacher_students.update(course_enrollments.get(course_id, []))
+    
+    students_data = []
+    for student_username in teacher_students:
+        if student_username in users:
+            students_data.append({
+                'username': student_username,
+                'data': users[student_username]
+            })
+    
+    return render_template('teacher_students.html', students=students_data, courses=teacher_courses)
+
+@app.route('/teacher/assignment_submissions/<int:assignment_id>')
+def assignment_submissions(assignment_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    assignment = next((a for a in assignments if a['id'] == assignment_id and a.get('teacher') == session['user']), None)
+    if not assignment:
+        flash('Devoir non trouvé')
+        return redirect(url_for('teacher_assignments'))
+    
+    assignment_submissions = [s for s in submissions if s['assignment_id'] == assignment_id]
+    enrolled_students = course_enrollments.get(assignment.get('course_id', 0), [])
+    
+    return render_template('assignment_submissions.html', 
+                         assignment=assignment, 
+                         submissions=assignment_submissions, 
+                         enrolled_students=enrolled_students,
+                         users=users)
+
+@app.route('/student/my_grades')
+def student_grades():
+    if 'user' not in session or session['role'] != 'student':
+        return redirect(url_for('login'))
+    
+    # Récupérer les soumissions de l'étudiant avec notes
+    student_submissions = [s for s in submissions if s['student'] == session['user']]
+    
+    grades_data = []
+    for submission in student_submissions:
+        assignment = next((a for a in assignments if a['id'] == submission['assignment_id']), None)
+        if assignment:
+            # Vérifier si les résultats sont publiés
+            results_available = is_results_published(assignment)
+            
+            grade_info = {
+                'assignment': assignment,
+                'submission': submission,
+                'correction': correction_results.get(submission['id'], {}) if results_available else {},
+                'plagiarism': plagiarism_results.get(submission['id'], {}) if results_available else {},
+                'results_available': results_available
+            }
+            grades_data.append(grade_info)
+    
+    return render_template('student_grades.html', grades=grades_data)
+
+@app.route('/teacher/publish_results/<int:assignment_id>')
+def publish_results(assignment_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    assignment = next((a for a in assignments if a['id'] == assignment_id and a.get('teacher') == session['user']), None)
+    if assignment:
+        assignment['results_published'] = True
+        flash('Résultats publiés avec succès')
+    else:
+        flash('Devoir non trouvé')
+    
+    return redirect(url_for('assignment_results', assignment_id=assignment_id))
+
+@app.route('/teacher/unpublish_results/<int:assignment_id>')
+def unpublish_results(assignment_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    assignment = next((a for a in assignments if a['id'] == assignment_id and a.get('teacher') == session['user']), None)
+    if assignment:
+        assignment['results_published'] = False
+        flash('Résultats masqués aux étudiants')
+    else:
+        flash('Devoir non trouvé')
+    
+    return redirect(url_for('assignment_results', assignment_id=assignment_id))
+
+def is_results_published(assignment):
+    """Vérifier si les résultats d'un devoir sont publiés"""
+    from datetime import datetime
+    
+    # Si manuellement publié par le professeur
+    if assignment.get('results_published', False):
+        return True
+    
+    # Si date de publication automatique définie
+    if assignment.get('results_release_date'):
+        try:
+            release_date = datetime.fromisoformat(assignment['results_release_date'])
+            return datetime.now() >= release_date
+        except:
+            pass
+    
+    return False
 
 if __name__ == '__main__':
     app.run(debug=True)

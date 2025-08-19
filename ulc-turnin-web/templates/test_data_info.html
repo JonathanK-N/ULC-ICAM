@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="alert alert-success">
+        <h4><i class="fas fa-database"></i> Données de Test Chargées</h4>
+        <p>L'application Cognito Web a été initialisée avec des données de test réalistes :</p>
+        
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3>50</h3>
+                        <p>Professeurs</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3>100</h3>
+                        <p>Étudiants</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3>60</h3>
+                        <p>Cours</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h3>95</h3>
+                        <p>Devoirs</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-users"></i> Exemples de Comptes</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Professeurs (prof001 à prof050)</h6>
+                    <p><code>prof001</code> / <code>prof1pass</code></p>
+                    <p><code>prof002</code> / <code>prof2pass</code></p>
+                    
+                    <h6>Étudiants (etud001 à etud100)</h6>
+                    <p><code>etud001</code> / <code>etud1pass</code></p>
+                    <p><code>etud002</code> / <code>etud2pass</code></p>
+                    
+                    <h6>Administrateur</h6>
+                    <p><code>admin</code> / <code>admin123</code></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Caractéristiques</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><strong>Noms congolais</strong> réalistes</li>
+                        <li><strong>6 facultés</strong> avec départements spécialisés</li>
+                        <li><strong>Cours assignés</strong> automatiquement aux professeurs</li>
+                        <li><strong>Devoirs variés</strong> avec correction auto et détection plagiat</li>
+                        <li><strong>Système LMD</strong> complet (L1-L3, M1-M2)</li>
+                        <li><strong>Données cohérentes</strong> entre facultés/départements</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info mt-4">
+        <h6><i class="fas fa-lightbulb"></i> Pour tester l'application :</h6>
+        <ol>
+            <li>Connectez-vous comme <strong>admin</strong> pour gérer le système</li>
+            <li>Connectez-vous comme <strong>prof001</strong> pour voir l'interface professeur</li>
+            <li>Connectez-vous comme <strong>etud001</strong> pour voir l'interface étudiant</li>
+            <li>Explorez les cours, devoirs et fonctionnalités</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}

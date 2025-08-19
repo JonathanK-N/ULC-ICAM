@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-users"></i> Gestion des groupes - {{ assignment.title }}</h2>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Informations du devoir</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Type de formation :</strong>
+                        <span class="badge bg-{{ 'success' if groups_info.type == 'auto' else 'primary' }}">
+                            {{ 'Automatique' if groups_info.type == 'auto' else 'Manuelle' }}
+                        </span>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Taille recommandée :</strong> {{ assignment.group_size }} étudiants
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Nombre de groupes :</strong> {{ groups_info.groups|length }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% if groups_info.groups %}
+        {% for group in groups_info.groups %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h6><i class="fas fa-users"></i> Groupe {{ loop.index }}</h6>
+                </div>
+                <div class="card-body">
+                    {% for student_username in group %}
+                        {% if student_username in users %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <strong>{{ users[student_username].name }}</strong><br>
+                                    <small class="text-muted">{{ student_username }} - CIP: {{ users[student_username].get('cip', 'N/A') }}</small>
+                                </div>
+                                <span class="badge bg-success">Membre</span>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            {{ group|length }} membre{{ 's' if group|length > 1 else '' }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-md-12">
+            <div class="text-center">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Aucun groupe formé</h4>
+                <p class="text-muted">
+                    {% if assignment.group_formation == 'manual' %}
+                        Les étudiants doivent former leurs groupes eux-mêmes.
+                    {% else %}
+                        Les groupes seront générés automatiquement.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% if course_students %}
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list"></i> Étudiants inscrits au cours</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for student in course_students %}
+                    <div class="col-md-4 mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ student.name }}</strong><br>
+                                <small class="text-muted">{{ student.username }}</small>
+                            </div>
+                            {% set student_group_id = student_groups.get(assignment.id, {}).get(student.username) %}
+                            {% if student_group_id is not none %}
+                                <span class="badge bg-success">Groupe {{ student_group_id + 1 }}</span>
+                            {% else %}
+                                <span class="badge bg-warning">Sans groupe</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{{ url_for('teacher_assignments') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour aux devoirs
+    </a>
+</div>
+{% endblock %}

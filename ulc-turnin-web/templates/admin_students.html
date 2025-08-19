@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-graduate"></i> Tous les Étudiants</h2>
+    <a href="{{ url_for('add_student') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Ajouter un étudiant
+    </a>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h4>{{ students|length }}</h4>
+                <p>Total Étudiants</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h4>{{ students.values()|selectattr('promotion', 'in', ['L1', 'L2', 'L3'])|list|length }}</h4>
+                <p>Licence</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h4>{{ students.values()|selectattr('promotion', 'in', ['M1', 'M2'])|list|length }}</h4>
+                <p>Master</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h4>{{ students.values()|selectattr('sexe', 'equalto', 'F')|list|length }}</h4>
+                <p>Femmes</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>CIP</th>
+                        <th>Nom complet</th>
+                        <th>Username</th>
+                        <th>Promotion</th>
+                        <th>Faculté</th>
+                        <th>Contact</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for username, student in students.items() %}
+                    <tr>
+                        <td>{{ student.get('cip', 'N/A') }}</td>
+                        <td>
+                            <a href="{{ url_for('user_profile', username=username) }}" class="text-decoration-none">
+                                <strong>{{ student.get('prenom', '') }} {{ student.get('nom', '') }}</strong>
+                            </a>
+                            <br><small class="text-muted">{{ student.get('postnom', '') }}</small>
+                        </td>
+                        <td><code>{{ username }}</code></td>
+                        <td><span class="badge bg-primary">{{ student.get('promotion', 'N/A') }}</span></td>
+                        <td><span class="badge bg-secondary">{{ student.get('faculte', 'N/A') }}</span></td>
+                        <td>
+                            {% if student.get('email') %}
+                                <small>{{ student.email }}</small><br>
+                            {% endif %}
+                            {% if student.get('telephone') %}
+                                <small>{{ student.telephone }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('user_profile', username=username) }}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('delete_user', username=username) }}" 
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirm('Supprimer cet étudiant ?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+    </a>
+</div>
+{% endblock %}

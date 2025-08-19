@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chalkboard-teacher"></i> Tous les Professeurs</h2>
+    <a href="{{ url_for('add_teacher') }}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Ajouter un professeur
+    </a>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h4>{{ teachers|length }}</h4>
+                <p>Total Professeurs</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h4>{{ teachers.values()|selectattr('grade', 'in', ['Prof. Ordinaire', 'Prof. Associé'])|list|length }}</h4>
+                <p>Professeurs</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h4>{{ teachers.values()|selectattr('grade', 'equalto', 'CT')|list|length }}</h4>
+                <p>Chefs de Travaux</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h4>{{ teachers.values()|selectattr('grade', 'in', ['Ass.', 'Attaché'])|list|length }}</h4>
+                <p>Assistants</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>CIP</th>
+                        <th>Nom complet</th>
+                        <th>Username</th>
+                        <th>Grade</th>
+                        <th>Département</th>
+                        <th>Cours assignés</th>
+                        <th>Contact</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for username, teacher in teachers.items() %}
+                    <tr>
+                        <td>{{ teacher.get('cip', 'N/A') }}</td>
+                        <td>
+                            <a href="{{ url_for('user_profile', username=username) }}" class="text-decoration-none">
+                                <strong>{{ teacher.get('prenom', '') }} {{ teacher.get('nom', '') }}</strong>
+                            </a>
+                            <br><small class="text-muted">{{ teacher.get('postnom', '') }}</small>
+                        </td>
+                        <td><code>{{ username }}</code></td>
+                        <td><span class="badge bg-success">{{ teacher.get('grade', 'N/A') }}</span></td>
+                        <td><span class="badge bg-secondary">{{ teacher.get('departement', 'N/A') }}</span></td>
+                        <td>
+                            {% set assigned_courses = [] %}
+                            {% if course_assignments is defined %}
+                                {% for course_id, assigned_teachers in course_assignments.items() %}
+                                    {% if username in assigned_teachers %}
+                                        {% set course = admin_courses|selectattr('id', 'equalto', course_id)|first %}
+                                        {% if course %}
+                                            {% set _ = assigned_courses.append(course.code) %}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            {% if assigned_courses %}
+                                {% for course_code in assigned_courses[:3] %}
+                                    <span class="badge bg-primary me-1">{{ course_code }}</span>
+                                {% endfor %}
+                                {% if assigned_courses|length > 3 %}
+                                    <span class="badge bg-info">+{{ assigned_courses|length - 3 }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">Aucun</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if teacher.get('email') %}
+                                <small>{{ teacher.email }}</small><br>
+                            {% endif %}
+                            {% if teacher.get('telephone') %}
+                                <small>{{ teacher.telephone }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('user_profile', username=username) }}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('delete_user', username=username) }}" 
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirm('Supprimer ce professeur ?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+    </a>
+</div>
+{% endblock %}

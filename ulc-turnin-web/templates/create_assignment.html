@@ -46,10 +46,65 @@
                     </div>
 
                     <div class="mb-3">
+                        <label for="results_release_date" class="form-label">Publication des résultats</label>
+                        <input type="datetime-local" class="form-control" id="results_release_date" name="results_release_date">
+                        <div class="form-text">
+                            Date et heure de publication automatique des notes aux étudiants. 
+                            Laissez vide pour publication manuelle.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
                         <label for="files" class="form-label">Fichiers à joindre</label>
                         <input type="file" class="form-control" id="files" name="files" multiple>
                         <div class="form-text">
                             Vous pouvez joindre plusieurs fichiers (énoncés, ressources, etc.)
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h6><i class="fas fa-users"></i> Travail de Groupe</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="is_group_work" name="is_group_work">
+                                    <label class="form-check-label" for="is_group_work">
+                                        <strong>Ce devoir est un travail de groupe</strong>
+                                    </label>
+                                </div>
+                                
+                                <div id="group_options" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Formation des groupes</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="group_formation" value="manual" id="manual" checked>
+                                                <label class="form-check-label" for="manual">
+                                                    Les étudiants forment leurs groupes
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="group_formation" value="auto" id="auto">
+                                                <label class="form-check-label" for="auto">
+                                                    Génération automatique des groupes
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="group_size" class="form-label">Taille des groupes</label>
+                                            <select class="form-select" id="group_size" name="group_size">
+                                                <option value="2">2 étudiants</option>
+                                                <option value="3">3 étudiants</option>
+                                                <option value="4">4 étudiants</option>
+                                                <option value="5">5 étudiants</option>
+                                                <option value="6">6 étudiants</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -111,6 +166,15 @@ document.getElementById('course_id').addEventListener('change', function() {
     const selectedOption = this.options[this.selectedIndex];
     const courseName = selectedOption.getAttribute('data-name') || '';
     document.getElementById('course').value = courseName;
+});
+
+document.getElementById('is_group_work').addEventListener('change', function() {
+    const groupOptions = document.getElementById('group_options');
+    if (this.checked) {
+        groupOptions.style.display = 'block';
+    } else {
+        groupOptions.style.display = 'none';
+    }
 });
 </script>
 {% endblock %}

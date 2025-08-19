@@ -35,17 +35,32 @@
                 </div>
 
                 <div class="mb-3">
+                    {% if assignment.is_group_work %}
+                        <span class="badge bg-primary me-1">Travail de Groupe</span>
+                    {% endif %}
                     {% if assignment.auto_correct %}
                         <span class="badge bg-success me-1">Correction Auto</span>
                     {% endif %}
                     {% if assignment.plagiarism_check %}
-                        <span class="badge bg-warning">Détection Plagiat</span>
+                        <span class="badge bg-warning me-1">Détection Plagiat</span>
+                    {% endif %}
+                    {% if assignment.results_published %}
+                        <span class="badge bg-info">Notes Publiées</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Notes Privées</span>
                     {% endif %}
                 </div>
                 
-                <a href="{{ url_for('assignment_results', assignment_id=assignment.id) }}" class="btn btn-primary">
-                    <i class="fas fa-chart-bar"></i> Voir les résultats
-                </a>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('assignment_results', assignment_id=assignment.id) }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-chart-bar"></i> Résultats
+                    </a>
+                    {% if assignment.is_group_work %}
+                        <a href="{{ url_for('manage_groups', assignment_id=assignment.id) }}" class="btn btn-info btn-sm">
+                            <i class="fas fa-users"></i> Groupes
+                        </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>

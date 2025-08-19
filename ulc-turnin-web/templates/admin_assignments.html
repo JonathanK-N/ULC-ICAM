@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tasks"></i> Tous les Devoirs</h2>
+</div>
+
+<div class="row">
+    {% for assignment in assignments %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ assignment.title }}</h5>
+                <div>
+                    <span class="badge bg-info">{{ assignment.course }}</span>
+                    {% if assignment.max_score %}
+                        <span class="badge bg-secondary">{{ assignment.max_score }} pts</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ assignment.description }}</p>
+                <div class="mb-2">
+                    <strong>Professeur :</strong> {{ assignment.teacher_name or assignment.teacher }}
+                </div>
+                <div class="mb-2">
+                    <strong>Date limite :</strong> 
+                    <span class="text-danger">{{ assignment.due_date }}</span>
+                </div>
+                
+                <div class="mb-3">
+                    {% if assignment.auto_correct %}
+                        <span class="badge bg-success me-1">Correction Auto</span>
+                    {% endif %}
+                    {% if assignment.plagiarism_check %}
+                        <span class="badge bg-warning">Détection Plagiat</span>
+                    {% endif %}
+                </div>
+                
+                {% if assignment.files %}
+                <div class="mb-2">
+                    <strong>Fichiers joints :</strong>
+                    {% for file in assignment.files %}
+                        <span class="badge bg-primary me-1">{{ file.split('_', 2)[-1] }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not assignments %}
+<div class="text-center">
+    <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+    <h4 class="text-muted">Aucun devoir créé</h4>
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+    </a>
+</div>
+{% endblock %}

@@ -7,56 +7,112 @@
 
 <div class="row mb-4">
     <div class="col-md-3">
-        <div class="card bg-primary text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h4>{{ users|length - 1 }}</h4>
-                        <p>Utilisateurs</p>
+        <a href="{{ url_for('admin_users') }}" class="text-decoration-none">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ users|length - 1 }}</h4>
+                            <p>Utilisateurs</p>
+                        </div>
+                        <i class="fas fa-users fa-2x"></i>
                     </div>
-                    <i class="fas fa-users fa-2x"></i>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-3">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h4>{{ assignments|length }}</h4>
-                        <p>Devoirs</p>
+        <a href="{{ url_for('admin_assignments') }}" class="text-decoration-none">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ assignments|length }}</h4>
+                            <p>Devoirs</p>
+                        </div>
+                        <i class="fas fa-tasks fa-2x"></i>
                     </div>
-                    <i class="fas fa-tasks fa-2x"></i>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-3">
-        <div class="card bg-info text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h4>{{ submissions|length }}</h4>
-                        <p>Soumissions</p>
+        <a href="{{ url_for('admin_submissions') }}" class="text-decoration-none">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ submissions|length }}</h4>
+                            <p>Soumissions</p>
+                        </div>
+                        <i class="fas fa-file-upload fa-2x"></i>
                     </div>
-                    <i class="fas fa-file-upload fa-2x"></i>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-3">
-        <div class="card bg-warning text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h4>{{ users.values()|selectattr("role", "equalto", "student")|list|length }}</h4>
-                        <p>Étudiants</p>
+        <a href="{{ url_for('admin_students') }}" class="text-decoration-none">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ users.values()|selectattr("role", "equalto", "student")|list|length }}</h4>
+                            <p>Étudiants</p>
+                        </div>
+                        <i class="fas fa-user-graduate fa-2x"></i>
                     </div>
-                    <i class="fas fa-user-graduate fa-2x"></i>
                 </div>
             </div>
-        </div>
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <a href="{{ url_for('admin_teachers') }}" class="text-decoration-none">
+            <div class="card bg-secondary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ users.values()|selectattr("role", "equalto", "teacher")|list|length }}</h4>
+                            <p>Professeurs</p>
+                        </div>
+                        <i class="fas fa-chalkboard-teacher fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('admin_courses_view') }}" class="text-decoration-none">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ admin_courses|length if admin_courses is defined else 0 }}</h4>
+                            <p>Cours</p>
+                        </div>
+                        <i class="fas fa-book-open fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('system_config_view') }}" class="text-decoration-none">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4><i class="fas fa-cogs"></i></h4>
+                            <p>Configuration</p>
+                        </div>
+                        <i class="fas fa-tools fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </a>
     </div>
 </div>
 

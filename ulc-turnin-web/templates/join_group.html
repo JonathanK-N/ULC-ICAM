@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-users"></i> Former un groupe - {{ assignment.title }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Travail de groupe :</strong> Sélectionnez vos coéquipiers pour ce devoir. 
+                    Taille recommandée : {{ assignment.group_size }} étudiants.
+                </div>
+
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Sélectionner vos coéquipiers :</strong>
+                        </label>
+                        <div class="form-text mb-3">
+                            Vous pouvez sélectionner jusqu'à {{ assignment.group_size - 1 }} coéquipiers 
+                            (vous êtes automatiquement inclus dans le groupe)
+                        </div>
+                        
+                        {% if available_students %}
+                            <div class="row">
+                                {% for student in available_students %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="group_members" value="{{ student.username }}" 
+                                               id="student_{{ student.username }}">
+                                        <label class="form-check-label" for="student_{{ student.username }}">
+                                            <strong>{{ student.name }}</strong><br>
+                                            <small class="text-muted">CIP: {{ student.cip }} - {{ student.username }}</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Aucun étudiant disponible pour former un groupe. 
+                                Tous les étudiants sont déjà dans des groupes.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Annuler
+                        </a>
+                        {% if available_students %}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-users"></i> Former le groupe
+                            </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Limiter la sélection selon la taille du groupe
+const checkboxes = document.querySelectorAll('input[name="group_members"]');
+const maxSelection = {{ assignment.group_size - 1 }};
+
+checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        const checkedBoxes = document.querySelectorAll('input[name="group_members"]:checked');
+        if (checkedBoxes.length >= maxSelection) {
+            checkboxes.forEach(cb => {
+                if (!cb.checked) cb.disabled = true;
+            });
+        } else {
+            checkboxes.forEach(cb => cb.disabled = false);
+        }
+    });
+});
+</script>
+{% endblock %}

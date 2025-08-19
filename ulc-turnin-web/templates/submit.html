@@ -31,6 +31,18 @@
                     </p>
                     
                     <div class="alert alert-info">
+                        {% if assignment.is_group_work %}
+                            <i class="fas fa-users"></i> <strong>Travail de groupe :</strong> 
+                            {% if assignment.group_formation == 'manual' %}
+                                Vous devez former votre groupe avant de soumettre.
+                                <a href="{{ url_for('join_group', assignment_id=assignment.id) }}" class="btn btn-primary btn-sm ms-2">
+                                    <i class="fas fa-users"></i> Former un groupe
+                                </a>
+                            {% else %}
+                                Les groupes ont été formés automatiquement.
+                            {% endif %}
+                            <br>
+                        {% endif %}
                         {% if assignment.auto_correct %}
                             <i class="fas fa-robot"></i> Ce devoir sera corrigé automatiquement.<br>
                         {% endif %}

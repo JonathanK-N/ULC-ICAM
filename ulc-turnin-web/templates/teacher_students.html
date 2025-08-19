@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-graduate"></i> Mes étudiants</h2>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-book-open"></i> Mes cours</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for course in courses %}
+                    <div class="col-md-4 mb-2">
+                        <span class="badge bg-primary me-2">{{ course.code }}</span>
+                        {{ course.name }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-users"></i> Étudiants inscrits ({{ students|length }})</h5>
+    </div>
+    <div class="card-body">
+        {% if students %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>CIP</th>
+                            <th>Nom complet</th>
+                            <th>Username</th>
+                            <th>Promotion</th>
+                            <th>Faculté</th>
+                            <th>Contact</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ student.data.get('cip', 'N/A') }}</td>
+                            <td>
+                                <strong>{{ student.data.get('prenom', '') }} {{ student.data.get('nom', '') }}</strong><br>
+                                <small class="text-muted">{{ student.data.get('postnom', '') }}</small>
+                            </td>
+                            <td><code>{{ student.username }}</code></td>
+                            <td><span class="badge bg-primary">{{ student.data.get('promotion', 'N/A') }}</span></td>
+                            <td><span class="badge bg-secondary">{{ student.data.get('faculte', 'N/A') }}</span></td>
+                            <td>
+                                {% if student.data.get('email') %}
+                                    <small>{{ student.data.email }}</small><br>
+                                {% endif %}
+                                {% if student.data.get('telephone') %}
+                                    <small>{{ student.data.telephone }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('user_profile', username=student.username) }}" 
+                                   class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i> Profil
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center text-muted">
+                <i class="fas fa-user-graduate fa-3x mb-3"></i>
+                <h5>Aucun étudiant inscrit</h5>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+    </a>
+</div>
+{% endblock %}
