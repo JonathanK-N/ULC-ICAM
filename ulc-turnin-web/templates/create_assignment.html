@@ -22,8 +22,16 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="course" class="form-label">Cours *</label>
-                            <input type="text" class="form-control" id="course" name="course" required>
+                            <label for="course_id" class="form-label">Cours assigné *</label>
+                            <select class="form-select" id="course_id" name="course_id" required>
+                                <option value="">Sélectionner un cours</option>
+                                {% for course in admin_courses %}
+                                    {% if course.id in course_assignments and session.user in course_assignments[course.id] %}
+                                        <option value="{{ course.id }}" data-name="{{ course.name }}">{{ course.name }} ({{ course.code }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            <input type="hidden" id="course" name="course">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="due_date" class="form-label">Date limite *</label>
@@ -97,4 +105,12 @@
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('course_id').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const courseName = selectedOption.getAttribute('data-name') || '';
+    document.getElementById('course').value = courseName;
+});
+</script>
 {% endblock %}

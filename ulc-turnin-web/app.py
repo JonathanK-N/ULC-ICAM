@@ -47,6 +47,19 @@ system_config = {
     'grades': ['Prof. Ordinaire', 'Prof. Associé', 'Prof. Extraordinaire', 'CT', 'Ass.', 'Attaché']
 }
 
+# Gestion des cours par l'admin
+admin_courses = [
+    {'id': 1, 'name': 'Algorithmique et Programmation', 'code': 'INFO101', 'credits': 6, 'faculte': 'Sciences', 'departement': 'Mathématiques-Informatique', 'promotions': ['L1']},
+    {'id': 2, 'name': 'Base de Données', 'code': 'INFO201', 'credits': 4, 'faculte': 'Sciences', 'departement': 'Mathématiques-Informatique', 'promotions': ['L2']}
+]
+next_course_admin_id = 3
+
+# Attribution des cours aux professeurs
+course_assignments = {
+    1: ['teacher'],  # course_id: [teacher_usernames]
+    2: ['teacher']
+}
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -519,6 +532,87 @@ def manage_config(config_type):
     
     return render_template('manage_config.html', config_type=config_type, items=system_config[config_type])
 
+@app.route('/admin/courses')
+def admin_courses_view():
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    return render_template('admin_courses.html', courses=admin_courses, course_assignments=course_assignments, users=users)
+
+@app.route('/admin/add_course', methods=['GET', 'POST'])
+def admin_add_course():
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        global next_course_admin_id
+        course = {
+            'id': next_course_admin_id,
+            'name': request.form['name'],
+            'code': request.form['code'],
+            'credits': int(request.form['credits']),
+            'faculte': request.form['faculte'],
+            'departement': request.form['departement'],
+            'promotions': request.form.getlist('promotions'),
+            'description': request.form.get('description', '')
+        }
+        admin_courses.append(course)
+        course_assignments[next_course_admin_id] = []
+        next_course_admin_id += 1
+        flash('Cours ajouté avec succès')
+        return redirect(url_for('admin_courses_view'))
+    
+    return render_template('admin_add_course.html', config=system_config)
+
+@app.route('/admin/assign_teacher/<int:course_id>', methods=['GET', 'POST'])
+def assign_teacher_to_course(course_id):
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    
+    course = next((c for c in admin_courses if c['id'] == course_id), None)
+    if not course:
+        flash('Cours non trouvé')
+        return redirect(url_for('admin_courses_view'))
+    
+    if request.method == 'POST':
+        teacher_username = request.form['teacher']
+        if teacher_username in users and users[teacher_username]['role'] == 'teacher':
+            if course_id not in course_assignments:
+                course_assignments[course_id] = []
+            if teacher_username not in course_assignments[course_id]:
+                course_assignments[course_id].append(teacher_username)
+                flash(f'Professeur {teacher_username} assigné au cours')
+            else:
+                flash('Professeur déjà assigné à ce cours')
+        return redirect(url_for('admin_courses_view'))
+    
+    teachers = {k: v for k, v in users.items() if v['role'] == 'teacher'}
+    assigned_teachers = course_assignments.get(course_id, [])
+    return render_template('assign_teacher.html', course=course, teachers=teachers, assigned_teachers=assigned_teachers)
+
+@app.route('/admin/unassign_teacher/<int:course_id>/<teacher_username>')
+def unassign_teacher_from_course(course_id, teacher_username):
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    
+    if course_id in course_assignments and teacher_username in course_assignments[course_id]:
+        course_assignments[course_id].remove(teacher_username)
+        flash(f'Professeur {teacher_username} désassigné du cours')
+    
+    return redirect(url_for('admin_courses_view'))
+
+@app.route('/teacher/my_assigned_courses')
+def teacher_assigned_courses():
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    # Trouver les cours assignés à ce professeur
+    teacher_courses = []
+    for course in admin_courses:
+        if course['id'] in course_assignments and session['user'] in course_assignments[course['id']]:
+            teacher_courses.append(course)
+    
+    return render_template('teacher_assigned_courses.html', courses=teacher_courses)
+
 @app.route('/teacher/assignments')
 def teacher_assignments():
     if 'user' not in session or session['role'] != 'teacher':
@@ -552,6 +646,7 @@ def create_assignment():
             'title': request.form['title'],
             'description': request.form['description'],
             'due_date': request.form['due_date'],
+            'course_id': int(request.form['course_id']) if request.form.get('course_id') else None,
             'course': request.form['course'],
             'teacher': session['user'],
             'teacher_name': session['name'],
@@ -566,7 +661,13 @@ def create_assignment():
         flash('Devoir créé avec succès')
         return redirect(url_for('teacher_assignments'))
     
-    return render_template('create_assignment.html')
+    # Récupérer les cours assignés au professeur
+    teacher_courses = []
+    for course in admin_courses:
+        if course['id'] in course_assignments and session['user'] in course_assignments[course['id']]:
+            teacher_courses.append(course)
+    
+    return render_template('create_assignment.html', admin_courses=admin_courses, course_assignments=course_assignments)
 
 @app.route('/download_assignment_file/<filename>')
 def download_assignment_file(filename):
