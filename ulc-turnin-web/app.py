@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
 import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -14,17 +14,23 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Données simulées (remplacer par une base de données)
 users = {
-    'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur'},
-    'student': {'password': 'password', 'role': 'student', 'name': 'Étudiant Test'},
-    'teacher': {'password': 'password', 'role': 'teacher', 'name': 'Professeur Test'}
+    'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur UNIKIN'},
+    'student': {'password': 'password', 'role': 'student', 'name': 'Étudiant Test', 'faculte': 'Sciences', 'promotion': 'G2'},
+    'teacher': {'password': 'password', 'role': 'teacher', 'name': 'Professeur Test', 'departement': 'Informatique'}
 }
 
+# Système congolais: G1, G2, G3 (Graduat) + L4, L5 (Licence)
 assignments = [
-    {'id': 1, 'title': 'TP Python', 'course': 'Programmation', 'due_date': '2024-02-15', 'description': 'Exercices Python'},
-    {'id': 2, 'title': 'Projet Web', 'course': 'Développement Web', 'due_date': '2024-02-20', 'description': 'Application Flask'}
+    {'id': 1, 'title': 'TP Algorithmique', 'course': 'Algorithmique et Programmation', 'due_date': '2024-02-15', 'description': 'Exercices sur les structures de données', 'files': [], 'auto_correct': False, 'plagiarism_check': True},
+    {'id': 2, 'title': 'Projet Base de Données', 'course': 'Système de Gestion de BD', 'due_date': '2024-02-20', 'description': 'Conception d\'une base de données', 'files': [], 'auto_correct': False, 'plagiarism_check': True}
 ]
+next_assignment_id = 3
 
 submissions = []
+
+# Résultats de correction et plagiat
+correction_results = {}  # {submission_id: {'score': 85, 'feedback': 'Bon travail'}}
+plagiarism_results = {}  # {submission_id: {'similarity': 15, 'sources': []}}
 
 # Gestion des cours
 courses = []
@@ -32,6 +38,14 @@ next_course_id = 1
 
 # Inscriptions des étudiants aux cours
 course_enrollments = {}  # {course_id: [student_usernames]}
+
+# Configuration système (modifiable par l'admin)
+system_config = {
+    'promotions': ['L1', 'L2', 'L3', 'M1', 'M2'],
+    'facultes': ['Sciences', 'Médecine', 'Droit', 'Sciences Économiques', 'Polytechnique', 'Lettres et Sciences Humaines'],
+    'departements': ['Mathématiques-Informatique', 'Physique', 'Chimie', 'Biologie', 'Médecine Interne', 'Chirurgie', 'Droit Privé', 'Droit Public'],
+    'grades': ['Prof. Ordinaire', 'Prof. Associé', 'Prof. Extraordinaire', 'CT', 'Ass.', 'Attaché']
+}
 
 @app.route('/')
 def index():
@@ -144,6 +158,13 @@ def submit_assignment(assignment_id):
                 'submitted_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
             submissions.append(submission)
+            
+            # Traitement automatique si activé
+            if assignment.get('plagiarism_check'):
+                simulate_plagiarism_check('contenu du fichier', submission['id'])
+            
+            if assignment.get('auto_correct'):
+                simulate_auto_correction('contenu du fichier', assignment, submission['id'])
             
             flash('Fichier soumis avec succès!')
             return redirect(url_for('dashboard'))
@@ -260,7 +281,7 @@ def import_csv():
         else:
             flash('Format de fichier non valide. Utilisez un fichier CSV.')
     
-    return render_template('import_csv.html')
+    return render_template('import_csv_congo.html')
 
 @app.route('/admin/delete_user/<username>')
 def delete_user(username):
@@ -466,6 +487,146 @@ def edit_user(username):
         return redirect(url_for('user_profile', username=username))
     
     return render_template('edit_user.html', username=username, user_data=users[username])
+
+@app.route('/admin/system_config')
+def system_config_view():
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    return render_template('system_config.html', config=system_config)
+
+@app.route('/admin/config/<config_type>', methods=['GET', 'POST'])
+def manage_config(config_type):
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    
+    if config_type not in system_config:
+        flash('Configuration non trouvée')
+        return redirect(url_for('system_config_view'))
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'add':
+            new_item = request.form.get('new_item')
+            if new_item and new_item not in system_config[config_type]:
+                system_config[config_type].append(new_item)
+                flash(f'{new_item} ajouté avec succès')
+        elif action == 'delete':
+            item_to_delete = request.form.get('item')
+            if item_to_delete in system_config[config_type]:
+                system_config[config_type].remove(item_to_delete)
+                flash(f'{item_to_delete} supprimé avec succès')
+        return redirect(url_for('manage_config', config_type=config_type))
+    
+    return render_template('manage_config.html', config_type=config_type, items=system_config[config_type])
+
+@app.route('/teacher/assignments')
+def teacher_assignments():
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    teacher_assignments = [a for a in assignments if a.get('teacher') == session['user']]
+    return render_template('teacher_assignments.html', assignments=teacher_assignments)
+
+@app.route('/teacher/create_assignment', methods=['GET', 'POST'])
+def create_assignment():
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        global next_assignment_id
+        
+        # Gestion des fichiers téléversés
+        uploaded_files = []
+        if 'files' in request.files:
+            files = request.files.getlist('files')
+            for file in files:
+                if file and file.filename != '':
+                    filename = secure_filename(f"assignment_{next_assignment_id}_{file.filename}")
+                    file_path = os.path.join('uploads', 'assignments')
+                    os.makedirs(file_path, exist_ok=True)
+                    file.save(os.path.join(file_path, filename))
+                    uploaded_files.append(filename)
+        
+        assignment = {
+            'id': next_assignment_id,
+            'title': request.form['title'],
+            'description': request.form['description'],
+            'due_date': request.form['due_date'],
+            'course': request.form['course'],
+            'teacher': session['user'],
+            'teacher_name': session['name'],
+            'files': uploaded_files,
+            'auto_correct': 'auto_correct' in request.form,
+            'plagiarism_check': 'plagiarism_check' in request.form,
+            'max_score': int(request.form.get('max_score', 100))
+        }
+        
+        assignments.append(assignment)
+        next_assignment_id += 1
+        flash('Devoir créé avec succès')
+        return redirect(url_for('teacher_assignments'))
+    
+    return render_template('create_assignment.html')
+
+@app.route('/download_assignment_file/<filename>')
+def download_assignment_file(filename):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    return send_from_directory(os.path.join('uploads', 'assignments'), filename)
+
+@app.route('/teacher/assignment_results/<int:assignment_id>')
+def assignment_results(assignment_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    assignment = next((a for a in assignments if a['id'] == assignment_id and a.get('teacher') == session['user']), None)
+    if not assignment:
+        flash('Devoir non trouvé')
+        return redirect(url_for('teacher_assignments'))
+    
+    # Récupérer les soumissions pour ce devoir
+    assignment_submissions = [s for s in submissions if s.get('assignment_id') == assignment_id]
+    
+    # Ajouter les résultats de correction et plagiat
+    for sub in assignment_submissions:
+        sub['correction'] = correction_results.get(sub['id'], {})
+        sub['plagiarism'] = plagiarism_results.get(sub['id'], {})
+    
+    return render_template('assignment_results.html', assignment=assignment, submissions=assignment_submissions)
+
+def simulate_plagiarism_check(content, submission_id):
+    """Simulation de détection de plagiat"""
+    import random
+    similarity = random.randint(0, 30)  # Simulation
+    sources = []
+    if similarity > 20:
+        sources = ['Document similaire 1', 'Source web détectée']
+    
+    plagiarism_results[submission_id] = {
+        'similarity': similarity,
+        'sources': sources,
+        'status': 'suspect' if similarity > 25 else 'acceptable'
+    }
+    return plagiarism_results[submission_id]
+
+def simulate_auto_correction(content, assignment, submission_id):
+    """Simulation de correction automatique"""
+    import random
+    score = random.randint(60, 95)  # Simulation
+    feedback = [
+        'Bonne structure du code',
+        'Logique correcte',
+        'Quelques améliorations possibles'
+    ]
+    
+    correction_results[submission_id] = {
+        'score': score,
+        'max_score': assignment.get('max_score', 100),
+        'feedback': feedback,
+        'auto_generated': True
+    }
+    return correction_results[submission_id]
 
 if __name__ == '__main__':
     app.run(debug=True)

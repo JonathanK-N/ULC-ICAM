@@ -52,11 +52,9 @@
                             <label for="grade" class="form-label">Grade *</label>
                             <select class="form-select" id="grade" name="grade" required>
                                 <option value="">Sélectionner</option>
-                                <option value="Prof.">Professeur</option>
-                                <option value="Dr.">Docteur</option>
-                                <option value="Ass.">Assistant</option>
-                                <option value="CT">Chef de Travaux</option>
-                                <option value="Ing.">Ingénieur</option>
+                                {% for grade in ['Prof. Ordinaire', 'Prof. Associé', 'Prof. Extraordinaire', 'CT', 'Ass.', 'Attaché'] %}
+                                    <option value="{{ grade }}">{{ grade }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -66,13 +64,9 @@
                             <label for="departement" class="form-label">Département *</label>
                             <select class="form-select" id="departement" name="departement" required>
                                 <option value="">Sélectionner</option>
-                                <option value="Informatique">Informatique</option>
-                                <option value="Médecine">Médecine</option>
-                                <option value="Droit">Droit</option>
-                                <option value="Économie">Économie</option>
-                                <option value="Ingénierie">Ingénierie</option>
-                                <option value="Sciences">Sciences</option>
-                                <option value="Mathématiques">Mathématiques</option>
+                                {% for dept in ['Mathématiques-Informatique', 'Physique', 'Chimie', 'Biologie', 'Médecine Interne', 'Chirurgie', 'Droit Privé', 'Droit Public'] %}
+                                    <option value="{{ dept }}">{{ dept }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">

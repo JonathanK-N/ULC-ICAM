@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-file-csv"></i> Importer des utilisateurs via CSV - Système Congolais</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Format du fichier CSV pour le système universitaire congolais :</h6>
+                    <p>Le fichier doit contenir les colonnes suivantes dans cet ordre :</p>
+                    <code>username,nom,postnom,prenom,role,faculte,promotion,password</code>
+                    <br><br>
+                    <strong>Exemples :</strong><br>
+                    <code>etudiant1,MUKENDI,wa,Jean,student,Sciences,G2,motdepasse123</code><br>
+                    <code>prof1,KABONGO,TSHILOBO,Marie,teacher,Médecine,,profpass456</code>
+                    <br><br>
+                    <strong>Promotions valides :</strong> G1, G2, G3, L4, L5<br>
+                    <strong>Facultés :</strong> Sciences, Médecine, Droit, Sciences Économiques, Polytechnique, etc.
+                </div>
+
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Sélectionner le fichier CSV</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
+                        <div class="form-text">
+                            Seuls les fichiers .csv sont acceptés
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-upload"></i> Importer
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4">
+                    <h6>Télécharger un modèle CSV congolais :</h6>
+                    <a href="data:text/csv;charset=utf-8,username%2Cnom%2Cpostnom%2Cprenom%2Crole%2Cfaculte%2Cpromotion%2Cpassword%0Aetudiant1%2CMUKENDI%2Cwa%2CJean%2Cstudent%2CSciences%2CG2%2Cmotdepasse123%0Aprof1%2CKABONGO%2CTSHILOBO%2CMarie%2Cteacher%2CM%C3%A9decine%2C%2Cprofpass456" 
+                       download="modele_utilisateurs_congo.csv" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-download"></i> Télécharger modèle congolais
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

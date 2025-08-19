@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tasks"></i> Mes Devoirs</h2>
+    <a href="{{ url_for('create_assignment') }}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Créer un devoir
+    </a>
+</div>
+
+<div class="row">
+    {% for assignment in assignments %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ assignment.title }}</h5>
+                <span class="badge bg-info">{{ assignment.course }}</span>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ assignment.description }}</p>
+                <p class="text-muted">
+                    <i class="fas fa-calendar"></i> 
+                    Date limite : {{ assignment.due_date }}
+                </p>
+                
+                <div class="mb-3">
+                    {% if assignment.files %}
+                        <strong>Fichiers joints :</strong><br>
+                        {% for file in assignment.files %}
+                            <a href="{{ url_for('download_assignment_file', filename=file) }}" class="btn btn-outline-primary btn-sm me-1 mb-1">
+                                <i class="fas fa-download"></i> {{ file.split('_', 2)[-1] }}
+                            </a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    {% if assignment.auto_correct %}
+                        <span class="badge bg-success me-1">Correction Auto</span>
+                    {% endif %}
+                    {% if assignment.plagiarism_check %}
+                        <span class="badge bg-warning">Détection Plagiat</span>
+                    {% endif %}
+                </div>
+                
+                <a href="{{ url_for('assignment_results', assignment_id=assignment.id) }}" class="btn btn-primary">
+                    <i class="fas fa-chart-bar"></i> Voir les résultats
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not assignments %}
+<div class="text-center">
+    <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+    <h4 class="text-muted">Aucun devoir créé</h4>
+    <p class="text-muted">Commencez par créer votre premier devoir</p>
+</div>
+{% endif %}
+
+<div class="mt-3">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+    </a>
+</div>
+{% endblock %}

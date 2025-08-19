@@ -19,11 +19,11 @@
                             <label for="promotion" class="form-label">Promotion</label>
                             <select class="form-select" id="promotion" name="promotion">
                                 <option value="">Sélectionner</option>
-                                <option value="L1" {% if user_data.get('promotion') == 'L1' %}selected{% endif %}>Licence 1</option>
-                                <option value="L2" {% if user_data.get('promotion') == 'L2' %}selected{% endif %}>Licence 2</option>
-                                <option value="L3" {% if user_data.get('promotion') == 'L3' %}selected{% endif %}>Licence 3</option>
-                                <option value="M1" {% if user_data.get('promotion') == 'M1' %}selected{% endif %}>Master 1</option>
-                                <option value="M2" {% if user_data.get('promotion') == 'M2' %}selected{% endif %}>Master 2</option>
+                                <option value="G1" {% if user_data.get('promotion') == 'G1' %}selected{% endif %}>Graduat 1 (G1)</option>
+                                <option value="G2" {% if user_data.get('promotion') == 'G2' %}selected{% endif %}>Graduat 2 (G2)</option>
+                                <option value="G3" {% if user_data.get('promotion') == 'G3' %}selected{% endif %}>Graduat 3 (G3)</option>
+                                <option value="L4" {% if user_data.get('promotion') == 'L4' %}selected{% endif %}>Licence 4 (L4)</option>
+                                <option value="L5" {% if user_data.get('promotion') == 'L5' %}selected{% endif %}>Licence 5 (L5)</option>
                             </select>
                         </div>
                     </div>
@@ -60,12 +60,14 @@
                             <label for="faculte" class="form-label">Faculté</label>
                             <select class="form-select" id="faculte" name="faculte">
                                 <option value="">Sélectionner</option>
-                                <option value="Informatique" {% if user_data.get('faculte') == 'Informatique' %}selected{% endif %}>Informatique</option>
+                                <option value="Sciences" {% if user_data.get('faculte') == 'Sciences' %}selected{% endif %}>Sciences</option>
                                 <option value="Médecine" {% if user_data.get('faculte') == 'Médecine' %}selected{% endif %}>Médecine</option>
                                 <option value="Droit" {% if user_data.get('faculte') == 'Droit' %}selected{% endif %}>Droit</option>
-                                <option value="Économie" {% if user_data.get('faculte') == 'Économie' %}selected{% endif %}>Économie</option>
-                                <option value="Ingénierie" {% if user_data.get('faculte') == 'Ingénierie' %}selected{% endif %}>Ingénierie</option>
-                                <option value="Sciences" {% if user_data.get('faculte') == 'Sciences' %}selected{% endif %}>Sciences</option>
+                                <option value="Sciences Économiques" {% if user_data.get('faculte') == 'Sciences Économiques' %}selected{% endif %}>Sciences Économiques</option>
+                                <option value="Polytechnique" {% if user_data.get('faculte') == 'Polytechnique' %}selected{% endif %}>Polytechnique</option>
+                                <option value="Lettres et Sciences Humaines" {% if user_data.get('faculte') == 'Lettres et Sciences Humaines' %}selected{% endif %}>Lettres et Sciences Humaines</option>
+                                <option value="Sciences Sociales" {% if user_data.get('faculte') == 'Sciences Sociales' %}selected{% endif %}>Sciences Sociales</option>
+                                <option value="Psychologie et Sciences de l'Éducation" {% if user_data.get('faculte') == 'Psychologie et Sciences de l\'Education' %}selected{% endif %}>Psychologie et Sciences de l'Éducation</option>
                             </select>
                         </div>
                     </div>
@@ -96,11 +98,12 @@
                             <label for="grade" class="form-label">Grade</label>
                             <select class="form-select" id="grade" name="grade">
                                 <option value="">Sélectionner</option>
-                                <option value="Prof." {% if user_data.get('grade') == 'Prof.' %}selected{% endif %}>Professeur</option>
-                                <option value="Dr." {% if user_data.get('grade') == 'Dr.' %}selected{% endif %}>Docteur</option>
-                                <option value="Ass." {% if user_data.get('grade') == 'Ass.' %}selected{% endif %}>Assistant</option>
+                                <option value="Prof. Ordinaire" {% if user_data.get('grade') == 'Prof. Ordinaire' %}selected{% endif %}>Professeur Ordinaire</option>
+                                <option value="Prof. Associé" {% if user_data.get('grade') == 'Prof. Associé' %}selected{% endif %}>Professeur Associé</option>
+                                <option value="Prof. Extraordinaire" {% if user_data.get('grade') == 'Prof. Extraordinaire' %}selected{% endif %}>Professeur Extraordinaire</option>
                                 <option value="CT" {% if user_data.get('grade') == 'CT' %}selected{% endif %}>Chef de Travaux</option>
-                                <option value="Ing." {% if user_data.get('grade') == 'Ing.' %}selected{% endif %}>Ingénieur</option>
+                                <option value="Ass." {% if user_data.get('grade') == 'Ass.' %}selected{% endif %}>Assistant</option>
+                                <option value="Attaché" {% if user_data.get('grade') == 'Attaché' %}selected{% endif %}>Attaché d'Enseignement</option>
                             </select>
                         </div>
                     </div>
@@ -144,12 +147,15 @@
                             <label for="departement" class="form-label">Département</label>
                             <select class="form-select" id="departement" name="departement">
                                 <option value="">Sélectionner</option>
-                                <option value="Informatique" {% if user_data.get('departement') == 'Informatique' %}selected{% endif %}>Informatique</option>
-                                <option value="Médecine" {% if user_data.get('departement') == 'Médecine' %}selected{% endif %}>Médecine</option>
-                                <option value="Droit" {% if user_data.get('departement') == 'Droit' %}selected{% endif %}>Droit</option>
-                                <option value="Économie" {% if user_data.get('departement') == 'Économie' %}selected{% endif %}>Économie</option>
-                                <option value="Ingénierie" {% if user_data.get('departement') == 'Ingénierie' %}selected{% endif %}>Ingénierie</option>
-                                <option value="Sciences" {% if user_data.get('departement') == 'Sciences' %}selected{% endif %}>Sciences</option>
+                                <option value="Mathématiques-Informatique" {% if user_data.get('departement') == 'Mathématiques-Informatique' %}selected{% endif %}>Mathématiques-Informatique</option>
+                                <option value="Physique" {% if user_data.get('departement') == 'Physique' %}selected{% endif %}>Physique</option>
+                                <option value="Chimie" {% if user_data.get('departement') == 'Chimie' %}selected{% endif %}>Chimie</option>
+                                <option value="Biologie" {% if user_data.get('departement') == 'Biologie' %}selected{% endif %}>Biologie</option>
+                                <option value="Médecine Interne" {% if user_data.get('departement') == 'Médecine Interne' %}selected{% endif %}>Médecine Interne</option>
+                                <option value="Chirurgie" {% if user_data.get('departement') == 'Chirurgie' %}selected{% endif %}>Chirurgie</option>
+                                <option value="Droit Privé" {% if user_data.get('departement') == 'Droit Privé' %}selected{% endif %}>Droit Privé</option>
+                                <option value="Droit Public" {% if user_data.get('departement') == 'Droit Public' %}selected{% endif %}>Droit Public</option>
+                                <option value="Génie Civil" {% if user_data.get('departement') == 'Génie Civil' %}selected{% endif %}>Génie Civil</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">

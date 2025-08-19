@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-cogs"></i> Gérer {{ config_type.title() }}</h2>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Liste actuelle</h5>
+            </div>
+            <div class="card-body">
+                {% if items %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Élément</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td>{{ item }}</td>
+                                    <td>
+                                        <form method="POST" style="display: inline;">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="item" value="{{ item }}">
+                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                    onclick="return confirm('Supprimer {{ item }} ?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Aucun élément configuré</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <h5><i class="fas fa-plus"></i> Ajouter un élément</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="action" value="add">
+                    <div class="mb-3">
+                        <label for="new_item" class="form-label">Nouvel élément</label>
+                        <input type="text" class="form-control" id="new_item" name="new_item" required>
+                        <div class="form-text">
+                            {% if config_type == 'promotions' %}
+                                Ex: L1, L2, L3, M1, M2
+                            {% elif config_type == 'facultes' %}
+                                Ex: Sciences, Médecine, Droit
+                            {% elif config_type == 'departements' %}
+                                Ex: Mathématiques, Informatique
+                            {% elif config_type == 'grades' %}
+                                Ex: Professeur, Assistant
+                            {% endif %}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Ajouter
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {% if config_type == 'promotions' %}
+        <div class="card border-info mt-3">
+            <div class="card-header bg-info text-white">
+                <h6><i class="fas fa-info-circle"></i> Système LMD</h6>
+            </div>
+            <div class="card-body">
+                <small>
+                    <strong>Licence :</strong> L1, L2, L3<br>
+                    <strong>Master :</strong> M1, M2<br>
+                    <strong>Doctorat :</strong> D1, D2, D3
+                </small>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('system_config_view') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour à la configuration
+    </a>
+</div>
+{% endblock %}

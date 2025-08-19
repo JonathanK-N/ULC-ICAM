@@ -52,11 +52,9 @@
                             <label for="promotion" class="form-label">Promotion *</label>
                             <select class="form-select" id="promotion" name="promotion" required>
                                 <option value="">Sélectionner</option>
-                                <option value="L1">Licence 1</option>
-                                <option value="L2">Licence 2</option>
-                                <option value="L3">Licence 3</option>
-                                <option value="M1">Master 1</option>
-                                <option value="M2">Master 2</option>
+                                {% for promotion in ['L1', 'L2', 'L3', 'M1', 'M2'] %}
+                                    <option value="{{ promotion }}">{{ promotion }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -66,12 +64,9 @@
                             <label for="faculte" class="form-label">Faculté *</label>
                             <select class="form-select" id="faculte" name="faculte" required>
                                 <option value="">Sélectionner</option>
-                                <option value="Informatique">Informatique</option>
-                                <option value="Médecine">Médecine</option>
-                                <option value="Droit">Droit</option>
-                                <option value="Économie">Économie</option>
-                                <option value="Ingénierie">Ingénierie</option>
-                                <option value="Sciences">Sciences</option>
+                                {% for faculte in ['Sciences', 'Médecine', 'Droit', 'Sciences Économiques', 'Polytechnique', 'Lettres et Sciences Humaines'] %}
+                                    <option value="{{ faculte }}">{{ faculte }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">

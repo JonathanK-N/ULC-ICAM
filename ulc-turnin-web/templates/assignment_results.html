@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-bar"></i> Résultats : {{ assignment.title }}</h2>
+    <div>
+        {% if assignment.auto_correct %}
+            <span class="badge bg-success me-1">Correction Auto</span>
+        {% endif %}
+        {% if assignment.plagiarism_check %}
+            <span class="badge bg-warning">Détection Plagiat</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-primary">{{ submissions|length }}</h4>
+                        <p class="text-muted">Soumissions</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-success">
+                            {% set corrected = submissions|selectattr('correction')|list|length %}
+                            {{ corrected }}
+                        </h4>
+                        <p class="text-muted">Corrigées</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-warning">
+                            {% set plagiarism_suspects = submissions|selectattr('plagiarism.status', 'equalto', 'suspect')|list|length %}
+                            {{ plagiarism_suspects }}
+                        </h4>
+                        <p class="text-muted">Plagiat Suspect</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-info">
+                            {% if submissions %}
+                                {% set total_score = submissions|selectattr('correction.score')|map(attribute='correction.score')|sum %}
+                                {% set count = submissions|selectattr('correction.score')|list|length %}
+                                {{ (total_score / count)|round(1) if count > 0 else 'N/A' }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </h4>
+                        <p class="text-muted">Moyenne</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Détail des soumissions</h5>
+    </div>
+    <div class="card-body">
+        {% if submissions %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Étudiant</th>
+                            <th>Fichier</th>
+                            <th>Date soumission</th>
+                            <th>Note</th>
+                            <th>Plagiat</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for submission in submissions %}
+                        <tr>
+                            <td>{{ submission.student }}</td>
+                            <td>{{ submission.filename }}</td>
+                            <td>{{ submission.submitted_at }}</td>
+                            <td>
+                                {% if submission.correction %}
+                                    <span class="badge bg-success">
+                                        {{ submission.correction.score }}/{{ submission.correction.max_score }}
+                                    </span>
+                                    {% if submission.correction.auto_generated %}
+                                        <small class="text-muted">(Auto)</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Non corrigé</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if submission.plagiarism %}
+                                    {% if submission.plagiarism.status == 'suspect' %}
+                                        <span class="badge bg-danger">{{ submission.plagiarism.similarity }}% Suspect</span>
+                                    {% else %}
+                                        <span class="badge bg-success">{{ submission.plagiarism.similarity }}% OK</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Non vérifié</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-info btn-sm" data-bs-toggle="modal" 
+                                        data-bs-target="#detailModal{{ submission.id }}">
+                                    <i class="fas fa-eye"></i> Détails
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center text-muted">
+                <i class="fas fa-inbox fa-3x mb-3"></i>
+                <h5>Aucune soumission pour ce devoir</h5>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modals pour les détails -->
+{% for submission in submissions %}
+<div class="modal fade" id="detailModal{{ submission.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails - {{ submission.student }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {% if submission.correction %}
+                <div class="mb-3">
+                    <h6><i class="fas fa-check-circle text-success"></i> Correction</h6>
+                    <p><strong>Note :</strong> {{ submission.correction.score }}/{{ submission.correction.max_score }}</p>
+                    <p><strong>Commentaires :</strong></p>
+                    <ul>
+                        {% for comment in submission.correction.feedback %}
+                            <li>{{ comment }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                {% if submission.plagiarism %}
+                <div class="mb-3">
+                    <h6><i class="fas fa-search text-warning"></i> Analyse de Plagiat</h6>
+                    <p><strong>Similarité :</strong> {{ submission.plagiarism.similarity }}%</p>
+                    <p><strong>Statut :</strong> 
+                        <span class="badge bg-{{ 'danger' if submission.plagiarism.status == 'suspect' else 'success' }}">
+                            {{ submission.plagiarism.status.title() }}
+                        </span>
+                    </p>
+                    {% if submission.plagiarism.sources %}
+                    <p><strong>Sources détectées :</strong></p>
+                    <ul>
+                        {% for source in submission.plagiarism.sources %}
+                            <li>{{ source }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<div class="mt-4">
+    <a href="{{ url_for('teacher_assignments') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour aux devoirs
+    </a>
+</div>
+{% endblock %}

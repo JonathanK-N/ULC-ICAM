@@ -12,10 +12,32 @@
                     <h5>{{ assignment.title }}</h5>
                     <p class="text-muted">{{ assignment.course }}</p>
                     <p>{{ assignment.description }}</p>
+                    
+                    {% if assignment.files %}
+                    <div class="mb-3">
+                        <h6><i class="fas fa-paperclip"></i> Fichiers joints :</h6>
+                        {% for file in assignment.files %}
+                            <a href="{{ url_for('download_assignment_file', filename=file) }}" 
+                               class="btn btn-outline-info btn-sm me-2 mb-2">
+                                <i class="fas fa-download"></i> {{ file.split('_', 2)[-1] }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
                     <p class="text-danger">
                         <i class="fas fa-calendar"></i> 
                         Date limite : {{ assignment.due_date }}
                     </p>
+                    
+                    <div class="alert alert-info">
+                        {% if assignment.auto_correct %}
+                            <i class="fas fa-robot"></i> Ce devoir sera corrigé automatiquement.<br>
+                        {% endif %}
+                        {% if assignment.plagiarism_check %}
+                            <i class="fas fa-search"></i> Votre soumission sera vérifiée pour détecter le plagiat.
+                        {% endif %}
+                    </div>
                 </div>
 
                 <form method="POST" enctype="multipart/form-data">
