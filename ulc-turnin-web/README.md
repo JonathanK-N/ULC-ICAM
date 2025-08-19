@@ -2,14 +2,19 @@
 
 <div align="center">
 
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=30&duration=3000&pause=1000&color=2E86AB&center=true&vCenter=true&width=600&lines=Cognito+Web;Plateforme+Académique+Moderne;Développé+par+Jonathan+Kakesa" alt="Typing SVG" />
+
 ![Cognito Web Logo](https://img.shields.io/badge/Cognito-Web-blue?style=for-the-badge&logo=graduation-cap)
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue?style=flat-square&logo=python)](https://python.org)
-[![Flask](https://img.shields.io/badge/Flask-2.0+-green?style=flat-square&logo=flask)](https://flask.palletsprojects.com)
-[![Bootstrap](https://img.shields.io/badge/Bootstrap-5.1+-purple?style=flat-square&logo=bootstrap)](https://getbootstrap.com)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![Flask](https://img.shields.io/badge/Flask-2.0+-green?style=flat-square&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-5.1+-purple?style=flat-square&logo=bootstrap&logoColor=white)](https://getbootstrap.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+[![Developer](https://img.shields.io/badge/Développeur-Jonathan%20Kakesa-red?style=flat-square&logo=github)](https://github.com/jonathan-kakesa)
 
 **Plateforme de gestion académique moderne et intuitive**
+
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="900">
 
 [🚀 Démo](#demo) • [📖 Documentation](#documentation) • [⚡ Installation](#installation) • [🤝 Contribution](#contribution)
 
@@ -238,6 +243,8 @@ erDiagram
 
 ## ⚡ Installation
 
+<img src="https://user-images.githubusercontent.com/74038190/212257454-16e3712e-945a-4ca2-b238-408ad0bf87e6.gif" width="100">
+
 ### 📋 Prérequis
 
 - **Python 3.8+** 🐍
@@ -268,6 +275,8 @@ Ouvrez votre navigateur et accédez à : **http://localhost:5000**
 ---
 
 ## 🎮 Utilisation
+
+<img src="https://user-images.githubusercontent.com/74038190/212257467-871d32b7-e401-42e8-a166-fcfd7baa4c6b.gif" width="100">
 
 ### 🔐 Connexion
 
@@ -430,6 +439,8 @@ python test_submission_simple.py
 
 ### 📊 Couverture des Tests
 
+<img src="https://user-images.githubusercontent.com/74038190/212284087-bbe7e430-757e-4901-90bf-4cd2ce3e1852.gif" width="100">
+
 - ✅ **Authentification** : CIP, Email, Sécurité
 - ✅ **Navigation** : Toutes les routes principales
 - ✅ **Fonctionnalités** : CRUD, Upload, Download
@@ -458,6 +469,8 @@ TOUTES LES VERIFICATIONS SONT PASSEES !
 
 <div align="center">
 
+<img src="https://user-images.githubusercontent.com/74038190/212257465-7ce8d493-cac5-494e-982a-5a9deb852c4b.gif" width="100">
+
 | Métrique | Valeur |
 |----------|--------|
 | **Lignes de code** | ~2,500 |
@@ -470,6 +483,8 @@ TOUTES LES VERIFICATIONS SONT PASSEES !
 
 ### 🚀 Performance
 
+<img src="https://user-images.githubusercontent.com/74038190/212284158-e840e285-664b-44d7-b79b-e264b5e54825.gif" width="400">
+
 - **Temps de chargement** : < 2s
 - **Responsive** : 100% mobile-friendly
 - **Compatibilité** : Tous navigateurs modernes
@@ -478,6 +493,8 @@ TOUTES LES VERIFICATIONS SONT PASSEES !
 ---
 
 ## 🤝 Contribution
+
+<img src="https://user-images.githubusercontent.com/74038190/212257472-08e52665-c503-4bd9-aa20-f5a4dae769b5.gif" width="100">
 
 ### 🛠️ Comment Contribuer
 
@@ -538,6 +555,10 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 
 ---
 
-*Développé avec ❤️ pour l'éducation moderne*
+<img src="https://user-images.githubusercontent.com/74038190/212284115-f47cd8ff-2ffb-4b04-b5bf-4d1c14c0247f.gif" width="1000">
+
+**👨‍💻 Développé par [Jonathan Kakesa](https://github.com/jonathan-kakesa) avec ❤️ pour l'éducation moderne**
+
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="900">
 
 </div>
