@@ -6,47 +6,26 @@ import json
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this'
-app.config['UPLOAD_FOLDER'] = 'uploads'
+# Configuration pour différents environnements
+if os.environ.get('VERCEL'):
+    app.config['UPLOAD_FOLDER'] = '/tmp'
+else:
+    app.config['UPLOAD_FOLDER'] = 'uploads'
+    
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
 # Créer le dossier uploads s'il n'existe pas
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Import des données de test
-try:
-    from generate_test_data import generer_donnees_test
-    test_profs, test_etuds, test_cours, test_assignments, test_devoirs = generer_donnees_test()
-    
-    # Initialiser avec les données de test
-    users = {'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur Cognito Web'}}
-    
-    # Ajouter les professeurs
-    for prof in test_profs:
-        users[prof['username']] = prof
-    
-    # Ajouter les étudiants
-    for etud in test_etuds:
-        users[etud['username']] = etud
-        
-except ImportError:
-    # Données par défaut si le script de test n'est pas disponible
-    users = {
-        'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur Cognito Web'},
-        'student': {'password': 'password', 'role': 'student', 'name': 'Étudiant Test', 'faculte': 'Sciences', 'promotion': 'L2'},
-        'teacher': {'password': 'password', 'role': 'teacher', 'name': 'Professeur Test', 'departement': 'Mathématiques-Informatique'}
-    }
+# Base de données utilisateurs - Seul l'administrateur par défaut
+users = {
+    'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur Cognito Web'}
+}
 
 # Système congolais: G1, G2, G3 (Graduat) + L4, L5 (Licence)
-# Initialiser les devoirs avec les données de test
-try:
-    assignments = test_devoirs
-    next_assignment_id = len(test_devoirs) + 1
-except NameError:
-    assignments = [
-        {'id': 1, 'title': 'TP Algorithmique', 'course': 'Algorithmique et Programmation', 'due_date': '2024-02-15', 'description': 'Exercices sur les structures de données', 'files': [], 'auto_correct': False, 'plagiarism_check': True},
-        {'id': 2, 'title': 'Projet Base de Données', 'course': 'Système de Gestion de BD', 'due_date': '2024-02-20', 'description': 'Conception d\'une base de données', 'files': [], 'auto_correct': False, 'plagiarism_check': True}
-    ]
-    next_assignment_id = 3
+# Devoirs - Base vide
+assignments = []
+next_assignment_id = 1
 
 submissions = []
 
@@ -66,18 +45,7 @@ next_course_id = 1
 # Inscriptions des étudiants aux cours
 course_enrollments = {}  # {course_id: [student_usernames]}
 
-# Initialiser les inscriptions avec des données de test
-try:
-    # Inscrire automatiquement des étudiants aux cours selon leur faculté
-    for course in admin_courses:
-        course_enrollments[course['id']] = []
-        for username, user in users.items():
-            if user['role'] == 'student' and user.get('faculte') == course['faculte']:
-                # Inscrire selon la promotion
-                if user.get('promotion') in course['promotions']:
-                    course_enrollments[course['id']].append(username)
-except NameError:
-    pass
+# Inscriptions vides
 
 # Configuration système (modifiable par l'admin)
 system_config = {
@@ -87,18 +55,10 @@ system_config = {
     'grades': ['Prof. Ordinaire', 'Prof. Associé', 'Prof. Extraordinaire', 'CT', 'Ass.', 'Attaché']
 }
 
-# Initialiser les cours avec les données de test
-try:
-    admin_courses = test_cours
-    next_course_admin_id = len(test_cours) + 1
-    course_assignments = test_assignments
-except NameError:
-    admin_courses = [
-        {'id': 1, 'name': 'Algorithmique et Programmation', 'code': 'INFO101', 'credits': 6, 'faculte': 'Sciences', 'departement': 'Mathématiques-Informatique', 'promotions': ['L1']},
-        {'id': 2, 'name': 'Base de Données', 'code': 'INFO201', 'credits': 4, 'faculte': 'Sciences', 'departement': 'Mathématiques-Informatique', 'promotions': ['L2']}
-    ]
-    next_course_admin_id = 3
-    course_assignments = {1: ['teacher'], 2: ['teacher']}
+# Cours - Base vide
+admin_courses = []
+next_course_admin_id = 1
+course_assignments = {}
 
 @app.route('/')
 def index():
@@ -1098,4 +1058,7 @@ def is_results_published(assignment):
     return False
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get('PORT', 5000))
+    debug_mode = os.environ.get('FLASK_ENV') != 'production'
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
