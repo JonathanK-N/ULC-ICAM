@@ -35,6 +35,9 @@
                 {% endif %}
                 
                 <div class="d-flex gap-2">
+                    <a href="{{ url_for('course_content_view', course_id=course.id) }}" class="btn btn-info btn-sm">
+                        <i class="fas fa-book"></i> Contenu
+                    </a>
                     <a href="{{ url_for('create_assignment') }}?course_id={{ course.id }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Créer Devoir
                     </a>

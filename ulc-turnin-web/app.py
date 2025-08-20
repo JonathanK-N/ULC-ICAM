@@ -60,6 +60,11 @@ admin_courses = []
 next_course_admin_id = 1
 course_assignments = {}
 
+# Contenu des cours par professeur
+course_content = {}  # {course_id: {'description': '', 'documents': [], 'chapters': []}}
+course_chapters = {}  # {course_id: [{id, title, description, content, exercises, documents}]}
+next_chapter_id = 1
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -155,7 +160,15 @@ def dashboard():
         return redirect(url_for('login'))
     
     if session['role'] == 'student':
-        return render_template('student_dashboard.html', assignments=assignments, student_groups=student_groups)
+        # Filtrer les devoirs selon les cours auxquels l'étudiant est inscrit
+        student_assignments = []
+        for assignment in assignments:
+            course_id = assignment.get('course_id')
+            if course_id and course_id in course_enrollments:
+                if session['user'] in course_enrollments[course_id]:
+                    student_assignments.append(assignment)
+        
+        return render_template('student_dashboard.html', assignments=student_assignments, student_groups=student_groups)
     elif session['role'] == 'teacher':
         # Calculer les statistiques pour le professeur
         teacher_assignments = [a for a in assignments if a.get('teacher') == session['user']]
@@ -196,6 +209,13 @@ def submit_assignment(assignment_id):
     if not assignment:
         flash('Devoir non trouvé')
         return redirect(url_for('dashboard'))
+    
+    # Vérifier que l'étudiant est inscrit au cours du devoir
+    course_id = assignment.get('course_id')
+    if course_id:
+        if course_id not in course_enrollments or session['user'] not in course_enrollments[course_id]:
+            flash('Vous n\'êtes pas inscrit au cours de ce devoir')
+            return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -379,38 +399,7 @@ def change_password():
     
     return render_template('change_password.html')
 
-@app.route('/teacher/courses')
-def teacher_courses():
-    if 'user' not in session or session['role'] != 'teacher':
-        return redirect(url_for('login'))
-    
-    teacher_courses = [c for c in courses if c['teacher'] == session['user']]
-    return render_template('teacher_courses.html', courses=teacher_courses)
 
-@app.route('/teacher/add_course', methods=['GET', 'POST'])
-def add_course():
-    if 'user' not in session or session['role'] != 'teacher':
-        return redirect(url_for('login'))
-    
-    if request.method == 'POST':
-        global next_course_id
-        course = {
-            'id': next_course_id,
-            'title': request.form['title'],
-            'description': request.form['description'],
-            'teacher': session['user'],
-            'teacher_name': session['name'],
-            'target_promotions': request.form.getlist('promotions'),
-            'target_facultes': request.form.getlist('facultes'),
-            'credits': request.form['credits']
-        }
-        courses.append(course)
-        course_enrollments[next_course_id] = []
-        next_course_id += 1
-        flash('Cours ajouté avec succès')
-        return redirect(url_for('teacher_courses'))
-    
-    return render_template('add_course.html')
 
 @app.route('/teacher/course/<int:course_id>')
 def course_detail(course_id):
@@ -663,6 +652,177 @@ def teacher_assigned_courses():
     
     return render_template('teacher_assigned_courses.html', courses=teacher_courses)
 
+@app.route('/teacher/course_content/<int:course_id>')
+def course_content_view(course_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+        flash('Accès non autorisé à ce cours')
+        return redirect(url_for('teacher_assigned_courses'))
+    
+    course = next((c for c in admin_courses if c['id'] == course_id), None)
+    if not course:
+        flash('Cours non trouvé')
+        return redirect(url_for('teacher_assigned_courses'))
+    
+    if course_id not in course_content:
+        course_content[course_id] = {'description': '', 'documents': []}
+    if course_id not in course_chapters:
+        course_chapters[course_id] = []
+    
+    return render_template('course_content.html', course=course, content=course_content[course_id], chapters=course_chapters[course_id])
+
+@app.route('/teacher/update_course_description/<int:course_id>', methods=['POST'])
+def update_course_description(course_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+        flash('Accès non autorisé')
+        return redirect(url_for('teacher_assigned_courses'))
+    
+    if course_id not in course_content:
+        course_content[course_id] = {'description': '', 'documents': []}
+    
+    course_content[course_id]['description'] = request.form.get('description', '')
+    flash('Description mise à jour')
+    return redirect(url_for('course_content_view', course_id=course_id))
+
+@app.route('/teacher/add_chapter/<int:course_id>', methods=['POST'])
+def add_chapter(course_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+        flash('Accès non autorisé')
+        return redirect(url_for('teacher_assigned_courses'))
+    
+    global next_chapter_id
+    
+    chapter = {
+        'id': next_chapter_id,
+        'title': request.form.get('title', ''),
+        'description': request.form.get('description', ''),
+        'content': '',
+        'exercises': [],
+        'documents': []
+    }
+    
+    if course_id not in course_chapters:
+        course_chapters[course_id] = []
+    
+    course_chapters[course_id].append(chapter)
+    next_chapter_id += 1
+    
+    flash('Chapitre ajouté avec succès')
+    return redirect(url_for('course_content_view', course_id=course_id))
+
+@app.route('/teacher/chapter/<int:course_id>/<int:chapter_id>')
+def chapter_detail(course_id, chapter_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+        flash('Accès non autorisé')
+        return redirect(url_for('teacher_assigned_courses'))
+    
+    course = next((c for c in admin_courses if c['id'] == course_id), None)
+    chapter = None
+    
+    if course_id in course_chapters:
+        chapter = next((ch for ch in course_chapters[course_id] if ch['id'] == chapter_id), None)
+    
+    if not chapter:
+        flash('Chapitre non trouvé')
+        return redirect(url_for('course_content_view', course_id=course_id))
+    
+    return render_template('chapter_detail.html', course=course, chapter=chapter)
+
+@app.route('/teacher/update_chapter/<int:course_id>/<int:chapter_id>', methods=['POST'])
+def update_chapter(course_id, chapter_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+        flash('Accès non autorisé')
+        return redirect(url_for('teacher_assigned_courses'))
+    
+    if course_id in course_chapters:
+        chapter = next((ch for ch in course_chapters[course_id] if ch['id'] == chapter_id), None)
+        if chapter:
+            chapter['title'] = request.form.get('title', chapter['title'])
+            chapter['description'] = request.form.get('description', chapter['description'])
+            chapter['content'] = request.form.get('content', chapter['content'])
+            flash('Chapitre mis à jour')
+    
+    return redirect(url_for('chapter_detail', course_id=course_id, chapter_id=chapter_id))
+
+@app.route('/teacher/add_exercise/<int:course_id>/<int:chapter_id>', methods=['POST'])
+def add_exercise(course_id, chapter_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+        flash('Accès non autorisé')
+        return redirect(url_for('teacher_assigned_courses'))
+    
+    if course_id in course_chapters:
+        chapter = next((ch for ch in course_chapters[course_id] if ch['id'] == chapter_id), None)
+        if chapter:
+            exercise = {
+                'title': request.form.get('exercise_title', ''),
+                'description': request.form.get('exercise_description', ''),
+                'solution': request.form.get('exercise_solution', '')
+            }
+            chapter['exercises'].append(exercise)
+            flash('Exercice ajouté')
+    
+    return redirect(url_for('chapter_detail', course_id=course_id, chapter_id=chapter_id))
+
+@app.route('/teacher/upload_chapter_document/<int:course_id>/<int:chapter_id>', methods=['POST'])
+def upload_chapter_document(course_id, chapter_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+        flash('Accès non autorisé')
+        return redirect(url_for('teacher_assigned_courses'))
+    
+    if 'document' not in request.files:
+        flash('Aucun document sélectionné')
+        return redirect(url_for('chapter_detail', course_id=course_id, chapter_id=chapter_id))
+    
+    file = request.files['document']
+    if file.filename == '':
+        flash('Aucun document sélectionné')
+        return redirect(url_for('chapter_detail', course_id=course_id, chapter_id=chapter_id))
+    
+    if file:
+        filename = secure_filename(f"chapter_{chapter_id}_{file.filename}")
+        doc_path = os.path.join('uploads', 'chapters')
+        os.makedirs(doc_path, exist_ok=True)
+        file.save(os.path.join(doc_path, filename))
+        
+        if course_id in course_chapters:
+            chapter = next((ch for ch in course_chapters[course_id] if ch['id'] == chapter_id), None)
+            if chapter:
+                chapter['documents'].append({
+                    'filename': filename,
+                    'original_name': file.filename,
+                    'uploaded_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                })
+                flash('Document ajouté au chapitre')
+    
+    return redirect(url_for('chapter_detail', course_id=course_id, chapter_id=chapter_id))
+
+@app.route('/download_chapter_document/<filename>')
+def download_chapter_document(filename):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    return send_from_directory(os.path.join('uploads', 'chapters'), filename)
+
 @app.route('/admin/assignments')
 def admin_assignments():
     if 'user' not in session or session['role'] != 'admin':
@@ -887,6 +1047,13 @@ def join_group(assignment_id):
         flash('Devoir non trouvé ou pas un travail de groupe')
         return redirect(url_for('dashboard'))
     
+    # Vérifier que l'étudiant est inscrit au cours du devoir
+    course_id = assignment.get('course_id')
+    if course_id:
+        if course_id not in course_enrollments or session['user'] not in course_enrollments[course_id]:
+            flash('Vous n\'êtes pas inscrit au cours de ce devoir')
+            return redirect(url_for('dashboard'))
+    
     if request.method == 'POST':
         selected_students = request.form.getlist('group_members')
         selected_students.append(session['user'])  # Ajouter l'étudiant actuel
@@ -997,6 +1164,11 @@ def student_grades():
     for submission in student_submissions:
         assignment = next((a for a in assignments if a['id'] == submission['assignment_id']), None)
         if assignment:
+            # Vérifier que l'étudiant est inscrit au cours du devoir
+            course_id = assignment.get('course_id')
+            if course_id and (course_id not in course_enrollments or session['user'] not in course_enrollments[course_id]):
+                continue  # Ignorer ce devoir si l'étudiant n'est pas inscrit
+            
             # Vérifier si les résultats sont publiés
             results_available = is_results_published(assignment)
             
