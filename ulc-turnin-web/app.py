@@ -31,6 +31,24 @@ def load_test_data():
         print(f"Erreur lors du chargement des données: {e}")
         return None
 
+def save_test_data():
+    """Sauvegarde les données actuelles dans le fichier JSON"""
+    data = {
+        'users': users,
+        'admin_courses': admin_courses,
+        'course_assignments': course_assignments,
+        'course_enrollments': course_enrollments,
+        'assignments': assignments,
+        'submissions': submissions,
+        'next_course_admin_id': next_course_admin_id,
+        'next_assignment_id': next_assignment_id
+    }
+    try:
+        with open('ulc_icam_data.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Erreur lors de l'enregistrement des données: {e}")
+
 # Charger les données de test
 test_data = load_test_data()
 
@@ -63,6 +81,10 @@ else:
 # Résultats de correction et plagiat
 correction_results = {}  # {submission_id: {'score': 85, 'feedback': 'Bon travail'}}
 plagiarism_results = {}  # {submission_id: {'similarity': 15, 'sources': []}}
+
+for sub in submissions:
+    if 'correction' in sub:
+        correction_results[sub['id']] = sub['correction']
 
 # Gestion des groupes pour les devoirs
 group_assignments = {}  # {assignment_id: {'groups': [[student1, student2], [student3, student4]], 'type': 'manual/auto'}}
@@ -271,14 +293,17 @@ def submit_assignment(assignment_id):
                 'results_available': False
             }
             submissions.append(submission)
-            
+
             # Traitement automatique si activé
             if assignment.get('plagiarism_check'):
                 simulate_plagiarism_check('contenu du fichier', submission['id'])
-            
+
             if assignment.get('auto_correct'):
-                simulate_auto_correction('contenu du fichier', assignment, submission['id'])
-            
+                submission['correction'] = simulate_auto_correction('contenu du fichier', assignment, submission['id'])
+                assignment['results_published'] = True
+
+            save_test_data()
+
             flash('Fichier soumis avec succès!')
             return redirect(url_for('dashboard'))
     
@@ -960,7 +985,11 @@ def download_assignment_file(filename):
 def download_file(filename):
     if 'user' not in session:
         return redirect(url_for('login'))
-    
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if not os.path.exists(file_path):
+        flash('Fichier introuvable')
+        return redirect(url_for('dashboard'))
+
     # Vérifier que le professeur a le droit de télécharger ce fichier
     if session['role'] == 'teacher':
         # Trouver la soumission correspondante
@@ -969,14 +998,82 @@ def download_file(filename):
             # Vérifier que le devoir appartient au professeur
             assignment = next((a for a in assignments if a['id'] == submission['assignment_id']), None)
             if assignment and assignment.get('teacher') == session['user']:
-                return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-    
+                return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+
     # Admin peut tout télécharger
     elif session['role'] == 'admin':
-        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-    
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+
     flash('Accès non autorisé à ce fichier')
     return redirect(url_for('dashboard'))
+
+
+@app.route('/download_correction/<filename>')
+def download_correction_file(filename):
+    """Permet de télécharger un fichier de correction"""
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
+    # Trouver la soumission associée au fichier de correction
+    submission = next((s for s in submissions
+                       if s.get('correction', {}).get('feedback_file') == filename), None)
+    if not submission:
+        flash('Fichier introuvable')
+        return redirect(url_for('dashboard'))
+
+    user_role = session.get('role')
+    # Vérification des droits d'accès
+    if user_role == 'student' and submission.get('student') != session.get('user'):
+        flash('Accès non autorisé à ce fichier')
+        return redirect(url_for('dashboard'))
+    if user_role == 'teacher':
+        assignment = next((a for a in assignments if a['id'] == submission['assignment_id']), None)
+        if not assignment or assignment.get('teacher') != session.get('user'):
+            flash('Accès non autorisé à ce fichier')
+            return redirect(url_for('dashboard'))
+
+    corrections_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'corrections')
+    return send_from_directory(corrections_folder, filename)
+
+
+@app.route('/teacher/grade_submission/<int:submission_id>', methods=['POST'])
+def grade_submission(submission_id):
+    """Permet à un enseignant de noter une soumission"""
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+
+    submission = next((s for s in submissions if s['id'] == submission_id), None)
+    if not submission:
+        flash('Soumission non trouvée')
+        return redirect(url_for('dashboard'))
+
+    score = request.form.get('score', type=float)
+    max_score = request.form.get('max_score', type=float)
+    feedback_text = request.form.get('feedback', '')
+
+    feedback_list = [f.strip() for f in feedback_text.split('\n') if f.strip()]
+
+    feedback_file = request.files.get('feedback_file')
+    filename = submission.get('correction', {}).get('feedback_file')
+    if feedback_file and feedback_file.filename:
+        corrections_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'corrections')
+        os.makedirs(corrections_folder, exist_ok=True)
+        filename = secure_filename(feedback_file.filename)
+        feedback_file.save(os.path.join(corrections_folder, filename))
+
+    submission['correction'] = {
+        'score': score,
+        'max_score': max_score,
+        'feedback': feedback_list,
+        'feedback_file': filename,
+        'auto_generated': False
+    }
+
+    # Garder les résultats dans la structure existante pour compatibilité
+    correction_results[submission_id] = submission['correction']
+
+    flash('Note enregistrée')
+    return redirect(request.referrer or url_for('dashboard'))
 
 @app.route('/teacher/assignment_results/<int:assignment_id>')
 def assignment_results(assignment_id):
@@ -993,8 +1090,16 @@ def assignment_results(assignment_id):
     
     # Ajouter les résultats de correction et plagiat
     for sub in assignment_submissions:
+
         sub['correction'] = correction_results.get(sub['id'], {})
         sub['plagiarism'] = plagiarism_results.get(sub['id'], {})
+
+
+        if not sub.get('correction') and sub['id'] in correction_results:
+            sub['correction'] = correction_results[sub['id']]
+        if not sub.get('plagiarism') and sub['id'] in plagiarism_results:
+            sub['plagiarism'] = plagiarism_results[sub['id']]
+    
 
     return render_template('assignment_results.html', assignment=assignment, submissions=assignment_submissions)
 
@@ -1271,16 +1376,63 @@ def student_grades():
             # Vérifier si les résultats sont publiés globalement ou individuellement
             results_available = submission.get('results_available') or is_results_published(assignment)
             
+            correction = submission.get('correction', {})
+            plagiarism = submission.get('plagiarism', {})
+            if results_available:
+                if not correction and submission['id'] in correction_results:
+                    correction = correction_results[submission['id']]
+                    submission['correction'] = correction
+                if not plagiarism and submission['id'] in plagiarism_results:
+                    plagiarism = plagiarism_results[submission['id']]
+                    submission['plagiarism'] = plagiarism
+            else:
+                correction = {}
+                plagiarism = {}
+
             grade_info = {
                 'assignment': assignment,
                 'submission': submission,
-                'correction': correction_results.get(submission['id'], {}) if results_available else {},
+
+                'correction': correction,
+                'plagiarism': plagiarism,
+
+                'correction': submission.get('correction', {}) if results_available else {},
                 'plagiarism': plagiarism_results.get(submission['id'], {}) if results_available else {},
+
                 'results_available': results_available
             }
             grades_data.append(grade_info)
     
     return render_template('student_grades.html', grades=grades_data)
+
+@app.route('/student/courses')
+def student_courses():
+    if 'user' not in session or session['role'] != 'student':
+        return redirect(url_for('login'))
+
+    enrolled_ids = [cid for cid, students in course_enrollments.items() if session['user'] in students]
+    enrolled_courses = [c for c in admin_courses if c['id'] in enrolled_ids]
+
+    return render_template('student_courses.html', courses=enrolled_courses)
+
+@app.route('/student/course/<int:course_id>')
+def student_course_detail(course_id):
+    if 'user' not in session or session['role'] != 'student':
+        return redirect(url_for('login'))
+
+    if course_id not in course_enrollments or session['user'] not in course_enrollments[course_id]:
+        flash("Accès non autorisé à ce cours")
+        return redirect(url_for('student_courses'))
+
+    course = next((c for c in admin_courses if c['id'] == course_id), None)
+    if not course:
+        flash('Cours non trouvé')
+        return redirect(url_for('student_courses'))
+
+    content = course_content.get(course_id, {'description': '', 'documents': []})
+    chapters = course_chapters.get(course_id, [])
+
+    return render_template('student_course_detail.html', course=course, content=content, chapters=chapters)
 
 @app.route('/teacher/publish_results/<int:assignment_id>')
 def publish_results(assignment_id):
