@@ -1006,6 +1006,74 @@ def download_file(filename):
     flash('Accès non autorisé à ce fichier')
     return redirect(url_for('dashboard'))
 
+
+@app.route('/download_correction/<filename>')
+def download_correction_file(filename):
+    """Permet de télécharger un fichier de correction"""
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
+    # Trouver la soumission associée au fichier de correction
+    submission = next((s for s in submissions
+                       if s.get('correction', {}).get('feedback_file') == filename), None)
+    if not submission:
+        flash('Fichier introuvable')
+        return redirect(url_for('dashboard'))
+
+    user_role = session.get('role')
+    # Vérification des droits d'accès
+    if user_role == 'student' and submission.get('student') != session.get('user'):
+        flash('Accès non autorisé à ce fichier')
+        return redirect(url_for('dashboard'))
+    if user_role == 'teacher':
+        assignment = next((a for a in assignments if a['id'] == submission['assignment_id']), None)
+        if not assignment or assignment.get('teacher') != session.get('user'):
+            flash('Accès non autorisé à ce fichier')
+            return redirect(url_for('dashboard'))
+
+    corrections_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'corrections')
+    return send_from_directory(corrections_folder, filename)
+
+
+@app.route('/teacher/grade_submission/<int:submission_id>', methods=['POST'])
+def grade_submission(submission_id):
+    """Permet à un enseignant de noter une soumission"""
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+
+    submission = next((s for s in submissions if s['id'] == submission_id), None)
+    if not submission:
+        flash('Soumission non trouvée')
+        return redirect(url_for('dashboard'))
+
+    score = request.form.get('score', type=float)
+    max_score = request.form.get('max_score', type=float)
+    feedback_text = request.form.get('feedback', '')
+
+    feedback_list = [f.strip() for f in feedback_text.split('\n') if f.strip()]
+
+    feedback_file = request.files.get('feedback_file')
+    filename = submission.get('correction', {}).get('feedback_file')
+    if feedback_file and feedback_file.filename:
+        corrections_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'corrections')
+        os.makedirs(corrections_folder, exist_ok=True)
+        filename = secure_filename(feedback_file.filename)
+        feedback_file.save(os.path.join(corrections_folder, filename))
+
+    submission['correction'] = {
+        'score': score,
+        'max_score': max_score,
+        'feedback': feedback_list,
+        'feedback_file': filename,
+        'auto_generated': False
+    }
+
+    # Garder les résultats dans la structure existante pour compatibilité
+    correction_results[submission_id] = submission['correction']
+
+    flash('Note enregistrée')
+    return redirect(request.referrer or url_for('dashboard'))
+
 @app.route('/teacher/assignment_results/<int:assignment_id>')
 def assignment_results(assignment_id):
     if 'user' not in session or session['role'] != 'teacher':
@@ -1021,8 +1089,10 @@ def assignment_results(assignment_id):
     
     # Ajouter les résultats de correction et plagiat
     for sub in assignment_submissions:
-        sub['correction'] = correction_results.get(sub['id'], {})
-        sub['plagiarism'] = plagiarism_results.get(sub['id'], {})
+        if not sub.get('correction') and sub['id'] in correction_results:
+            sub['correction'] = correction_results[sub['id']]
+        if not sub.get('plagiarism') and sub['id'] in plagiarism_results:
+            sub['plagiarism'] = plagiarism_results[sub['id']]
     
     return render_template('assignment_results.html', assignment=assignment, submissions=assignment_submissions)
 
@@ -1235,11 +1305,29 @@ def student_grades():
             # Vérifier si les résultats sont publiés
             results_available = is_results_published(assignment)
             
+            correction = submission.get('correction', {})
+            plagiarism = submission.get('plagiarism', {})
+            if results_available:
+                if not correction and submission['id'] in correction_results:
+                    correction = correction_results[submission['id']]
+                    submission['correction'] = correction
+                if not plagiarism and submission['id'] in plagiarism_results:
+                    plagiarism = plagiarism_results[submission['id']]
+                    submission['plagiarism'] = plagiarism
+            else:
+                correction = {}
+                plagiarism = {}
+
             grade_info = {
                 'assignment': assignment,
                 'submission': submission,
+
+                'correction': correction,
+                'plagiarism': plagiarism,
+
                 'correction': submission.get('correction', {}) if results_available else {},
                 'plagiarism': plagiarism_results.get(submission['id'], {}) if results_available else {},
+
                 'results_available': results_available
             }
             grades_data.append(grade_info)

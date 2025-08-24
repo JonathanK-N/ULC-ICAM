@@ -117,6 +117,12 @@
                                 {% endif %}
                             </td>
                             <td>
+
+                                <button class="btn btn-primary btn-sm mb-1" data-bs-toggle="modal"
+                                        data-bs-target="#gradeModal{{ submission.id }}">
+                                    <i class="fas fa-pen"></i> Noter
+                                </button>
+
                                 <button class="btn btn-info btn-sm" data-bs-toggle="modal"
                                         data-bs-target="#detailModal{{ submission.id }}">
                                     <i class="fas fa-eye"></i> Détails
@@ -158,6 +164,13 @@
                             <li>{{ comment }}</li>
                         {% endfor %}
                     </ul>
+                    {% if submission.correction.feedback_file %}
+                    <p><strong>Fichier corrigé :</strong>
+                        <a href="{{ url_for('download_correction_file', filename=submission.correction.feedback_file) }}">
+                            Télécharger
+                        </a>
+                    </p>
+                    {% endif %}
                 </div>
                 {% endif %}
                 
@@ -182,6 +195,45 @@
                 {% endif %}
             </div>
         </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modals de notation -->
+{% for submission in submissions %}
+<div class="modal fade" id="gradeModal{{ submission.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="post" action="{{ url_for('grade_submission', submission_id=submission.id) }}" enctype="multipart/form-data">
+            <div class="modal-header">
+                <h5 class="modal-title">Noter - {{ submission.student }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="score{{ submission.id }}" class="form-label">Score</label>
+                    <input type="number" step="any" class="form-control" id="score{{ submission.id }}" name="score" required value="{{ submission.correction.score if submission.correction }}">
+                </div>
+                <div class="mb-3">
+                    <label for="max_score{{ submission.id }}" class="form-label">Score max</label>
+                    <input type="number" step="any" class="form-control" id="max_score{{ submission.id }}" name="max_score" required value="{{ submission.correction.max_score if submission.correction else assignment.max_score }}">
+                </div>
+                <div class="mb-3">
+                    <label for="feedback{{ submission.id }}" class="form-label">Commentaires</label>
+                    <textarea class="form-control" id="feedback{{ submission.id }}" name="feedback" rows="3">{{ submission.correction.feedback | join('\n') if submission.correction }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="feedback_file{{ submission.id }}" class="form-label">Fichier corrigé</label>
+                    <input type="file" class="form-control" id="feedback_file{{ submission.id }}" name="feedback_file">
+                    {% if submission.correction.feedback_file %}
+                    <a href="{{ url_for('download_correction_file', filename=submission.correction.feedback_file) }}" class="d-block mt-2"><i class="fas fa-download"></i> Fichier actuel</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </form>
     </div>
 </div>
 {% endfor %}
