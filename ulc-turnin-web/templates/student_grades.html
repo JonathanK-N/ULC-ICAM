@@ -46,7 +46,15 @@
                             </ul>
                         </div>
                         {% endif %}
-                        
+
+                        {% if grade.correction.feedback_file %}
+                        <div class="mt-3">
+                            <a href="{{ url_for('download_correction_file', filename=grade.correction.feedback_file) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download"></i> Télécharger le corrigé
+                            </a>
+                        </div>
+                        {% endif %}
+
                         {% if grade.correction.auto_generated %}
                             <small class="text-muted">
                                 <i class="fas fa-robot"></i> Correction automatique
