@@ -289,7 +289,8 @@ def submit_assignment(assignment_id):
                 'student': session['user'],
                 'assignment_id': assignment_id,
                 'filename': filename,
-                'submitted_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                'submitted_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'results_available': False
             }
             submissions.append(submission)
 
@@ -1089,12 +1090,82 @@ def assignment_results(assignment_id):
     
     # Ajouter les résultats de correction et plagiat
     for sub in assignment_submissions:
+
+        sub['correction'] = correction_results.get(sub['id'], {})
+        sub['plagiarism'] = plagiarism_results.get(sub['id'], {})
+
+
         if not sub.get('correction') and sub['id'] in correction_results:
             sub['correction'] = correction_results[sub['id']]
         if not sub.get('plagiarism') and sub['id'] in plagiarism_results:
             sub['plagiarism'] = plagiarism_results[sub['id']]
     
+
     return render_template('assignment_results.html', assignment=assignment, submissions=assignment_submissions)
+
+
+@app.route('/teacher/grade_submission/<int:submission_id>', methods=['GET', 'POST'])
+def grade_submission(submission_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+
+    submission = next((s for s in submissions if s['id'] == submission_id), None)
+    if not submission:
+        flash('Soumission non trouvée')
+        return redirect(url_for('teacher_submissions'))
+
+    assignment = next((a for a in assignments if a['id'] == submission['assignment_id']), None)
+    if not assignment or assignment.get('teacher') != session['user']:
+        flash('Accès non autorisé')
+        return redirect(url_for('teacher_submissions'))
+
+    if request.method == 'POST':
+        score = int(request.form['score'])
+        max_score = int(request.form.get('max_score', assignment.get('max_score', 100)))
+        feedback_text = request.form.get('feedback', '')
+        feedback = [line.strip() for line in feedback_text.splitlines() if line.strip()]
+
+        correction_results[submission_id] = {
+            'score': score,
+            'max_score': max_score,
+            'feedback': feedback,
+            'auto_generated': False
+        }
+
+        if 'publish_now' in request.form:
+            submission['results_available'] = True
+
+        flash('Soumission corrigée')
+        return redirect(url_for('assignment_results', assignment_id=submission['assignment_id']))
+
+    correction = correction_results.get(submission_id)
+    return render_template('grade_submission.html', submission=submission, assignment=assignment, correction=correction)
+
+
+@app.route('/teacher/publish_submissions/<int:assignment_id>')
+def publish_submissions(assignment_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+
+    for sub in submissions:
+        if sub.get('assignment_id') == assignment_id:
+            sub['results_available'] = True
+
+    flash('Notes publiées pour toutes les soumissions')
+    return redirect(url_for('assignment_results', assignment_id=assignment_id))
+
+
+@app.route('/teacher/unpublish_submissions/<int:assignment_id>')
+def unpublish_submissions(assignment_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+
+    for sub in submissions:
+        if sub.get('assignment_id') == assignment_id:
+            sub['results_available'] = False
+
+    flash('Notes masquées pour toutes les soumissions')
+    return redirect(url_for('assignment_results', assignment_id=assignment_id))
 
 def simulate_plagiarism_check(content, submission_id):
     """Simulation de détection de plagiat"""
@@ -1302,8 +1373,8 @@ def student_grades():
             if course_id and (course_id not in course_enrollments or session['user'] not in course_enrollments[course_id]):
                 continue  # Ignorer ce devoir si l'étudiant n'est pas inscrit
             
-            # Vérifier si les résultats sont publiés
-            results_available = is_results_published(assignment)
+            # Vérifier si les résultats sont publiés globalement ou individuellement
+            results_available = submission.get('results_available') or is_results_published(assignment)
             
             correction = submission.get('correction', {})
             plagiarism = submission.get('plagiarism', {})
