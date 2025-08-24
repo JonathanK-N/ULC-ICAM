@@ -31,6 +31,24 @@ def load_test_data():
         print(f"Erreur lors du chargement des données: {e}")
         return None
 
+def save_test_data():
+    """Sauvegarde les données actuelles dans le fichier JSON"""
+    data = {
+        'users': users,
+        'admin_courses': admin_courses,
+        'course_assignments': course_assignments,
+        'course_enrollments': course_enrollments,
+        'assignments': assignments,
+        'submissions': submissions,
+        'next_course_admin_id': next_course_admin_id,
+        'next_assignment_id': next_assignment_id
+    }
+    try:
+        with open('ulc_icam_data.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Erreur lors de l'enregistrement des données: {e}")
+
 # Charger les données de test
 test_data = load_test_data()
 
@@ -63,6 +81,10 @@ else:
 # Résultats de correction et plagiat
 correction_results = {}  # {submission_id: {'score': 85, 'feedback': 'Bon travail'}}
 plagiarism_results = {}  # {submission_id: {'similarity': 15, 'sources': []}}
+
+for sub in submissions:
+    if 'correction' in sub:
+        correction_results[sub['id']] = sub['correction']
 
 # Gestion des groupes pour les devoirs
 group_assignments = {}  # {assignment_id: {'groups': [[student1, student2], [student3, student4]], 'type': 'manual/auto'}}
@@ -270,14 +292,17 @@ def submit_assignment(assignment_id):
                 'submitted_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
             submissions.append(submission)
-            
+
             # Traitement automatique si activé
             if assignment.get('plagiarism_check'):
                 simulate_plagiarism_check('contenu du fichier', submission['id'])
-            
+
             if assignment.get('auto_correct'):
-                simulate_auto_correction('contenu du fichier', assignment, submission['id'])
-            
+                submission['correction'] = simulate_auto_correction('contenu du fichier', assignment, submission['id'])
+                assignment['results_published'] = True
+
+            save_test_data()
+
             flash('Fichier soumis avec succès!')
             return redirect(url_for('dashboard'))
     
@@ -959,7 +984,11 @@ def download_assignment_file(filename):
 def download_file(filename):
     if 'user' not in session:
         return redirect(url_for('login'))
-    
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if not os.path.exists(file_path):
+        flash('Fichier introuvable')
+        return redirect(url_for('dashboard'))
+
     # Vérifier que le professeur a le droit de télécharger ce fichier
     if session['role'] == 'teacher':
         # Trouver la soumission correspondante
@@ -968,12 +997,12 @@ def download_file(filename):
             # Vérifier que le devoir appartient au professeur
             assignment = next((a for a in assignments if a['id'] == submission['assignment_id']), None)
             if assignment and assignment.get('teacher') == session['user']:
-                return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-    
+                return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+
     # Admin peut tout télécharger
     elif session['role'] == 'admin':
-        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-    
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+
     flash('Accès non autorisé à ce fichier')
     return redirect(url_for('dashboard'))
 
@@ -1292,8 +1321,13 @@ def student_grades():
             grade_info = {
                 'assignment': assignment,
                 'submission': submission,
+
                 'correction': correction,
                 'plagiarism': plagiarism,
+
+                'correction': submission.get('correction', {}) if results_available else {},
+                'plagiarism': plagiarism_results.get(submission['id'], {}) if results_available else {},
+
                 'results_available': results_available
             }
             grades_data.append(grade_info)
