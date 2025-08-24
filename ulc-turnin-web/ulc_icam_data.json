@@ -8458,5 +8458,8 @@
       "etud303"
     ]
   },
-  "next_course_admin_id": 110
+  "next_course_admin_id": 110,
+  "assignments": [],
+  "submissions": [],
+  "next_assignment_id": 1
 }

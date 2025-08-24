@@ -17,17 +17,48 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 # Créer le dossier uploads s'il n'existe pas
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Base de données utilisateurs - Seul l'administrateur par défaut
-users = {
-    'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur Cognito Web'}
-}
+# Charger les données de test ULC-ICAM
+def load_test_data():
+    """Charge les données de test depuis le fichier JSON"""
+    try:
+        with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data
+    except FileNotFoundError:
+        print("Fichier de données non trouvé, utilisation des données par défaut")
+        return None
+    except Exception as e:
+        print(f"Erreur lors du chargement des données: {e}")
+        return None
 
-# Système congolais: G1, G2, G3 (Graduat) + L4, L5 (Licence)
-# Devoirs - Base vide
-assignments = []
-next_assignment_id = 1
+# Charger les données de test
+test_data = load_test_data()
 
-submissions = []
+if test_data:
+    # Utiliser les données de test
+    users = test_data.get('users', {})
+    admin_courses = test_data.get('admin_courses', [])
+    course_assignments = test_data.get('course_assignments', {})
+    course_enrollments = test_data.get('course_enrollments', {})
+    assignments = test_data.get('assignments', [])
+    submissions = test_data.get('submissions', [])
+    next_course_admin_id = test_data.get('next_course_admin_id', 1)
+    next_assignment_id = test_data.get('next_assignment_id', 1)
+    print(f"✅ Données de test chargées: {len(users)} utilisateurs, {len(admin_courses)} cours")
+else:
+    # Données par défaut
+    users = {
+        'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur Cognito Web'}
+    }
+    admin_courses = []
+    course_assignments = {}
+    course_enrollments = {}
+    assignments = []
+    submissions = []
+    next_course_admin_id = 1
+    next_assignment_id = 1
+
+# Les données sont maintenant chargées depuis le fichier JSON ci-dessus
 
 # Résultats de correction et plagiat
 correction_results = {}  # {submission_id: {'score': 85, 'feedback': 'Bon travail'}}
@@ -45,7 +76,7 @@ next_course_id = 1
 # Inscriptions des étudiants aux cours
 course_enrollments = {}  # {course_id: [student_usernames]}
 
-# Inscriptions vides
+# Les inscriptions sont maintenant chargées depuis le fichier JSON ci-dessus
 
 # Configuration système (modifiable par l'admin)
 system_config = {
@@ -55,10 +86,7 @@ system_config = {
     'grades': ['Prof. Ordinaire', 'Prof. Associé', 'Prof. Extraordinaire', 'CT', 'Ass.', 'Attaché']
 }
 
-# Cours - Base vide
-admin_courses = []
-next_course_admin_id = 1
-course_assignments = {}
+# Les cours sont maintenant chargés depuis le fichier JSON ci-dessus
 
 # Contenu des cours par professeur
 course_content = {}  # {course_id: {'description': '', 'documents': [], 'chapters': []}}
@@ -77,7 +105,7 @@ def login():
 def student_login():
     if request.method == 'POST':
         identifier = request.form['identifier']  # CIP ou email
-        password = request.form['password']
+        password = request.form.get('password', '')  # Mot de passe optionnel pour les tests
         
         # Chercher l'utilisateur par CIP ou email
         user_found = None
@@ -86,7 +114,8 @@ def student_login():
         for username, user_data in users.items():
             if (user_data['role'] == 'student' and 
                 (user_data.get('cip') == identifier or user_data.get('email') == identifier)):
-                if user_data['password'] == password:
+                # Mode test : connexion avec CIP seulement (sans mot de passe)
+                if not password or user_data['password'] == password:
                     user_found = user_data
                     username_found = username
                     break
@@ -95,11 +124,12 @@ def student_login():
             session['user'] = username_found
             session['role'] = user_found['role']
             session['name'] = user_found['name']
-            if user_found.get('must_change_password', False):
+            # Ignorer le changement de mot de passe obligatoire en mode test
+            if password and user_found.get('must_change_password', False):
                 return redirect(url_for('change_password'))
             return redirect(url_for('dashboard'))
         else:
-            flash('CIP/Email ou mot de passe incorrect')
+            flash('CIP/Email incorrect ou utilisateur non trouvé')
     
     return render_template('student_login.html')
 
@@ -107,7 +137,7 @@ def student_login():
 def teacher_login():
     if request.method == 'POST':
         identifier = request.form['identifier']  # CIP ou email
-        password = request.form['password']
+        password = request.form.get('password', '')  # Mot de passe optionnel pour les tests
         
         # Chercher l'utilisateur par CIP ou email
         user_found = None
@@ -116,7 +146,8 @@ def teacher_login():
         for username, user_data in users.items():
             if (user_data['role'] == 'teacher' and 
                 (user_data.get('cip') == identifier or user_data.get('email') == identifier)):
-                if user_data['password'] == password:
+                # Mode test : connexion avec CIP seulement (sans mot de passe)
+                if not password or user_data['password'] == password:
                     user_found = user_data
                     username_found = username
                     break
@@ -125,11 +156,12 @@ def teacher_login():
             session['user'] = username_found
             session['role'] = user_found['role']
             session['name'] = user_found['name']
-            if user_found.get('must_change_password', False):
+            # Ignorer le changement de mot de passe obligatoire en mode test
+            if password and user_found.get('must_change_password', False):
                 return redirect(url_for('change_password'))
             return redirect(url_for('dashboard'))
         else:
-            flash('CIP/Email ou mot de passe incorrect')
+            flash('CIP/Email incorrect ou utilisateur non trouvé')
     
     return render_template('teacher_login.html')
 
