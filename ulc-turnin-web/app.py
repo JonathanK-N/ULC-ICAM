@@ -959,7 +959,11 @@ def download_assignment_file(filename):
 def download_file(filename):
     if 'user' not in session:
         return redirect(url_for('login'))
-    
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if not os.path.exists(file_path):
+        flash('Fichier introuvable')
+        return redirect(url_for('dashboard'))
+
     # Vérifier que le professeur a le droit de télécharger ce fichier
     if session['role'] == 'teacher':
         # Trouver la soumission correspondante
@@ -968,12 +972,12 @@ def download_file(filename):
             # Vérifier que le devoir appartient au professeur
             assignment = next((a for a in assignments if a['id'] == submission['assignment_id']), None)
             if assignment and assignment.get('teacher') == session['user']:
-                return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-    
+                return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+
     # Admin peut tout télécharger
     elif session['role'] == 'admin':
-        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-    
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+
     flash('Accès non autorisé à ce fichier')
     return redirect(url_for('dashboard'))
 
