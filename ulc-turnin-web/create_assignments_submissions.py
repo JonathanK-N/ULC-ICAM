@@ -16,8 +16,8 @@ def create_assignments_and_submissions():
     
     users = data['users']
     courses = data['admin_courses']
-    course_assignments = data['course_assignments']
-    course_enrollments = data['course_enrollments']
+    course_assignments = {int(k): v for k, v in data['course_assignments'].items()}
+    course_enrollments = {int(k): v for k, v in data['course_enrollments'].items()}
     
     # Titres de devoirs
     titres = [
@@ -34,8 +34,8 @@ def create_assignments_and_submissions():
     
     # Créer des devoirs pour chaque cours qui a un professeur assigné
     for course in courses:
-        if course['id'] in course_assignments:
-            prof_username = course_assignments[course['id']][0]
+        if int(course['id']) in course_assignments:
+            prof_username = course_assignments[int(course['id'])][0]
             prof = users[prof_username]
             
             # Créer 1-3 devoirs par cours
@@ -68,7 +68,7 @@ def create_assignments_and_submissions():
                 assignments.append(assignment)
                 
                 # Créer des soumissions pour ce devoir
-                etudiants_inscrits = course_enrollments.get(course['id'], [])
+                etudiants_inscrits = course_enrollments.get(int(course['id']), [])
                 
                 # 60-90% des étudiants soumettent
                 taux_soumission = random.uniform(0.6, 0.9)

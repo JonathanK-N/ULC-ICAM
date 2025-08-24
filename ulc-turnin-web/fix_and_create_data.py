@@ -30,7 +30,7 @@ def fix_and_create_data():
         
         if profs_faculte:
             prof = random.choice(profs_faculte)
-            course_assignments[course['id']] = [prof['username']]
+            course_assignments[int(course['id'])] = [prof['username']]
             
             # Inscrire des étudiants
             etudiants_eligibles = [u for u in users.values() 
@@ -42,7 +42,7 @@ def fix_and_create_data():
             nb_inscrits = min(random.randint(3, 8), len(etudiants_eligibles))
             if etudiants_eligibles:
                 inscrits = random.sample(etudiants_eligibles, nb_inscrits)
-                course_enrollments[course['id']] = [e['username'] for e in inscrits]
+                course_enrollments[int(course['id'])] = [e['username'] for e in inscrits]
     
     print(f"Assignations creees: {len(course_assignments)} cours")
     
@@ -61,8 +61,8 @@ def fix_and_create_data():
     print("Creation des devoirs...")
     
     for course in courses[:30]:  # Limiter à 30 cours pour commencer
-        if course['id'] in course_assignments:
-            prof_username = course_assignments[course['id']][0]
+        if int(course['id']) in course_assignments:
+            prof_username = course_assignments[int(course['id'])][0]
             prof = users[prof_username]
             
             # 1-2 devoirs par cours
@@ -91,7 +91,7 @@ def fix_and_create_data():
                 assignments.append(assignment)
                 
                 # Créer des soumissions
-                etudiants_inscrits = course_enrollments.get(course['id'], [])
+                etudiants_inscrits = course_enrollments.get(int(course['id']), [])
                 nb_soumissions = int(len(etudiants_inscrits) * random.uniform(0.6, 0.9))
                 
                 etudiants_soumettent = random.sample(etudiants_inscrits, 

@@ -184,9 +184,10 @@ def assigner_professeurs_cours(professeurs, cours):
         
         if profs_eligibles:
             prof_assigne = random.choice(profs_eligibles)
-            if cours_obj['id'] not in assignments:
-                assignments[cours_obj['id']] = []
-            assignments[cours_obj['id']].append(prof_assigne['username'])
+            course_id = int(cours_obj['id'])
+            if course_id not in assignments:
+                assignments[course_id] = []
+            assignments[course_id].append(prof_assigne['username'])
     
     return assignments
 
@@ -195,7 +196,7 @@ def inscrire_etudiants_cours(etudiants, cours):
     enrollments = {}
     
     for cours_obj in cours:
-        enrollments[cours_obj['id']] = []
+        enrollments[int(cours_obj['id'])] = []
         
         etudiants_eligibles = [
             e for e in etudiants 
@@ -204,7 +205,7 @@ def inscrire_etudiants_cours(etudiants, cours):
         ]
         
         for etudiant in etudiants_eligibles:
-            enrollments[cours_obj['id']].append(etudiant['username'])
+            enrollments[int(cours_obj['id'])].append(etudiant['username'])
     
     return enrollments
 

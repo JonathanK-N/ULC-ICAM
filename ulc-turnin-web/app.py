@@ -38,8 +38,8 @@ if test_data:
     # Utiliser les données de test
     users = test_data.get('users', {})
     admin_courses = test_data.get('admin_courses', [])
-    course_assignments = test_data.get('course_assignments', {})
-    course_enrollments = test_data.get('course_enrollments', {})
+    course_assignments = {int(k): v for k, v in test_data.get('course_assignments', {}).items()}
+    course_enrollments = {int(k): v for k, v in test_data.get('course_enrollments', {}).items()}
     assignments = test_data.get('assignments', [])
     submissions = test_data.get('submissions', [])
     next_course_admin_id = test_data.get('next_course_admin_id', 1)

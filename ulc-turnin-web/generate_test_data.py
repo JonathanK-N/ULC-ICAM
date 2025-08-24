@@ -170,7 +170,7 @@ def generer_donnees_test():
         # Assigner 1-3 professeurs par cours
         nb_profs = min(random.randint(1, 3), len(profs_dept))
         profs_assignes = random.sample(profs_dept, nb_profs)
-        course_assignments[cours_obj['id']] = [p['username'] for p in profs_assignes]
+        course_assignments[int(cours_obj['id'])] = [p['username'] for p in profs_assignes]
     
     # Générer 95 devoirs
     devoirs = []
@@ -182,7 +182,7 @@ def generer_donnees_test():
     
     for i in range(95):
         cours_obj = random.choice(cours)
-        profs_assignes = course_assignments.get(cours_obj['id'], [])
+        profs_assignes = course_assignments.get(int(cours_obj['id']), [])
         if profs_assignes:
             prof_username = random.choice(profs_assignes)
             prof = next(p for p in professeurs if p['username'] == prof_username)
