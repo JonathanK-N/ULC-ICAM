@@ -1,15 +1,15 @@
-#!/usr/bin/env python3
-"""
-Test spécifique du workflow de soumission et récupération des fichiers
-"""
 
-import requests
-import os
-import time
-from datetime import datetime
+def test_dashboard_access_student(client):
+    client.post('/login/student', data={'identifier': 'ETUD001', 'password': 'etud123'})
+    resp = client.get('/dashboard')
+    assert resp.status_code == 200
 
-BASE_URL = "http://localhost:5000"
-session = requests.Session()
+
+codex/refactor-tests-to-use-app.test_client
+def test_teacher_assignments_page(client):
+    client.post('/login/teacher', data={'identifier': 'PROF001', 'password': 'prof123'})
+    resp = client.get('/teacher/assignments')
+    assert resp.status_code == 200
 
 def create_test_file(filename, content):
     """Créer un fichier de test"""
@@ -51,3 +51,4 @@ def test_student_submission():
         test_file = create_test_file("test_submission.txt", 
                                    f"Soumission de test par etud001\nDate: {datetime.now()}\nContenu du devoir...")
         # Additional workflow details: see test/fixtures/submission_workflow_full.txt
+ deployement
