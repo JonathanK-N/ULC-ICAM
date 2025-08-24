@@ -73,10 +73,7 @@ next_group_id = 1
 courses = []
 next_course_id = 1
 
-# Inscriptions des étudiants aux cours
-course_enrollments = {}  # {course_id: [student_usernames]}
-
-# Les inscriptions sont maintenant chargées depuis le fichier JSON ci-dessus
+# Inscriptions des étudiants aux cours chargées depuis le fichier JSON ci-dessus
 
 # Configuration système (modifiable par l'admin)
 system_config = {
