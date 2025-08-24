@@ -397,9 +397,12 @@ pie title Répartition des Cours par Faculté
 
 ### ⚙️ Variables d'Environnement
 
+- `FLASK_SECRET_KEY` : clé secrète utilisée par Flask pour signer les sessions. Définissez-la dans votre environnement pour personnaliser la sécurité.
+
 ```python
 # Configuration Flask
-SECRET_KEY = 'your-secret-key-change-this'
+import os
+SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "your-secret-key-change-this")
 UPLOAD_FOLDER = 'uploads'
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
 

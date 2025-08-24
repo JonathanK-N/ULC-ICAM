@@ -5,7 +5,7 @@ from datetime import datetime
 import json
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-change-this'
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "your-secret-key-change-this")
 # Configuration pour différents environnements
 if os.environ.get('VERCEL'):
     app.config['UPLOAD_FOLDER'] = '/tmp'
