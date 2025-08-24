@@ -1217,6 +1217,35 @@ def student_grades():
     
     return render_template('student_grades.html', grades=grades_data)
 
+@app.route('/student/courses')
+def student_courses():
+    if 'user' not in session or session['role'] != 'student':
+        return redirect(url_for('login'))
+
+    enrolled_ids = [cid for cid, students in course_enrollments.items() if session['user'] in students]
+    enrolled_courses = [c for c in admin_courses if c['id'] in enrolled_ids]
+
+    return render_template('student_courses.html', courses=enrolled_courses)
+
+@app.route('/student/course/<int:course_id>')
+def student_course_detail(course_id):
+    if 'user' not in session or session['role'] != 'student':
+        return redirect(url_for('login'))
+
+    if course_id not in course_enrollments or session['user'] not in course_enrollments[course_id]:
+        flash("Accès non autorisé à ce cours")
+        return redirect(url_for('student_courses'))
+
+    course = next((c for c in admin_courses if c['id'] == course_id), None)
+    if not course:
+        flash('Cours non trouvé')
+        return redirect(url_for('student_courses'))
+
+    content = course_content.get(course_id, {'description': '', 'documents': []})
+    chapters = course_chapters.get(course_id, [])
+
+    return render_template('student_course_detail.html', course=course, content=content, chapters=chapters)
+
 @app.route('/teacher/publish_results/<int:assignment_id>')
 def publish_results(assignment_id):
     if 'user' not in session or session['role'] != 'teacher':
