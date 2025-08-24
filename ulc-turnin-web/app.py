@@ -438,7 +438,7 @@ def course_detail(course_id):
     course = next((c for c in courses if c['id'] == course_id and c['teacher'] == session['user']), None)
     if not course:
         flash('Cours non trouvé')
-        return redirect(url_for('teacher_courses'))
+        return redirect(url_for('teacher_assigned_courses'))
     
     # Étudiants éligibles selon les critères du cours
     eligible_students = []
@@ -680,6 +680,11 @@ def teacher_assigned_courses():
             teacher_courses.append(course)
     
     return render_template('teacher_assigned_courses.html', courses=teacher_courses)
+
+
+@app.route('/teacher/courses')
+def teacher_courses():
+    return redirect(url_for('teacher_assigned_courses'))
 
 @app.route('/teacher/course_content/<int:course_id>')
 def course_content_view(course_id):
