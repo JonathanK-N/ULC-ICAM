@@ -1036,45 +1036,6 @@ def download_correction_file(filename):
     return send_from_directory(corrections_folder, filename)
 
 
-@app.route('/teacher/grade_submission/<int:submission_id>', methods=['POST'])
-def grade_submission(submission_id):
-    """Permet à un enseignant de noter une soumission"""
-    if 'user' not in session or session['role'] != 'teacher':
-        return redirect(url_for('login'))
-
-    submission = next((s for s in submissions if s['id'] == submission_id), None)
-    if not submission:
-        flash('Soumission non trouvée')
-        return redirect(url_for('dashboard'))
-
-    score = request.form.get('score', type=float)
-    max_score = request.form.get('max_score', type=float)
-    feedback_text = request.form.get('feedback', '')
-
-    feedback_list = [f.strip() for f in feedback_text.split('\n') if f.strip()]
-
-    feedback_file = request.files.get('feedback_file')
-    filename = submission.get('correction', {}).get('feedback_file')
-    if feedback_file and feedback_file.filename:
-        corrections_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'corrections')
-        os.makedirs(corrections_folder, exist_ok=True)
-        filename = secure_filename(feedback_file.filename)
-        feedback_file.save(os.path.join(corrections_folder, filename))
-
-    submission['correction'] = {
-        'score': score,
-        'max_score': max_score,
-        'feedback': feedback_list,
-        'feedback_file': filename,
-        'auto_generated': False
-    }
-
-    # Garder les résultats dans la structure existante pour compatibilité
-    correction_results[submission_id] = submission['correction']
-
-    flash('Note enregistrée')
-    return redirect(request.referrer or url_for('dashboard'))
-
 @app.route('/teacher/assignment_results/<int:assignment_id>')
 def assignment_results(assignment_id):
     if 'user' not in session or session['role'] != 'teacher':
@@ -1120,17 +1081,29 @@ def grade_submission(submission_id):
         return redirect(url_for('teacher_submissions'))
 
     if request.method == 'POST':
-        score = int(request.form['score'])
-        max_score = int(request.form.get('max_score', assignment.get('max_score', 100)))
+        score = request.form.get('score', type=float)
+        max_score = request.form.get('max_score', type=float) or assignment.get('max_score', 100)
         feedback_text = request.form.get('feedback', '')
-        feedback = [line.strip() for line in feedback_text.splitlines() if line.strip()]
+        feedback_list = [line.strip() for line in feedback_text.splitlines() if line.strip()]
 
-        correction_results[submission_id] = {
+        feedback_file = request.files.get('feedback_file')
+        filename = correction_results.get(submission_id, {}).get('feedback_file')
+        if feedback_file and feedback_file.filename:
+            corrections_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'corrections')
+            os.makedirs(corrections_folder, exist_ok=True)
+            filename = secure_filename(feedback_file.filename)
+            feedback_file.save(os.path.join(corrections_folder, filename))
+
+        correction = {
             'score': score,
             'max_score': max_score,
-            'feedback': feedback,
+            'feedback': feedback_list,
+            'feedback_file': filename,
             'auto_generated': False
         }
+
+        correction_results[submission_id] = correction
+        submission['correction'] = correction
 
         if 'publish_now' in request.form:
             submission['results_available'] = True
