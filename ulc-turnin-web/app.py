@@ -114,7 +114,17 @@ next_chapter_id = 1
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    teachers = sum(1 for u in users.values() if u.get('role') == 'teacher')
+    students = sum(1 for u in users.values() if u.get('role') == 'student')
+    courses_count = len(admin_courses)
+    assignments_count = len(assignments)
+    return render_template(
+        'index.html',
+        teachers=teachers,
+        students=students,
+        courses=courses_count,
+        assignments=assignments_count,
+    )
 
 @app.route('/login')
 def login():
