@@ -1,176 +1,299 @@
-{% extends "base.html" %}
-
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-user-shield"></i> Tableau de bord administrateur</h2>
-</div>
-
-<div class="row mb-4">
-    <div class="col-md-3">
-        <a href="{{ url_for('admin_users') }}" class="text-decoration-none">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4>{{ users|length - 1 }}</h4>
-                            <p>Utilisateurs</p>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Administrateur - ULC-ICAM Turnin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 2px 0;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .stats-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        .stats-card.primary { background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); color: white; }
+        .stats-card.success { background: linear-gradient(45deg, #56ab2f 0%, #a8e6cf 100%); color: white; }
+        .stats-card.warning { background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%); color: white; }
+        .stats-card.info { background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%); color: white; }
+        
+        .main-content {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        .navbar-custom {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .quick-action-btn {
+            border-radius: 10px;
+            padding: 15px;
+            text-decoration: none;
+            color: white;
+            display: block;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .quick-action-btn:hover {
+            transform: translateY(-3px);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="p-4">
+                    <h4 class="mb-4">
+                        <i class="fas fa-graduation-cap me-2"></i>
+                        ULC-ICAM
+                    </h4>
+                    <div class="text-center mb-4">
+                        <div class="bg-white bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fas fa-user-shield fa-2x"></i>
                         </div>
-                        <i class="fas fa-users fa-2x"></i>
+                        <div class="mt-2">
+                            <strong>{{ session.name }}</strong>
+                            <br><small class="text-white-50">Administrateur</small>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </a>
-    </div>
-    <div class="col-md-3">
-        <a href="{{ url_for('admin_assignments') }}" class="text-decoration-none">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4>{{ assignments|length }}</h4>
-                            <p>Devoirs</p>
-                        </div>
-                        <i class="fas fa-tasks fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </a>
-    </div>
-    <div class="col-md-3">
-        <a href="{{ url_for('admin_submissions') }}" class="text-decoration-none">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4>{{ submissions|length }}</h4>
-                            <p>Soumissions</p>
-                        </div>
-                        <i class="fas fa-file-upload fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </a>
-    </div>
-    <div class="col-md-3">
-        <a href="{{ url_for('admin_students') }}" class="text-decoration-none">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4>{{ users.values()|selectattr("role", "equalto", "student")|list|length }}</h4>
-                            <p>Étudiants</p>
-                        </div>
-                        <i class="fas fa-user-graduate fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </a>
-    </div>
-</div>
-
-<div class="row mb-4">
-    <div class="col-md-3">
-        <a href="{{ url_for('admin_teachers') }}" class="text-decoration-none">
-            <div class="card bg-secondary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4>{{ users.values()|selectattr("role", "equalto", "teacher")|list|length }}</h4>
-                            <p>Professeurs</p>
-                        </div>
-                        <i class="fas fa-chalkboard-teacher fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </a>
-    </div>
-    <div class="col-md-3">
-        <a href="{{ url_for('admin_courses_view') }}" class="text-decoration-none">
-            <div class="card bg-dark text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4>{{ admin_courses|length if admin_courses is defined else 0 }}</h4>
-                            <p>Cours</p>
-                        </div>
-                        <i class="fas fa-book-open fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </a>
-    </div>
-    <div class="col-md-3">
-        <a href="{{ url_for('system_config_view') }}" class="text-decoration-none">
-            <div class="card bg-danger text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4><i class="fas fa-cogs"></i></h4>
-                            <p>Configuration</p>
-                        </div>
-                        <i class="fas fa-tools fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </a>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-users"></i> Gestion des utilisateurs</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ url_for('add_student') }}" class="btn btn-primary">
-                        <i class="fas fa-user-graduate"></i> Ajouter Étudiant
+                
+                <nav class="nav flex-column px-3">
+                    <a class="nav-link active" href="{{ url_for('dashboard') }}">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                     </a>
-                    <a href="{{ url_for('add_teacher') }}" class="btn btn-success">
-                        <i class="fas fa-chalkboard-teacher"></i> Ajouter Enseignant
+                    <a class="nav-link" href="{{ url_for('admin_users') }}">
+                        <i class="fas fa-users me-2"></i>Utilisateurs
                     </a>
-                    <a href="{{ url_for('import_csv') }}" class="btn btn-info">
-                        <i class="fas fa-file-csv"></i> Importer CSV
+                    <a class="nav-link" href="{{ url_for('admin_courses') }}">
+                        <i class="fas fa-book me-2"></i>Cours
                     </a>
-                    <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-list"></i> Voir tous
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-file-alt me-2"></i>Devoirs
                     </a>
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-chart-bar me-2"></i>Rapports
+                    </a>
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-cog me-2"></i>Configuration
+                    </a>
+                    
+                    <hr class="text-white-50">
+                    
+                    <a class="nav-link" href="{{ url_for('logout') }}">
+                        <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+                    </a>
+                </nav>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content p-0">
+                <!-- Top Navbar -->
+                <nav class="navbar navbar-expand-lg navbar-custom px-4">
+                    <div class="container-fluid">
+                        <h2 class="navbar-brand mb-0 fw-bold">Dashboard Administrateur</h2>
+                        <div class="navbar-nav ms-auto">
+                            <span class="nav-link">
+                                <i class="fas fa-calendar me-2"></i>
+                                {{ moment().format('DD MMMM YYYY') }}
+                            </span>
+                        </div>
+                    </div>
+                </nav>
+                
+                <!-- Content -->
+                <div class="p-4">
+                    <!-- Statistiques -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card primary">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-users fa-3x mb-3"></i>
+                                    <h3 class="fw-bold">{{ users_count }}</h3>
+                                    <p class="mb-0">Utilisateurs Total</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card success">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-user-graduate fa-3x mb-3"></i>
+                                    <h3 class="fw-bold">{{ students_count }}</h3>
+                                    <p class="mb-0">Étudiants</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card warning">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chalkboard-teacher fa-3x mb-3"></i>
+                                    <h3 class="fw-bold">{{ teachers_count }}</h3>
+                                    <p class="mb-0">Professeurs</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card info">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-book fa-3x mb-3"></i>
+                                    <h3 class="fw-bold">{{ courses_count }}</h3>
+                                    <p class="mb-0">Cours Actifs</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions Rapides -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h4 class="mb-3">Actions Rapides</h4>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('add_user') }}" class="quick-action-btn" style="background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);">
+                                <i class="fas fa-user-plus fa-2x mb-2"></i>
+                                <br>Ajouter Utilisateur
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('add_course') }}" class="quick-action-btn" style="background: linear-gradient(45deg, #56ab2f 0%, #a8e6cf 100%);">
+                                <i class="fas fa-plus-circle fa-2x mb-2"></i>
+                                <br>Créer Cours
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" class="quick-action-btn" style="background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);">
+                                <i class="fas fa-file-import fa-2x mb-2"></i>
+                                <br>Import CSV
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" class="quick-action-btn" style="background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);">
+                                <i class="fas fa-chart-line fa-2x mb-2"></i>
+                                <br>Rapports
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Tableaux -->
+                    <div class="row">
+                        <!-- Utilisateurs Récents -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-users me-2"></i>Utilisateurs Récents
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if recent_users %}
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Nom</th>
+                                                        <th>Rôle</th>
+                                                        <th>Créé le</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for user in recent_users %}
+                                                    <tr>
+                                                        <td>{{ user.name }}</td>
+                                                        <td>
+                                                            <span class="badge bg-{{ 'primary' if user.role == 'admin' else 'success' if user.role == 'teacher' else 'info' }}">
+                                                                {{ user.role.title() }}
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ user.created_at[:10] if user.created_at else 'N/A' }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted mb-0">Aucun utilisateur récent</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Activité Système -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-activity me-2"></i>Activité Système
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span>Devoirs Actifs</span>
+                                        <span class="badge bg-primary">{{ assignments_count }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span>Soumissions Totales</span>
+                                        <span class="badge bg-success">{{ submissions_count }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span>Cours Actifs</span>
+                                        <span class="badge bg-info">{{ courses_count }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Système</span>
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Opérationnel
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-cogs"></i> Configuration Système</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ url_for('system_config_view') }}" class="btn btn-warning">
-                        <i class="fas fa-tools"></i> Configurer le Système
-                    </a>
-                    <a href="{{ url_for('admin_courses_view') }}" class="btn btn-info mt-2">
-                        <i class="fas fa-book-open"></i> Gérer les Cours
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-chart-bar"></i> Statistiques</h5>
-            </div>
-            <div class="card-body">
-                <p>Enseignants: {{ users.values()|selectattr("role", "equalto", "teacher")|list|length }}</p>
-                <p>Étudiants: {{ users.values()|selectattr("role", "equalto", "student")|list|length }}</p>
-                <p>Total soumissions: {{ submissions|length }}</p>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/fr.min.js"></script>
+    <script>
+        // Configuration moment.js en français
+        moment.locale('fr');
+        
+        // Mise à jour de la date en temps réel
+        function updateDateTime() {
+            const dateElement = document.querySelector('.navbar-nav .nav-link');
+            if (dateElement) {
+                dateElement.innerHTML = '<i class="fas fa-calendar me-2"></i>' + moment().format('DD MMMM YYYY, HH:mm');
+            }
+        }
+        
+        // Mettre à jour toutes les minutes
+        setInterval(updateDateTime, 60000);
+        updateDateTime();
+    </script>
+</body>
+</html>

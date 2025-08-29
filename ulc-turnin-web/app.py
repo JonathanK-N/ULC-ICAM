@@ -72,7 +72,7 @@ if test_data:
     submissions = test_data.get('submissions', [])
     next_course_admin_id = test_data.get('next_course_admin_id', 1)
     next_assignment_id = test_data.get('next_assignment_id', 1)
-    print(f"✅ Données de test chargées: {len(users)} utilisateurs, {len(admin_courses)} cours")
+    print(f"Donnees de test chargees: {len(users)} utilisateurs, {len(admin_courses)} cours")
 else:
     # Données par défaut
     users = {

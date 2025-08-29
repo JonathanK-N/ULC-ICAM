@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # Application Flask
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./uploads:/app/uploads
+      - ./cache:/app/cache
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # Worker Celery
+  celery:
+    build: .
+    command: celery -A celery_tasks worker --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # Celery Beat (tâches périodiques)
+  celery-beat:
+    build: .
+    command: celery -A celery_tasks beat --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # Redis (Cache + Queue)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # Monitoring (optionnel)
+  flower:
+    build: .
+    command: celery -A celery_tasks flower
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+volumes:
+  redis_data:
