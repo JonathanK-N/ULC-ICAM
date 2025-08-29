@@ -6812,322 +6812,322 @@
   ],
   "course_assignments": {
     "1": [
-      "prof006"
+      "prof001"
     ],
     "2": [
-      "prof003"
+      "prof006"
     ],
     "3": [
       "prof001"
     ],
     "4": [
-      "prof001"
+      "prof002"
     ],
     "5": [
-      "prof006"
+      "prof001"
     ],
     "6": [
-      "prof003"
+      "prof008"
     ],
     "7": [
       "prof005"
     ],
     "8": [
-      "prof003"
+      "prof002"
     ],
     "9": [
-      "prof008"
+      "prof002"
     ],
     "10": [
-      "prof004"
-    ],
-    "11": [
-      "prof004"
-    ],
-    "12": [
-      "prof001"
-    ],
-    "13": [
       "prof006"
     ],
-    "14": [
-      "prof005"
-    ],
-    "15": [
-      "prof004"
-    ],
-    "16": [
-      "prof007"
-    ],
-    "17": [
+    "11": [
       "prof003"
     ],
-    "18": [
+    "12": [
+      "prof005"
+    ],
+    "13": [
+      "prof004"
+    ],
+    "14": [
+      "prof003"
+    ],
+    "15": [
+      "prof007"
+    ],
+    "16": [
+      "prof003"
+    ],
+    "17": [
       "prof008"
     ],
+    "18": [
+      "prof004"
+    ],
     "19": [
-      "prof009"
-    ],
-    "20": [
-      "prof011"
-    ],
-    "21": [
-      "prof009"
-    ],
-    "22": [
-      "prof012"
-    ],
-    "23": [
-      "prof012"
-    ],
-    "24": [
-      "prof012"
-    ],
-    "25": [
-      "prof011"
-    ],
-    "26": [
-      "prof014"
-    ],
-    "27": [
-      "prof012"
-    ],
-    "28": [
       "prof010"
     ],
+    "20": [
+      "prof010"
+    ],
+    "21": [
+      "prof013"
+    ],
+    "22": [
+      "prof013"
+    ],
+    "23": [
+      "prof011"
+    ],
+    "24": [
+      "prof009"
+    ],
+    "25": [
+      "prof013"
+    ],
+    "26": [
+      "prof013"
+    ],
+    "27": [
+      "prof013"
+    ],
+    "28": [
+      "prof011"
+    ],
     "29": [
-      "prof012"
+      "prof011"
     ],
     "30": [
       "prof011"
     ],
     "31": [
-      "prof012"
-    ],
-    "32": [
       "prof009"
     ],
-    "33": [
-      "prof013"
-    ],
-    "34": [
+    "32": [
       "prof014"
     ],
-    "35": [
+    "33": [
+      "prof014"
+    ],
+    "34": [
       "prof013"
     ],
-    "36": [
+    "35": [
       "prof010"
     ],
+    "36": [
+      "prof013"
+    ],
     "37": [
-      "prof019"
+      "prof016"
     ],
     "38": [
-      "prof019"
+      "prof015"
     ],
     "39": [
-      "prof016"
+      "prof018"
     ],
     "40": [
       "prof019"
     ],
     "41": [
-      "prof018"
+      "prof019"
     ],
     "42": [
-      "prof015"
+      "prof018"
     ],
     "43": [
-      "prof016"
+      "prof018"
     ],
     "44": [
-      "prof018"
-    ],
-    "45": [
-      "prof019"
-    ],
-    "46": [
-      "prof017"
-    ],
-    "47": [
-      "prof019"
-    ],
-    "48": [
-      "prof017"
-    ],
-    "49": [
       "prof020"
     ],
-    "50": [
-      "prof016"
-    ],
-    "51": [
+    "45": [
       "prof018"
     ],
-    "52": [
+    "46": [
+      "prof019"
+    ],
+    "47": [
+      "prof020"
+    ],
+    "48": [
+      "prof020"
+    ],
+    "49": [
+      "prof019"
+    ],
+    "50": [
       "prof017"
     ],
-    "53": [
+    "51": [
+      "prof015"
+    ],
+    "52": [
       "prof016"
     ],
+    "53": [
+      "prof019"
+    ],
     "54": [
-      "prof018"
+      "prof015"
     ],
     "55": [
       "prof021"
     ],
     "56": [
-      "prof022"
-    ],
-    "57": [
       "prof021"
     ],
-    "58": [
+    "57": [
       "prof024"
     ],
+    "58": [
+      "prof023"
+    ],
     "59": [
-      "prof026"
+      "prof023"
     ],
     "60": [
       "prof022"
     ],
     "61": [
-      "prof021"
+      "prof023"
     ],
     "62": [
       "prof022"
     ],
     "63": [
-      "prof022"
+      "prof021"
     ],
     "64": [
-      "prof021"
+      "prof023"
     ],
     "65": [
-      "prof022"
+      "prof025"
     ],
     "66": [
-      "prof021"
+      "prof022"
     ],
     "67": [
       "prof023"
     ],
     "68": [
-      "prof021"
+      "prof022"
     ],
     "69": [
-      "prof021"
+      "prof023"
     ],
     "70": [
-      "prof024"
-    ],
-    "71": [
       "prof026"
     ],
+    "71": [
+      "prof023"
+    ],
     "72": [
-      "prof022"
+      "prof026"
     ],
     "73": [
       "prof032"
     ],
     "74": [
-      "prof029"
+      "prof030"
     ],
     "75": [
-      "prof028"
+      "prof029"
     ],
     "76": [
-      "prof030"
+      "prof028"
     ],
     "77": [
-      "prof028"
+      "prof029"
     ],
     "78": [
-      "prof028"
+      "prof031"
     ],
     "79": [
-      "prof030"
+      "prof029"
     ],
     "80": [
-      "prof032"
+      "prof027"
     ],
     "81": [
-      "prof031"
+      "prof030"
     ],
     "82": [
-      "prof031"
+      "prof029"
     ],
     "83": [
-      "prof032"
-    ],
-    "84": [
       "prof028"
     ],
+    "84": [
+      "prof030"
+    ],
     "85": [
-      "prof027"
+      "prof031"
     ],
     "86": [
       "prof030"
     ],
     "87": [
-      "prof027"
+      "prof028"
     ],
     "88": [
-      "prof031"
-    ],
-    "89": [
-      "prof031"
-    ],
-    "90": [
       "prof027"
     ],
+    "89": [
+      "prof027"
+    ],
+    "90": [
+      "prof031"
+    ],
     "91": [
-      "prof030"
+      "prof031"
     ],
     "92": [
       "prof036"
     ],
     "93": [
-      "prof034"
+      "prof033"
     ],
     "94": [
       "prof037"
     ],
     "95": [
-      "prof035"
+      "prof037"
     ],
     "96": [
-      "prof035"
-    ],
-    "97": [
       "prof038"
     ],
-    "98": [
-      "prof036"
-    ],
-    "99": [
-      "prof034"
-    ],
-    "100": [
-      "prof037"
-    ],
-    "101": [
+    "97": [
       "prof033"
     ],
-    "102": [
+    "98": [
       "prof037"
+    ],
+    "99": [
+      "prof033"
+    ],
+    "100": [
+      "prof036"
+    ],
+    "101": [
+      "prof036"
+    ],
+    "102": [
+      "prof035"
     ],
     "103": [
-      "prof036"
-    ],
-    "104": [
       "prof034"
     ],
+    "104": [
+      "prof035"
+    ],
     "105": [
-      "prof037"
+      "prof038"
     ],
     "106": [
-      "prof036"
+      "prof035"
     ],
     "107": [
       "prof035"
@@ -7136,1330 +7136,2699 @@
       "prof034"
     ],
     "109": [
-      "prof033"
+      "prof036"
     ]
   },
   "course_enrollments": {
     "1": [
-      "etud001",
-      "etud002",
-      "etud003",
-      "etud004",
-      "etud005",
+      "etud009",
       "etud006",
       "etud007",
       "etud008",
-      "etud009"
+      "etud003",
+      "etud002",
+      "etud001",
+      "etud004"
     ],
     "2": [
-      "etud001",
-      "etud002",
-      "etud003",
       "etud004",
-      "etud005",
-      "etud006",
-      "etud007",
-      "etud008",
-      "etud009"
+      "etud003",
+      "etud006"
     ],
     "3": [
       "etud001",
-      "etud002",
-      "etud003",
-      "etud004",
-      "etud005",
       "etud006",
-      "etud007",
+      "etud009",
       "etud008",
-      "etud009"
+      "etud005",
+      "etud003",
+      "etud007",
+      "etud004"
     ],
     "4": [
-      "etud001",
-      "etud002",
-      "etud003",
       "etud004",
-      "etud005",
-      "etud006",
-      "etud007",
       "etud008",
-      "etud009"
+      "etud001",
+      "etud005",
+      "etud009",
+      "etud003"
     ],
     "5": [
-      "etud010",
-      "etud011",
-      "etud012",
       "etud013",
-      "etud014",
-      "etud015",
-      "etud016",
       "etud017",
-      "etud018"
+      "etud018",
+      "etud011",
+      "etud010",
+      "etud014",
+      "etud012"
     ],
     "6": [
-      "etud010",
-      "etud011",
+      "etud015",
       "etud012",
       "etud013",
       "etud014",
-      "etud015",
+      "etud010",
       "etud016",
       "etud017",
-      "etud018"
+      "etud011"
     ],
     "7": [
-      "etud010",
-      "etud011",
-      "etud012",
-      "etud013",
-      "etud014",
-      "etud015",
-      "etud016",
+      "etud018",
       "etud017",
-      "etud018"
+      "etud015"
     ],
     "8": [
+      "etud018",
+      "etud017",
+      "etud013",
       "etud010",
       "etud011",
-      "etud012",
-      "etud013",
-      "etud014",
       "etud015",
-      "etud016",
-      "etud017",
-      "etud018"
+      "etud014"
     ],
     "9": [
-      "etud019",
-      "etud020",
-      "etud021",
-      "etud022",
-      "etud023",
       "etud024",
-      "etud025",
-      "etud026",
+      "etud021",
       "etud027",
-      "etud028",
-      "etud029",
-      "etud030"
+      "etud020",
+      "etud029"
     ],
     "10": [
-      "etud019",
-      "etud020",
-      "etud021",
-      "etud022",
-      "etud023",
-      "etud024",
-      "etud025",
-      "etud026",
-      "etud027",
-      "etud028",
       "etud029",
-      "etud030"
+      "etud025",
+      "etud020"
     ],
     "11": [
       "etud019",
-      "etud020",
-      "etud021",
       "etud022",
-      "etud023",
-      "etud024",
-      "etud025",
-      "etud026",
       "etud027",
-      "etud028",
+      "etud023",
       "etud029",
       "etud030"
     ],
     "12": [
-      "etud019",
-      "etud020",
       "etud021",
-      "etud022",
-      "etud023",
+      "etud020",
       "etud024",
+      "etud023",
+      "etud019",
       "etud025",
       "etud026",
-      "etud027",
-      "etud028",
-      "etud029",
-      "etud030"
+      "etud028"
     ],
     "13": [
-      "etud031",
-      "etud032",
-      "etud033",
-      "etud034",
-      "etud035",
-      "etud036",
-      "etud037",
-      "etud038",
       "etud039",
-      "etud040",
-      "etud041",
-      "etud042"
+      "etud037",
+      "etud031",
+      "etud036",
+      "etud035",
+      "etud041"
     ],
     "14": [
-      "etud031",
-      "etud032",
-      "etud033",
-      "etud034",
-      "etud035",
       "etud036",
-      "etud037",
-      "etud038",
-      "etud039",
-      "etud040",
       "etud041",
-      "etud042"
+      "etud032",
+      "etud031",
+      "etud037",
+      "etud033",
+      "etud038"
     ],
     "15": [
-      "etud031",
-      "etud032",
-      "etud033",
-      "etud034",
-      "etud035",
       "etud036",
-      "etud037",
-      "etud038",
-      "etud039",
       "etud040",
-      "etud041",
-      "etud042"
+      "etud035",
+      "etud031",
+      "etud034"
     ],
     "16": [
-      "etud043",
-      "etud044",
-      "etud045",
+      "etud050",
       "etud046",
       "etud047",
-      "etud048",
-      "etud049",
-      "etud050",
-      "etud051",
-      "etud052"
+      "etud043",
+      "etud045",
+      "etud051"
     ],
     "17": [
-      "etud043",
-      "etud044",
-      "etud045",
-      "etud046",
-      "etud047",
-      "etud048",
-      "etud049",
       "etud050",
+      "etud052",
+      "etud049",
+      "etud044",
       "etud051",
-      "etud052"
+      "etud043",
+      "etud046"
     ],
     "18": [
-      "etud043",
       "etud044",
-      "etud045",
-      "etud046",
-      "etud047",
       "etud048",
-      "etud049",
+      "etud043",
       "etud050",
-      "etud051",
-      "etud052"
+      "etud045",
+      "etud047"
     ],
     "19": [
-      "etud053",
-      "etud054",
-      "etud055",
-      "etud056",
       "etud057",
-      "etud058",
-      "etud059",
       "etud060",
-      "etud061"
+      "etud059",
+      "etud061",
+      "etud056",
+      "etud055",
+      "etud053"
     ],
     "20": [
-      "etud053",
-      "etud054",
+      "etud061",
+      "etud058",
+      "etud057",
+      "etud060",
       "etud055",
       "etud056",
-      "etud057",
-      "etud058",
-      "etud059",
-      "etud060",
-      "etud061"
+      "etud059"
     ],
     "21": [
-      "etud053",
-      "etud054",
       "etud055",
-      "etud056",
-      "etud057",
       "etud058",
-      "etud059",
       "etud060",
+      "etud053",
+      "etud056",
       "etud061"
     ],
     "22": [
-      "etud053",
-      "etud054",
-      "etud055",
-      "etud056",
-      "etud057",
-      "etud058",
       "etud059",
       "etud060",
-      "etud061"
+      "etud056",
+      "etud057"
     ],
     "23": [
-      "etud062",
-      "etud063",
-      "etud064",
-      "etud065",
       "etud066",
-      "etud067",
-      "etud068",
+      "etud062",
       "etud069",
+      "etud068",
+      "etud067",
       "etud070",
-      "etud071"
+      "etud065",
+      "etud064"
     ],
     "24": [
-      "etud062",
-      "etud063",
-      "etud064",
-      "etud065",
-      "etud066",
-      "etud067",
       "etud068",
+      "etud066",
+      "etud063",
+      "etud062",
       "etud069",
-      "etud070",
-      "etud071"
+      "etud065"
     ],
     "25": [
+      "etud071",
       "etud062",
-      "etud063",
-      "etud064",
-      "etud065",
-      "etud066",
-      "etud067",
       "etud068",
-      "etud069",
+      "etud067",
+      "etud066",
+      "etud063",
       "etud070",
-      "etud071"
+      "etud069"
     ],
     "26": [
-      "etud062",
       "etud063",
-      "etud064",
-      "etud065",
-      "etud066",
-      "etud067",
-      "etud068",
-      "etud069",
-      "etud070",
-      "etud071"
+      "etud062",
+      "etud065"
     ],
     "27": [
       "etud072",
-      "etud073",
-      "etud074",
-      "etud075",
-      "etud076",
       "etud077",
-      "etud078",
+      "etud080",
+      "etud076",
       "etud079",
-      "etud080"
+      "etud073",
+      "etud078",
+      "etud075"
     ],
     "28": [
-      "etud072",
+      "etud079",
+      "etud076",
       "etud073",
       "etud074",
       "etud075",
-      "etud076",
-      "etud077",
       "etud078",
-      "etud079",
-      "etud080"
+      "etud077",
+      "etud072"
     ],
     "29": [
-      "etud072",
+      "etud080",
       "etud073",
-      "etud074",
-      "etud075",
-      "etud076",
       "etud077",
       "etud078",
-      "etud079",
-      "etud080"
+      "etud072"
     ],
     "30": [
-      "etud072",
-      "etud073",
-      "etud074",
-      "etud075",
-      "etud076",
-      "etud077",
-      "etud078",
       "etud079",
-      "etud080"
+      "etud073",
+      "etud078",
+      "etud072",
+      "etud077"
     ],
     "31": [
-      "etud081",
+      "etud086",
+      "etud084",
       "etud082",
       "etud083",
-      "etud084",
-      "etud085",
-      "etud086",
-      "etud087",
-      "etud088"
+      "etud085"
     ],
     "32": [
-      "etud081",
-      "etud082",
-      "etud083",
       "etud084",
       "etud085",
       "etud086",
-      "etud087",
-      "etud088"
+      "etud081"
     ],
     "33": [
       "etud081",
-      "etud082",
-      "etud083",
-      "etud084",
-      "etud085",
       "etud086",
+      "etud082",
+      "etud085",
+      "etud084",
+      "etud088",
       "etud087",
-      "etud088"
+      "etud083"
     ],
     "34": [
-      "etud089",
+      "etud096",
       "etud090",
-      "etud091",
-      "etud092",
-      "etud093",
-      "etud094",
-      "etud095",
-      "etud096"
+      "etud089"
     ],
     "35": [
-      "etud089",
-      "etud090",
-      "etud091",
-      "etud092",
       "etud093",
+      "etud091",
+      "etud090",
+      "etud096",
       "etud094",
-      "etud095",
-      "etud096"
+      "etud095"
     ],
     "36": [
-      "etud089",
-      "etud090",
       "etud091",
       "etud092",
-      "etud093",
       "etud094",
+      "etud093",
       "etud095",
+      "etud089",
       "etud096"
     ],
     "37": [
-      "etud097",
-      "etud098",
-      "etud099",
-      "etud100",
-      "etud101",
-      "etud102",
       "etud103",
-      "etud104"
+      "etud099",
+      "etud097",
+      "etud101",
+      "etud104",
+      "etud098",
+      "etud100",
+      "etud102"
     ],
     "38": [
-      "etud097",
-      "etud098",
-      "etud099",
       "etud100",
-      "etud101",
-      "etud102",
-      "etud103",
-      "etud104"
+      "etud099",
+      "etud097",
+      "etud098"
     ],
     "39": [
-      "etud097",
-      "etud098",
-      "etud099",
       "etud100",
-      "etud101",
       "etud102",
+      "etud097",
+      "etud104",
+      "etud099",
       "etud103",
-      "etud104"
+      "etud098"
     ],
     "40": [
-      "etud097",
-      "etud098",
-      "etud099",
-      "etud100",
+      "etud104",
       "etud101",
+      "etud097",
       "etud102",
-      "etud103",
-      "etud104"
+      "etud100"
     ],
     "41": [
-      "etud105",
-      "etud106",
-      "etud107",
-      "etud108",
-      "etud109",
-      "etud110",
-      "etud111",
-      "etud112",
-      "etud113",
       "etud114",
-      "etud115",
-      "etud116"
+      "etud116",
+      "etud110"
     ],
     "42": [
-      "etud105",
-      "etud106",
-      "etud107",
       "etud108",
-      "etud109",
-      "etud110",
-      "etud111",
-      "etud112",
-      "etud113",
-      "etud114",
       "etud115",
-      "etud116"
+      "etud116",
+      "etud110",
+      "etud113",
+      "etud112"
     ],
     "43": [
-      "etud105",
-      "etud106",
-      "etud107",
-      "etud108",
-      "etud109",
-      "etud110",
-      "etud111",
       "etud112",
+      "etud111",
+      "etud116",
       "etud113",
-      "etud114",
-      "etud115",
-      "etud116"
+      "etud114"
     ],
     "44": [
-      "etud105",
-      "etud106",
-      "etud107",
-      "etud108",
-      "etud109",
-      "etud110",
-      "etud111",
-      "etud112",
       "etud113",
-      "etud114",
-      "etud115",
-      "etud116"
+      "etud109",
+      "etud116",
+      "etud105",
+      "etud110"
     ],
     "45": [
-      "etud117",
-      "etud118",
-      "etud119",
-      "etud120",
-      "etud121",
-      "etud122",
       "etud123",
+      "etud117",
+      "etud119",
+      "etud118",
+      "etud125",
       "etud124",
-      "etud125"
+      "etud121",
+      "etud122"
     ],
     "46": [
-      "etud117",
-      "etud118",
       "etud119",
       "etud120",
-      "etud121",
-      "etud122",
-      "etud123",
-      "etud124",
+      "etud118",
       "etud125"
     ],
     "47": [
-      "etud117",
-      "etud118",
-      "etud119",
-      "etud120",
+      "etud125",
       "etud121",
       "etud122",
-      "etud123",
-      "etud124",
-      "etud125"
+      "etud117",
+      "etud120",
+      "etud118"
     ],
     "48": [
-      "etud117",
-      "etud118",
-      "etud119",
-      "etud120",
       "etud121",
-      "etud122",
+      "etud125",
+      "etud119",
       "etud123",
+      "etud122",
+      "etud118",
       "etud124",
-      "etud125"
+      "etud117"
     ],
     "49": [
-      "etud126",
+      "etud134",
       "etud127",
-      "etud128",
       "etud129",
-      "etud130",
-      "etud131",
-      "etud132",
-      "etud133",
-      "etud134"
+      "etud128",
+      "etud130"
     ],
     "50": [
-      "etud126",
-      "etud127",
-      "etud128",
-      "etud129",
       "etud130",
-      "etud131",
-      "etud132",
-      "etud133",
-      "etud134"
+      "etud134",
+      "etud127"
     ],
     "51": [
-      "etud126",
-      "etud127",
-      "etud128",
       "etud129",
-      "etud130",
+      "etud134",
       "etud131",
+      "etud130",
+      "etud128",
+      "etud127",
       "etud132",
-      "etud133",
-      "etud134"
+      "etud126"
     ],
     "52": [
       "etud135",
-      "etud136",
       "etud137",
-      "etud138",
       "etud139",
-      "etud140",
-      "etud141",
-      "etud142",
-      "etud143",
-      "etud144",
-      "etud145"
+      "etud138",
+      "etud144"
     ],
     "53": [
-      "etud135",
-      "etud136",
-      "etud137",
-      "etud138",
-      "etud139",
       "etud140",
+      "etud145",
       "etud141",
-      "etud142",
-      "etud143",
-      "etud144",
-      "etud145"
+      "etud137",
+      "etud143"
     ],
     "54": [
-      "etud135",
-      "etud136",
-      "etud137",
-      "etud138",
-      "etud139",
-      "etud140",
       "etud141",
-      "etud142",
+      "etud137",
       "etud143",
       "etud144",
-      "etud145"
+      "etud142",
+      "etud140",
+      "etud136",
+      "etud135"
     ],
     "55": [
-      "etud146",
-      "etud147",
       "etud148",
-      "etud149",
-      "etud150",
-      "etud151",
       "etud152",
+      "etud147",
+      "etud146",
+      "etud150",
+      "etud149",
       "etud153"
     ],
     "56": [
-      "etud146",
-      "etud147",
-      "etud148",
-      "etud149",
-      "etud150",
       "etud151",
+      "etud147",
+      "etud153",
+      "etud146",
+      "etud150",
       "etud152",
-      "etud153"
+      "etud148",
+      "etud149"
     ],
     "57": [
       "etud146",
-      "etud147",
-      "etud148",
-      "etud149",
       "etud150",
-      "etud151",
-      "etud152",
-      "etud153"
+      "etud153",
+      "etud148",
+      "etud152"
     ],
     "58": [
-      "etud146",
-      "etud147",
-      "etud148",
-      "etud149",
       "etud150",
+      "etud146",
+      "etud148",
+      "etud153",
+      "etud147",
       "etud151",
-      "etud152",
-      "etud153"
+      "etud152"
     ],
     "59": [
       "etud154",
-      "etud155",
-      "etud156",
-      "etud157",
+      "etud161",
       "etud158",
-      "etud159",
-      "etud160",
-      "etud161"
+      "etud157"
     ],
     "60": [
-      "etud154",
-      "etud155",
       "etud156",
       "etud157",
-      "etud158",
-      "etud159",
-      "etud160",
-      "etud161"
+      "etud158"
     ],
     "61": [
-      "etud154",
-      "etud155",
-      "etud156",
-      "etud157",
-      "etud158",
-      "etud159",
       "etud160",
-      "etud161"
+      "etud159",
+      "etud157"
     ],
     "62": [
-      "etud154",
-      "etud155",
-      "etud156",
-      "etud157",
-      "etud158",
       "etud159",
+      "etud158",
       "etud160",
-      "etud161"
+      "etud157"
     ],
     "63": [
-      "etud162",
-      "etud163",
-      "etud164",
-      "etud165",
-      "etud166",
-      "etud167",
-      "etud168",
-      "etud169",
-      "etud170",
-      "etud171",
       "etud172",
+      "etud167",
+      "etud166",
+      "etud168",
+      "etud165",
       "etud173"
     ],
     "64": [
-      "etud162",
-      "etud163",
-      "etud164",
-      "etud165",
       "etud166",
-      "etud167",
-      "etud168",
-      "etud169",
+      "etud165",
       "etud170",
+      "etud164",
+      "etud162",
       "etud171",
-      "etud172",
-      "etud173"
+      "etud163"
     ],
     "65": [
-      "etud162",
-      "etud163",
-      "etud164",
-      "etud165",
-      "etud166",
-      "etud167",
       "etud168",
-      "etud169",
-      "etud170",
       "etud171",
-      "etud172",
+      "etud164",
       "etud173"
     ],
     "66": [
-      "etud162",
-      "etud163",
       "etud164",
-      "etud165",
-      "etud166",
       "etud167",
-      "etud168",
       "etud169",
-      "etud170",
       "etud171",
-      "etud172",
-      "etud173"
+      "etud165"
     ],
     "67": [
-      "etud174",
       "etud175",
-      "etud176",
-      "etud177",
       "etud178",
-      "etud179",
-      "etud180",
-      "etud181",
-      "etud182",
       "etud183",
-      "etud184"
+      "etud176",
+      "etud180"
     ],
     "68": [
-      "etud174",
-      "etud175",
-      "etud176",
-      "etud177",
-      "etud178",
       "etud179",
-      "etud180",
-      "etud181",
-      "etud182",
       "etud183",
-      "etud184"
+      "etud176",
+      "etud174",
+      "etud180"
     ],
     "69": [
-      "etud174",
-      "etud175",
-      "etud176",
-      "etud177",
       "etud178",
-      "etud179",
-      "etud180",
-      "etud181",
-      "etud182",
       "etud183",
-      "etud184"
+      "etud174",
+      "etud181",
+      "etud176"
     ],
     "70": [
       "etud185",
-      "etud186",
-      "etud187",
-      "etud188",
-      "etud189",
-      "etud190",
-      "etud191",
-      "etud192",
-      "etud193",
       "etud194",
-      "etud195",
-      "etud196"
+      "etud187"
     ],
     "71": [
-      "etud185",
-      "etud186",
-      "etud187",
-      "etud188",
-      "etud189",
       "etud190",
-      "etud191",
       "etud192",
-      "etud193",
-      "etud194",
+      "etud189",
+      "etud186",
       "etud195",
-      "etud196"
+      "etud191",
+      "etud196",
+      "etud193"
     ],
     "72": [
-      "etud185",
-      "etud186",
-      "etud187",
-      "etud188",
-      "etud189",
-      "etud190",
       "etud191",
-      "etud192",
-      "etud193",
-      "etud194",
+      "etud190",
       "etud195",
-      "etud196"
+      "etud192",
+      "etud194",
+      "etud187"
     ],
     "73": [
-      "etud197",
-      "etud198",
-      "etud199",
-      "etud200",
-      "etud201",
       "etud202",
-      "etud203",
-      "etud204",
+      "etud207",
       "etud205",
-      "etud206",
-      "etud207"
+      "etud200"
     ],
     "74": [
-      "etud197",
-      "etud198",
-      "etud199",
-      "etud200",
-      "etud201",
-      "etud202",
       "etud203",
-      "etud204",
-      "etud205",
-      "etud206",
-      "etud207"
+      "etud198",
+      "etud200"
     ],
     "75": [
-      "etud197",
-      "etud198",
-      "etud199",
-      "etud200",
-      "etud201",
+      "etud207",
       "etud202",
-      "etud203",
-      "etud204",
-      "etud205",
-      "etud206",
-      "etud207"
+      "etud198",
+      "etud200",
+      "etud205"
     ],
     "76": [
-      "etud197",
-      "etud198",
-      "etud199",
-      "etud200",
-      "etud201",
       "etud202",
-      "etud203",
       "etud204",
-      "etud205",
-      "etud206",
-      "etud207"
+      "etud207",
+      "etud197"
     ],
     "77": [
       "etud208",
-      "etud209",
-      "etud210",
-      "etud211",
-      "etud212",
-      "etud213",
-      "etud214",
       "etud215",
-      "etud216",
-      "etud217",
-      "etud218",
-      "etud219"
+      "etud217"
     ],
     "78": [
-      "etud208",
-      "etud209",
       "etud210",
       "etud211",
-      "etud212",
       "etud213",
-      "etud214",
-      "etud215",
-      "etud216",
       "etud217",
-      "etud218",
-      "etud219"
+      "etud208",
+      "etud212",
+      "etud215",
+      "etud214"
     ],
     "79": [
-      "etud208",
-      "etud209",
       "etud210",
-      "etud211",
-      "etud212",
-      "etud213",
-      "etud214",
-      "etud215",
-      "etud216",
-      "etud217",
       "etud218",
-      "etud219"
+      "etud214",
+      "etud216",
+      "etud219",
+      "etud208"
     ],
     "80": [
-      "etud208",
       "etud209",
-      "etud210",
-      "etud211",
-      "etud212",
-      "etud213",
-      "etud214",
-      "etud215",
-      "etud216",
-      "etud217",
       "etud218",
-      "etud219"
+      "etud217",
+      "etud208",
+      "etud214"
     ],
     "81": [
-      "etud220",
-      "etud221",
-      "etud222",
-      "etud223",
-      "etud224",
-      "etud225",
-      "etud226",
-      "etud227",
       "etud228",
       "etud229",
-      "etud230",
-      "etud231"
+      "etud231",
+      "etud224",
+      "etud226",
+      "etud222"
     ],
     "82": [
       "etud220",
-      "etud221",
-      "etud222",
-      "etud223",
-      "etud224",
-      "etud225",
-      "etud226",
       "etud227",
       "etud228",
-      "etud229",
-      "etud230",
-      "etud231"
+      "etud231",
+      "etud223",
+      "etud222"
     ],
     "83": [
-      "etud220",
-      "etud221",
-      "etud222",
-      "etud223",
-      "etud224",
+      "etud230",
+      "etud231",
       "etud225",
-      "etud226",
-      "etud227",
+      "etud223",
+      "etud222",
       "etud228",
       "etud229",
-      "etud230",
-      "etud231"
+      "etud224"
     ],
     "84": [
-      "etud220",
-      "etud221",
-      "etud222",
-      "etud223",
-      "etud224",
-      "etud225",
       "etud226",
-      "etud227",
-      "etud228",
+      "etud231",
+      "etud224",
       "etud229",
-      "etud230",
-      "etud231"
+      "etud221"
     ],
     "85": [
-      "etud232",
       "etud233",
-      "etud234",
-      "etud235",
-      "etud236",
-      "etud237",
-      "etud238",
+      "etud240",
       "etud239",
-      "etud240"
+      "etud237",
+      "etud232",
+      "etud236",
+      "etud238",
+      "etud235"
     ],
     "86": [
-      "etud232",
-      "etud233",
-      "etud234",
-      "etud235",
-      "etud236",
       "etud237",
-      "etud238",
-      "etud239",
-      "etud240"
+      "etud235",
+      "etud232"
     ],
     "87": [
-      "etud232",
-      "etud233",
-      "etud234",
-      "etud235",
-      "etud236",
-      "etud237",
       "etud238",
-      "etud239",
-      "etud240"
+      "etud232",
+      "etud234",
+      "etud233"
     ],
     "88": [
       "etud232",
-      "etud233",
-      "etud234",
-      "etud235",
-      "etud236",
       "etud237",
-      "etud238",
       "etud239",
-      "etud240"
+      "etud240",
+      "etud238",
+      "etud233"
     ],
     "89": [
-      "etud241",
-      "etud242",
-      "etud243",
-      "etud244",
-      "etud245",
-      "etud246",
-      "etud247",
-      "etud248",
       "etud249",
-      "etud250"
+      "etud247",
+      "etud241",
+      "etud243",
+      "etud242",
+      "etud248",
+      "etud245"
     ],
     "90": [
+      "etud250",
       "etud241",
-      "etud242",
-      "etud243",
-      "etud244",
-      "etud245",
-      "etud246",
-      "etud247",
-      "etud248",
-      "etud249",
-      "etud250"
+      "etud246"
     ],
     "91": [
-      "etud241",
-      "etud242",
-      "etud243",
-      "etud244",
-      "etud245",
-      "etud246",
       "etud247",
-      "etud248",
-      "etud249",
-      "etud250"
+      "etud246",
+      "etud250",
+      "etud244",
+      "etud249"
     ],
     "92": [
-      "etud251",
       "etud252",
-      "etud253",
       "etud254",
       "etud255",
-      "etud256",
-      "etud257",
-      "etud258",
+      "etud251",
       "etud259",
-      "etud260"
+      "etud258",
+      "etud257",
+      "etud253"
     ],
     "93": [
       "etud251",
-      "etud252",
+      "etud260",
       "etud253",
-      "etud254",
-      "etud255",
-      "etud256",
       "etud257",
+      "etud252",
       "etud258",
-      "etud259",
-      "etud260"
+      "etud256"
     ],
     "94": [
       "etud251",
-      "etud252",
-      "etud253",
-      "etud254",
-      "etud255",
-      "etud256",
-      "etud257",
-      "etud258",
       "etud259",
-      "etud260"
+      "etud258",
+      "etud252",
+      "etud255",
+      "etud257",
+      "etud256"
     ],
     "95": [
       "etud251",
-      "etud252",
       "etud253",
       "etud254",
-      "etud255",
-      "etud256",
-      "etud257",
-      "etud258",
-      "etud259",
-      "etud260"
+      "etud252",
+      "etud259"
     ],
     "96": [
-      "etud261",
-      "etud262",
-      "etud263",
       "etud264",
-      "etud265",
-      "etud266",
+      "etud261",
       "etud267",
       "etud268",
-      "etud269"
+      "etud265"
     ],
     "97": [
-      "etud261",
-      "etud262",
+      "etud269",
       "etud263",
-      "etud264",
-      "etud265",
+      "etud262",
       "etud266",
       "etud267",
+      "etud265",
       "etud268",
-      "etud269"
+      "etud264"
     ],
     "98": [
-      "etud261",
-      "etud262",
-      "etud263",
-      "etud264",
-      "etud265",
-      "etud266",
-      "etud267",
       "etud268",
-      "etud269"
+      "etud267",
+      "etud269",
+      "etud265",
+      "etud266"
     ],
     "99": [
-      "etud261",
-      "etud262",
-      "etud263",
-      "etud264",
-      "etud265",
       "etud266",
-      "etud267",
       "etud268",
+      "etud267",
+      "etud262",
+      "etud264",
+      "etud261",
       "etud269"
     ],
     "100": [
-      "etud270",
-      "etud271",
-      "etud272",
       "etud273",
-      "etud274",
-      "etud275",
-      "etud276",
-      "etud277",
-      "etud278",
-      "etud279",
+      "etud271",
       "etud280",
-      "etud281"
+      "etud276",
+      "etud279",
+      "etud278",
+      "etud272"
     ],
     "101": [
-      "etud270",
-      "etud271",
+      "etud281",
       "etud272",
-      "etud273",
-      "etud274",
-      "etud275",
-      "etud276",
-      "etud277",
-      "etud278",
       "etud279",
-      "etud280",
-      "etud281"
+      "etud276",
+      "etud278",
+      "etud274",
+      "etud270"
     ],
     "102": [
-      "etud270",
-      "etud271",
-      "etud272",
-      "etud273",
-      "etud274",
-      "etud275",
-      "etud276",
-      "etud277",
-      "etud278",
       "etud279",
-      "etud280",
-      "etud281"
+      "etud281",
+      "etud276",
+      "etud272",
+      "etud270",
+      "etud271"
     ],
     "103": [
-      "etud270",
-      "etud271",
-      "etud272",
-      "etud273",
-      "etud274",
-      "etud275",
-      "etud276",
-      "etud277",
-      "etud278",
       "etud279",
-      "etud280",
-      "etud281"
+      "etud273",
+      "etud277",
+      "etud272",
+      "etud280"
     ],
     "104": [
-      "etud282",
-      "etud283",
-      "etud284",
-      "etud285",
       "etud286",
+      "etud289",
+      "etud284",
+      "etud283",
       "etud287",
       "etud288",
-      "etud289",
-      "etud290",
-      "etud291",
-      "etud292",
+      "etud285",
       "etud293"
     ],
     "105": [
-      "etud282",
       "etud283",
-      "etud284",
-      "etud285",
-      "etud286",
-      "etud287",
-      "etud288",
-      "etud289",
       "etud290",
-      "etud291",
       "etud292",
-      "etud293"
+      "etud286",
+      "etud288"
     ],
     "106": [
-      "etud282",
-      "etud283",
-      "etud284",
-      "etud285",
-      "etud286",
-      "etud287",
-      "etud288",
-      "etud289",
-      "etud290",
-      "etud291",
       "etud292",
-      "etud293"
+      "etud291",
+      "etud288"
     ],
     "107": [
-      "etud294",
-      "etud295",
-      "etud296",
-      "etud297",
-      "etud298",
+      "etud303",
       "etud299",
-      "etud300",
+      "etud295",
       "etud301",
-      "etud302",
-      "etud303"
+      "etud298"
     ],
     "108": [
-      "etud294",
-      "etud295",
-      "etud296",
-      "etud297",
+      "etud302",
       "etud298",
       "etud299",
-      "etud300",
-      "etud301",
-      "etud302",
-      "etud303"
+      "etud297",
+      "etud296"
     ],
     "109": [
-      "etud294",
-      "etud295",
-      "etud296",
-      "etud297",
       "etud298",
-      "etud299",
-      "etud300",
       "etud301",
-      "etud302",
-      "etud303"
+      "etud294"
     ]
   },
   "next_course_admin_id": 110,
-  "assignments": [],
-  "submissions": [],
-  "next_assignment_id": 1
+  "assignments": [
+    {
+      "id": 1,
+      "title": "Memoire - Mathematiques I",
+      "description": "Travail pour le cours de Mathematiques I",
+      "due_date": "2025-09-04T15:30",
+      "course_id": 1,
+      "course": "Mathematiques I",
+      "teacher": "prof001",
+      "teacher_name": "Prof. Ordinaire Jean-Baptiste Mukendi",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 20,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 2,
+      "title": "Projet de Module - Mathematiques I",
+      "description": "Travail pour le cours de Mathematiques I",
+      "due_date": "2025-09-19T15:30",
+      "course_id": 1,
+      "course": "Mathematiques I",
+      "teacher": "prof001",
+      "teacher_name": "Prof. Ordinaire Jean-Baptiste Mukendi",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 3,
+      "title": "Travail Dirige - Physique Generale",
+      "description": "Travail pour le cours de Physique Generale",
+      "due_date": "2025-09-12T15:30",
+      "course_id": 2,
+      "course": "Physique Generale",
+      "teacher": "prof006",
+      "teacher_name": "Ass. Therese Mbuyi",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 100,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 4,
+      "title": "Presentation - Chimie Generale",
+      "description": "Travail pour le cours de Chimie Generale",
+      "due_date": "2025-09-15T15:30",
+      "course_id": 3,
+      "course": "Chimie Generale",
+      "teacher": "prof001",
+      "teacher_name": "Prof. Ordinaire Jean-Baptiste Mukendi",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 20,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 5,
+      "title": "Projet de Module - Biologie Cellulaire",
+      "description": "Travail pour le cours de Biologie Cellulaire",
+      "due_date": "2025-09-12T15:30",
+      "course_id": 4,
+      "course": "Biologie Cellulaire",
+      "teacher": "prof002",
+      "teacher_name": "Prof. Ordinaire Therese Mbuyi",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 6,
+      "title": "TP Pratique - Mathematiques II",
+      "description": "Travail pour le cours de Mathematiques II",
+      "due_date": "2025-09-04T15:30",
+      "course_id": 5,
+      "course": "Mathematiques II",
+      "teacher": "prof001",
+      "teacher_name": "Prof. Ordinaire Jean-Baptiste Mukendi",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 20,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 7,
+      "title": "Travail Dirige - Mathematiques II",
+      "description": "Travail pour le cours de Mathematiques II",
+      "due_date": "2025-08-31T15:30",
+      "course_id": 5,
+      "course": "Mathematiques II",
+      "teacher": "prof001",
+      "teacher_name": "Prof. Ordinaire Jean-Baptiste Mukendi",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 8,
+      "title": "Projet de Module - Physique Moderne",
+      "description": "Travail pour le cours de Physique Moderne",
+      "due_date": "2025-09-03T15:30",
+      "course_id": 6,
+      "course": "Physique Moderne",
+      "teacher": "prof008",
+      "teacher_name": "Prof. Associe Robert Kalala",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 9,
+      "title": "Memoire - Chimie Organique",
+      "description": "Travail pour le cours de Chimie Organique",
+      "due_date": "2025-09-05T15:30",
+      "course_id": 7,
+      "course": "Chimie Organique",
+      "teacher": "prof005",
+      "teacher_name": "Prof. Ordinaire Bernadette Luboya",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 10,
+      "title": "Analyse - Genetique",
+      "description": "Travail pour le cours de Genetique",
+      "due_date": "2025-09-16T15:30",
+      "course_id": 8,
+      "course": "Genetique",
+      "teacher": "prof002",
+      "teacher_name": "Prof. Ordinaire Therese Mbuyi",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 100,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 11,
+      "title": "Exercices - Analyse Numerique",
+      "description": "Travail pour le cours de Analyse Numerique",
+      "due_date": "2025-09-19T15:30",
+      "course_id": 9,
+      "course": "Analyse Numerique",
+      "teacher": "prof002",
+      "teacher_name": "Prof. Ordinaire Therese Mbuyi",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 12,
+      "title": "Examen Blanc - Thermodynamique",
+      "description": "Travail pour le cours de Thermodynamique",
+      "due_date": "2025-09-14T15:30",
+      "course_id": 10,
+      "course": "Thermodynamique",
+      "teacher": "prof006",
+      "teacher_name": "Ass. Therese Mbuyi",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 100,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 13,
+      "title": "Etude de Cas - Biochimie",
+      "description": "Travail pour le cours de Biochimie",
+      "due_date": "2025-09-04T15:30",
+      "course_id": 11,
+      "course": "Biochimie",
+      "teacher": "prof003",
+      "teacher_name": "CT Andre Katanga",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 14,
+      "title": "Etude de Cas - Ecologie",
+      "description": "Travail pour le cours de Ecologie",
+      "due_date": "2025-09-13T15:30",
+      "course_id": 12,
+      "course": "Ecologie",
+      "teacher": "prof005",
+      "teacher_name": "Prof. Ordinaire Bernadette Luboya",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 15,
+      "title": "Travail Dirige - Recherche Operationnelle",
+      "description": "Travail pour le cours de Recherche Operationnelle",
+      "due_date": "2025-09-13T15:30",
+      "course_id": 13,
+      "course": "Recherche Operationnelle",
+      "teacher": "prof004",
+      "teacher_name": "CT Joseph Kabila",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 100,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 16,
+      "title": "Examen Blanc - Physique Quantique",
+      "description": "Travail pour le cours de Physique Quantique",
+      "due_date": "2025-09-16T15:30",
+      "course_id": 14,
+      "course": "Physique Quantique",
+      "teacher": "prof003",
+      "teacher_name": "CT Andre Katanga",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 100,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 17,
+      "title": "TP Pratique - Physique Quantique",
+      "description": "Travail pour le cours de Physique Quantique",
+      "due_date": "2025-09-07T15:30",
+      "course_id": 14,
+      "course": "Physique Quantique",
+      "teacher": "prof003",
+      "teacher_name": "CT Andre Katanga",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 100,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 18,
+      "title": "Exercices - Chimie Analytique",
+      "description": "Travail pour le cours de Chimie Analytique",
+      "due_date": "2025-09-11T15:30",
+      "course_id": 15,
+      "course": "Chimie Analytique",
+      "teacher": "prof007",
+      "teacher_name": "Prof. Ordinaire Emmanuel Ilunga",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 20,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 19,
+      "title": "Presentation - Chimie Analytique",
+      "description": "Travail pour le cours de Chimie Analytique",
+      "due_date": "2025-09-15T15:30",
+      "course_id": 15,
+      "course": "Chimie Analytique",
+      "teacher": "prof007",
+      "teacher_name": "Prof. Ordinaire Emmanuel Ilunga",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 100,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 20,
+      "title": "Projet de Module - Intelligence Artificielle",
+      "description": "Travail pour le cours de Intelligence Artificielle",
+      "due_date": "2025-09-17T15:30",
+      "course_id": 16,
+      "course": "Intelligence Artificielle",
+      "teacher": "prof003",
+      "teacher_name": "CT Andre Katanga",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 21,
+      "title": "Analyse - Physique des Particules",
+      "description": "Travail pour le cours de Physique des Particules",
+      "due_date": "2025-09-14T15:30",
+      "course_id": 17,
+      "course": "Physique des Particules",
+      "teacher": "prof008",
+      "teacher_name": "Prof. Associe Robert Kalala",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 20,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 22,
+      "title": "Presentation - Biotechnologie",
+      "description": "Travail pour le cours de Biotechnologie",
+      "due_date": "2025-09-13T15:30",
+      "course_id": 18,
+      "course": "Biotechnologie",
+      "teacher": "prof004",
+      "teacher_name": "CT Joseph Kabila",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 23,
+      "title": "Memoire - Biotechnologie",
+      "description": "Travail pour le cours de Biotechnologie",
+      "due_date": "2025-09-05T15:30",
+      "course_id": 18,
+      "course": "Biotechnologie",
+      "teacher": "prof004",
+      "teacher_name": "CT Joseph Kabila",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 24,
+      "title": "Examen Blanc - Anatomie I",
+      "description": "Travail pour le cours de Anatomie I",
+      "due_date": "2025-09-05T15:30",
+      "course_id": 19,
+      "course": "Anatomie I",
+      "teacher": "prof010",
+      "teacher_name": "CT Marie-Claire Tshisekedi",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 20,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 25,
+      "title": "Memoire - Physiologie I",
+      "description": "Travail pour le cours de Physiologie I",
+      "due_date": "2025-09-03T15:30",
+      "course_id": 20,
+      "course": "Physiologie I",
+      "teacher": "prof010",
+      "teacher_name": "CT Marie-Claire Tshisekedi",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 100,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 26,
+      "title": "Memoire - Physiologie I",
+      "description": "Travail pour le cours de Physiologie I",
+      "due_date": "2025-09-16T15:30",
+      "course_id": 20,
+      "course": "Physiologie I",
+      "teacher": "prof010",
+      "teacher_name": "CT Marie-Claire Tshisekedi",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 20,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 27,
+      "title": "Projet de Module - Histologie",
+      "description": "Travail pour le cours de Histologie",
+      "due_date": "2025-09-16T15:30",
+      "course_id": 21,
+      "course": "Histologie",
+      "teacher": "prof013",
+      "teacher_name": "Ass. Therese Mbuyi",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 28,
+      "title": "Memoire - Embryologie",
+      "description": "Travail pour le cours de Embryologie",
+      "due_date": "2025-09-20T15:30",
+      "course_id": 22,
+      "course": "Embryologie",
+      "teacher": "prof013",
+      "teacher_name": "Ass. Therese Mbuyi",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 100,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 29,
+      "title": "Rapport - Embryologie",
+      "description": "Travail pour le cours de Embryologie",
+      "due_date": "2025-09-18T15:30",
+      "course_id": 22,
+      "course": "Embryologie",
+      "teacher": "prof013",
+      "teacher_name": "Ass. Therese Mbuyi",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 100,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 30,
+      "title": "Exercices - Anatomie II",
+      "description": "Travail pour le cours de Anatomie II",
+      "due_date": "2025-09-19T15:30",
+      "course_id": 23,
+      "course": "Anatomie II",
+      "teacher": "prof011",
+      "teacher_name": "CT Bernadette Luboya",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 100,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 31,
+      "title": "Etude de Cas - Anatomie II",
+      "description": "Travail pour le cours de Anatomie II",
+      "due_date": "2025-08-31T15:30",
+      "course_id": 23,
+      "course": "Anatomie II",
+      "teacher": "prof011",
+      "teacher_name": "CT Bernadette Luboya",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 100,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 32,
+      "title": "Projet de Module - Physiologie II",
+      "description": "Travail pour le cours de Physiologie II",
+      "due_date": "2025-09-19T15:30",
+      "course_id": 24,
+      "course": "Physiologie II",
+      "teacher": "prof009",
+      "teacher_name": "Ass. Pierre Kasongo",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 20,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 33,
+      "title": "Rapport - Physiologie II",
+      "description": "Travail pour le cours de Physiologie II",
+      "due_date": "2025-09-11T15:30",
+      "course_id": 24,
+      "course": "Physiologie II",
+      "teacher": "prof009",
+      "teacher_name": "Ass. Pierre Kasongo",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 34,
+      "title": "Analyse - Pathologie Generale",
+      "description": "Travail pour le cours de Pathologie Generale",
+      "due_date": "2025-09-23T15:30",
+      "course_id": 25,
+      "course": "Pathologie Generale",
+      "teacher": "prof013",
+      "teacher_name": "Ass. Therese Mbuyi",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 35,
+      "title": "Presentation - Pathologie Generale",
+      "description": "Travail pour le cours de Pathologie Generale",
+      "due_date": "2025-09-02T15:30",
+      "course_id": 25,
+      "course": "Pathologie Generale",
+      "teacher": "prof013",
+      "teacher_name": "Ass. Therese Mbuyi",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 20,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 36,
+      "title": "Analyse - Pharmacologie I",
+      "description": "Travail pour le cours de Pharmacologie I",
+      "due_date": "2025-08-31T15:30",
+      "course_id": 26,
+      "course": "Pharmacologie I",
+      "teacher": "prof013",
+      "teacher_name": "Ass. Therese Mbuyi",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 100,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 37,
+      "title": "Travail Dirige - Pharmacologie I",
+      "description": "Travail pour le cours de Pharmacologie I",
+      "due_date": "2025-09-15T15:30",
+      "course_id": 26,
+      "course": "Pharmacologie I",
+      "teacher": "prof013",
+      "teacher_name": "Ass. Therese Mbuyi",
+      "files": [],
+      "auto_correct": false,
+      "plagiarism_check": true,
+      "max_score": 100,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 38,
+      "title": "Presentation - Semiologie",
+      "description": "Travail pour le cours de Semiologie",
+      "due_date": "2025-09-12T15:30",
+      "course_id": 27,
+      "course": "Semiologie",
+      "teacher": "prof013",
+      "teacher_name": "Ass. Therese Mbuyi",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 39,
+      "title": "Memoire - Pathologie Speciale",
+      "description": "Travail pour le cours de Pathologie Speciale",
+      "due_date": "2025-09-11T15:30",
+      "course_id": 28,
+      "course": "Pathologie Speciale",
+      "teacher": "prof011",
+      "teacher_name": "CT Bernadette Luboya",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": true
+    },
+    {
+      "id": 40,
+      "title": "Etude de Cas - Pharmacologie II",
+      "description": "Travail pour le cours de Pharmacologie II",
+      "due_date": "2025-09-11T15:30",
+      "course_id": 29,
+      "course": "Pharmacologie II",
+      "teacher": "prof011",
+      "teacher_name": "CT Bernadette Luboya",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": false
+    },
+    {
+      "id": 41,
+      "title": "Rapport - Microbiologie",
+      "description": "Travail pour le cours de Microbiologie",
+      "due_date": "2025-08-31T15:30",
+      "course_id": 30,
+      "course": "Microbiologie",
+      "teacher": "prof011",
+      "teacher_name": "CT Bernadette Luboya",
+      "files": [],
+      "auto_correct": true,
+      "plagiarism_check": true,
+      "max_score": 50,
+      "is_group_work": false,
+      "results_published": false
+    }
+  ],
+  "submissions": [
+    {
+      "id": 1,
+      "student": "etud007",
+      "assignment_id": 1,
+      "filename": "etud007_1_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 2,
+      "student": "etud006",
+      "assignment_id": 1,
+      "filename": "etud006_1_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 3,
+      "student": "etud002",
+      "assignment_id": 1,
+      "filename": "etud002_1_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 4,
+      "student": "etud001",
+      "assignment_id": 1,
+      "filename": "etud001_1_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 5,
+      "student": "etud009",
+      "assignment_id": 2,
+      "filename": "etud009_2_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 6,
+      "student": "etud004",
+      "assignment_id": 2,
+      "filename": "etud004_2_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 7,
+      "student": "etud003",
+      "assignment_id": 2,
+      "filename": "etud003_2_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 8,
+      "student": "etud006",
+      "assignment_id": 2,
+      "filename": "etud006_2_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 9,
+      "student": "etud007",
+      "assignment_id": 2,
+      "filename": "etud007_2_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 10,
+      "student": "etud004",
+      "assignment_id": 3,
+      "filename": "etud004_3_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 11,
+      "student": "etud003",
+      "assignment_id": 3,
+      "filename": "etud003_3_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 12,
+      "student": "etud006",
+      "assignment_id": 4,
+      "filename": "etud006_4_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 13,
+      "student": "etud008",
+      "assignment_id": 4,
+      "filename": "etud008_4_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 14,
+      "student": "etud007",
+      "assignment_id": 4,
+      "filename": "etud007_4_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 15,
+      "student": "etud001",
+      "assignment_id": 4,
+      "filename": "etud001_4_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 16,
+      "student": "etud005",
+      "assignment_id": 4,
+      "filename": "etud005_4_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 17,
+      "student": "etud004",
+      "assignment_id": 4,
+      "filename": "etud004_4_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 18,
+      "student": "etud003",
+      "assignment_id": 4,
+      "filename": "etud003_4_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 19,
+      "student": "etud005",
+      "assignment_id": 5,
+      "filename": "etud005_5_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 20,
+      "student": "etud008",
+      "assignment_id": 5,
+      "filename": "etud008_5_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 21,
+      "student": "etud004",
+      "assignment_id": 5,
+      "filename": "etud004_5_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 22,
+      "student": "etud009",
+      "assignment_id": 5,
+      "filename": "etud009_5_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 23,
+      "student": "etud011",
+      "assignment_id": 6,
+      "filename": "etud011_6_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 24,
+      "student": "etud014",
+      "assignment_id": 6,
+      "filename": "etud014_6_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 25,
+      "student": "etud013",
+      "assignment_id": 6,
+      "filename": "etud013_6_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 26,
+      "student": "etud018",
+      "assignment_id": 6,
+      "filename": "etud018_6_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 27,
+      "student": "etud017",
+      "assignment_id": 6,
+      "filename": "etud017_6_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 28,
+      "student": "etud012",
+      "assignment_id": 6,
+      "filename": "etud012_6_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 29,
+      "student": "etud014",
+      "assignment_id": 7,
+      "filename": "etud014_7_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 30,
+      "student": "etud012",
+      "assignment_id": 7,
+      "filename": "etud012_7_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 31,
+      "student": "etud010",
+      "assignment_id": 7,
+      "filename": "etud010_7_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 32,
+      "student": "etud018",
+      "assignment_id": 7,
+      "filename": "etud018_7_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 33,
+      "student": "etud011",
+      "assignment_id": 7,
+      "filename": "etud011_7_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 34,
+      "student": "etud010",
+      "assignment_id": 8,
+      "filename": "etud010_8_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 35,
+      "student": "etud016",
+      "assignment_id": 8,
+      "filename": "etud016_8_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 36,
+      "student": "etud012",
+      "assignment_id": 8,
+      "filename": "etud012_8_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 37,
+      "student": "etud013",
+      "assignment_id": 8,
+      "filename": "etud013_8_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 38,
+      "student": "etud014",
+      "assignment_id": 8,
+      "filename": "etud014_8_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 39,
+      "student": "etud015",
+      "assignment_id": 9,
+      "filename": "etud015_9_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 40,
+      "student": "etud018",
+      "assignment_id": 9,
+      "filename": "etud018_9_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 41,
+      "student": "etud015",
+      "assignment_id": 10,
+      "filename": "etud015_10_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 42,
+      "student": "etud010",
+      "assignment_id": 10,
+      "filename": "etud010_10_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 43,
+      "student": "etud018",
+      "assignment_id": 10,
+      "filename": "etud018_10_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 44,
+      "student": "etud011",
+      "assignment_id": 10,
+      "filename": "etud011_10_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 45,
+      "student": "etud020",
+      "assignment_id": 11,
+      "filename": "etud020_11_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 46,
+      "student": "etud021",
+      "assignment_id": 11,
+      "filename": "etud021_11_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 47,
+      "student": "etud027",
+      "assignment_id": 11,
+      "filename": "etud027_11_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 48,
+      "student": "etud029",
+      "assignment_id": 11,
+      "filename": "etud029_11_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 49,
+      "student": "etud020",
+      "assignment_id": 12,
+      "filename": "etud020_12_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 50,
+      "student": "etud025",
+      "assignment_id": 12,
+      "filename": "etud025_12_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 51,
+      "student": "etud029",
+      "assignment_id": 13,
+      "filename": "etud029_13_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 52,
+      "student": "etud022",
+      "assignment_id": 13,
+      "filename": "etud022_13_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 53,
+      "student": "etud027",
+      "assignment_id": 13,
+      "filename": "etud027_13_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 54,
+      "student": "etud023",
+      "assignment_id": 13,
+      "filename": "etud023_13_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 55,
+      "student": "etud028",
+      "assignment_id": 14,
+      "filename": "etud028_14_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 56,
+      "student": "etud026",
+      "assignment_id": 14,
+      "filename": "etud026_14_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 57,
+      "student": "etud024",
+      "assignment_id": 14,
+      "filename": "etud024_14_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 58,
+      "student": "etud021",
+      "assignment_id": 14,
+      "filename": "etud021_14_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 59,
+      "student": "etud019",
+      "assignment_id": 14,
+      "filename": "etud019_14_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 60,
+      "student": "etud037",
+      "assignment_id": 15,
+      "filename": "etud037_15_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 61,
+      "student": "etud041",
+      "assignment_id": 15,
+      "filename": "etud041_15_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 62,
+      "student": "etud031",
+      "assignment_id": 15,
+      "filename": "etud031_15_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 63,
+      "student": "etud039",
+      "assignment_id": 15,
+      "filename": "etud039_15_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 64,
+      "student": "etud036",
+      "assignment_id": 16,
+      "filename": "etud036_16_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 65,
+      "student": "etud031",
+      "assignment_id": 16,
+      "filename": "etud031_16_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 66,
+      "student": "etud032",
+      "assignment_id": 16,
+      "filename": "etud032_16_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 67,
+      "student": "etud038",
+      "assignment_id": 16,
+      "filename": "etud038_16_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 68,
+      "student": "etud041",
+      "assignment_id": 17,
+      "filename": "etud041_17_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 69,
+      "student": "etud037",
+      "assignment_id": 17,
+      "filename": "etud037_17_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 70,
+      "student": "etud038",
+      "assignment_id": 17,
+      "filename": "etud038_17_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 71,
+      "student": "etud033",
+      "assignment_id": 17,
+      "filename": "etud033_17_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 72,
+      "student": "etud031",
+      "assignment_id": 17,
+      "filename": "etud031_17_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 73,
+      "student": "etud032",
+      "assignment_id": 17,
+      "filename": "etud032_17_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 74,
+      "student": "etud034",
+      "assignment_id": 18,
+      "filename": "etud034_18_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 75,
+      "student": "etud036",
+      "assignment_id": 18,
+      "filename": "etud036_18_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 76,
+      "student": "etud040",
+      "assignment_id": 18,
+      "filename": "etud040_18_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 77,
+      "student": "etud031",
+      "assignment_id": 19,
+      "filename": "etud031_19_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 78,
+      "student": "etud036",
+      "assignment_id": 19,
+      "filename": "etud036_19_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 79,
+      "student": "etud040",
+      "assignment_id": 19,
+      "filename": "etud040_19_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 80,
+      "student": "etud034",
+      "assignment_id": 19,
+      "filename": "etud034_19_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 81,
+      "student": "etud043",
+      "assignment_id": 20,
+      "filename": "etud043_20_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 82,
+      "student": "etud047",
+      "assignment_id": 20,
+      "filename": "etud047_20_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 83,
+      "student": "etud051",
+      "assignment_id": 20,
+      "filename": "etud051_20_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 84,
+      "student": "etud045",
+      "assignment_id": 20,
+      "filename": "etud045_20_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 85,
+      "student": "etud050",
+      "assignment_id": 21,
+      "filename": "etud050_21_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 86,
+      "student": "etud046",
+      "assignment_id": 21,
+      "filename": "etud046_21_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 87,
+      "student": "etud049",
+      "assignment_id": 21,
+      "filename": "etud049_21_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 88,
+      "student": "etud052",
+      "assignment_id": 21,
+      "filename": "etud052_21_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 89,
+      "student": "etud050",
+      "assignment_id": 22,
+      "filename": "etud050_22_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 90,
+      "student": "etud044",
+      "assignment_id": 22,
+      "filename": "etud044_22_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 91,
+      "student": "etud047",
+      "assignment_id": 22,
+      "filename": "etud047_22_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 92,
+      "student": "etud048",
+      "assignment_id": 22,
+      "filename": "etud048_22_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 93,
+      "student": "etud048",
+      "assignment_id": 23,
+      "filename": "etud048_23_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 94,
+      "student": "etud044",
+      "assignment_id": 23,
+      "filename": "etud044_23_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 95,
+      "student": "etud043",
+      "assignment_id": 23,
+      "filename": "etud043_23_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 96,
+      "student": "etud047",
+      "assignment_id": 23,
+      "filename": "etud047_23_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 97,
+      "student": "etud061",
+      "assignment_id": 24,
+      "filename": "etud061_24_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 98,
+      "student": "etud060",
+      "assignment_id": 24,
+      "filename": "etud060_24_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 99,
+      "student": "etud057",
+      "assignment_id": 24,
+      "filename": "etud057_24_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 100,
+      "student": "etud055",
+      "assignment_id": 24,
+      "filename": "etud055_24_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 101,
+      "student": "etud053",
+      "assignment_id": 24,
+      "filename": "etud053_24_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 102,
+      "student": "etud055",
+      "assignment_id": 25,
+      "filename": "etud055_25_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 103,
+      "student": "etud060",
+      "assignment_id": 25,
+      "filename": "etud060_25_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 104,
+      "student": "etud059",
+      "assignment_id": 25,
+      "filename": "etud059_25_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 105,
+      "student": "etud058",
+      "assignment_id": 25,
+      "filename": "etud058_25_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 106,
+      "student": "etud061",
+      "assignment_id": 25,
+      "filename": "etud061_25_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 107,
+      "student": "etud059",
+      "assignment_id": 26,
+      "filename": "etud059_26_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 108,
+      "student": "etud057",
+      "assignment_id": 26,
+      "filename": "etud057_26_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 109,
+      "student": "etud058",
+      "assignment_id": 26,
+      "filename": "etud058_26_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 110,
+      "student": "etud055",
+      "assignment_id": 26,
+      "filename": "etud055_26_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 111,
+      "student": "etud055",
+      "assignment_id": 27,
+      "filename": "etud055_27_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 112,
+      "student": "etud060",
+      "assignment_id": 27,
+      "filename": "etud060_27_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 113,
+      "student": "etud058",
+      "assignment_id": 27,
+      "filename": "etud058_27_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 114,
+      "student": "etud059",
+      "assignment_id": 28,
+      "filename": "etud059_28_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 115,
+      "student": "etud056",
+      "assignment_id": 28,
+      "filename": "etud056_28_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 116,
+      "student": "etud060",
+      "assignment_id": 29,
+      "filename": "etud060_29_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 117,
+      "student": "etud057",
+      "assignment_id": 29,
+      "filename": "etud057_29_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 118,
+      "student": "etud067",
+      "assignment_id": 30,
+      "filename": "etud067_30_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 119,
+      "student": "etud065",
+      "assignment_id": 30,
+      "filename": "etud065_30_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 120,
+      "student": "etud062",
+      "assignment_id": 30,
+      "filename": "etud062_30_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 121,
+      "student": "etud068",
+      "assignment_id": 30,
+      "filename": "etud068_30_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 122,
+      "student": "etud070",
+      "assignment_id": 30,
+      "filename": "etud070_30_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 123,
+      "student": "etud064",
+      "assignment_id": 30,
+      "filename": "etud064_30_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 124,
+      "student": "etud062",
+      "assignment_id": 31,
+      "filename": "etud062_31_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 125,
+      "student": "etud068",
+      "assignment_id": 31,
+      "filename": "etud068_31_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 126,
+      "student": "etud065",
+      "assignment_id": 31,
+      "filename": "etud065_31_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 127,
+      "student": "etud070",
+      "assignment_id": 31,
+      "filename": "etud070_31_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 128,
+      "student": "etud069",
+      "assignment_id": 31,
+      "filename": "etud069_31_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 129,
+      "student": "etud064",
+      "assignment_id": 31,
+      "filename": "etud064_31_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 130,
+      "student": "etud067",
+      "assignment_id": 31,
+      "filename": "etud067_31_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 131,
+      "student": "etud062",
+      "assignment_id": 32,
+      "filename": "etud062_32_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 132,
+      "student": "etud068",
+      "assignment_id": 32,
+      "filename": "etud068_32_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 133,
+      "student": "etud065",
+      "assignment_id": 32,
+      "filename": "etud065_32_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 134,
+      "student": "etud069",
+      "assignment_id": 33,
+      "filename": "etud069_33_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 135,
+      "student": "etud063",
+      "assignment_id": 33,
+      "filename": "etud063_33_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 136,
+      "student": "etud062",
+      "assignment_id": 33,
+      "filename": "etud062_33_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 137,
+      "student": "etud066",
+      "assignment_id": 33,
+      "filename": "etud066_33_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 138,
+      "student": "etud065",
+      "assignment_id": 33,
+      "filename": "etud065_33_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 139,
+      "student": "etud070",
+      "assignment_id": 34,
+      "filename": "etud070_34_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 140,
+      "student": "etud069",
+      "assignment_id": 34,
+      "filename": "etud069_34_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 141,
+      "student": "etud066",
+      "assignment_id": 34,
+      "filename": "etud066_34_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 142,
+      "student": "etud068",
+      "assignment_id": 34,
+      "filename": "etud068_34_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 143,
+      "student": "etud063",
+      "assignment_id": 34,
+      "filename": "etud063_34_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 144,
+      "student": "etud067",
+      "assignment_id": 35,
+      "filename": "etud067_35_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 145,
+      "student": "etud068",
+      "assignment_id": 35,
+      "filename": "etud068_35_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 146,
+      "student": "etud066",
+      "assignment_id": 35,
+      "filename": "etud066_35_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 147,
+      "student": "etud063",
+      "assignment_id": 35,
+      "filename": "etud063_35_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 148,
+      "student": "etud070",
+      "assignment_id": 35,
+      "filename": "etud070_35_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 149,
+      "student": "etud069",
+      "assignment_id": 35,
+      "filename": "etud069_35_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 150,
+      "student": "etud063",
+      "assignment_id": 36,
+      "filename": "etud063_36_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 151,
+      "student": "etud065",
+      "assignment_id": 36,
+      "filename": "etud065_36_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 152,
+      "student": "etud063",
+      "assignment_id": 37,
+      "filename": "etud063_37_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 153,
+      "student": "etud062",
+      "assignment_id": 37,
+      "filename": "etud062_37_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 154,
+      "student": "etud073",
+      "assignment_id": 38,
+      "filename": "etud073_38_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 155,
+      "student": "etud078",
+      "assignment_id": 38,
+      "filename": "etud078_38_travail.pdf",
+      "submitted_at": "2025-08-20 15:30:23"
+    },
+    {
+      "id": 156,
+      "student": "etud079",
+      "assignment_id": 38,
+      "filename": "etud079_38_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 157,
+      "student": "etud080",
+      "assignment_id": 38,
+      "filename": "etud080_38_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 158,
+      "student": "etud077",
+      "assignment_id": 38,
+      "filename": "etud077_38_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 159,
+      "student": "etud072",
+      "assignment_id": 39,
+      "filename": "etud072_39_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 160,
+      "student": "etud076",
+      "assignment_id": 39,
+      "filename": "etud076_39_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 161,
+      "student": "etud078",
+      "assignment_id": 39,
+      "filename": "etud078_39_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 162,
+      "student": "etud075",
+      "assignment_id": 39,
+      "filename": "etud075_39_travail.pdf",
+      "submitted_at": "2025-08-19 15:30:23"
+    },
+    {
+      "id": 163,
+      "student": "etud079",
+      "assignment_id": 39,
+      "filename": "etud079_39_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 164,
+      "student": "etud073",
+      "assignment_id": 39,
+      "filename": "etud073_39_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 165,
+      "student": "etud073",
+      "assignment_id": 40,
+      "filename": "etud073_40_travail.pdf",
+      "submitted_at": "2025-08-21 15:30:23"
+    },
+    {
+      "id": 166,
+      "student": "etud080",
+      "assignment_id": 40,
+      "filename": "etud080_40_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    },
+    {
+      "id": 167,
+      "student": "etud077",
+      "assignment_id": 40,
+      "filename": "etud077_40_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 168,
+      "student": "etud077",
+      "assignment_id": 41,
+      "filename": "etud077_41_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 169,
+      "student": "etud078",
+      "assignment_id": 41,
+      "filename": "etud078_41_travail.pdf",
+      "submitted_at": "2025-08-23 15:30:23"
+    },
+    {
+      "id": 170,
+      "student": "etud072",
+      "assignment_id": 41,
+      "filename": "etud072_41_travail.pdf",
+      "submitted_at": "2025-08-22 15:30:23"
+    }
+  ],
+  "next_assignment_id": 42
 }

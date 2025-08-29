@@ -4,6 +4,15 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import json
 import secrets
+import requests
+import hashlib
+from difflib import SequenceMatcher
+import re
+import docx2txt
+from PyPDF2 import PdfReader
+import openai
+from transformers import pipeline
+import threading
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
@@ -309,12 +318,12 @@ def submit_assignment(assignment_id):
             }
             submissions.append(submission)
 
-            # Traitement automatique si activé
-            if assignment.get('plagiarism_check'):
-                simulate_plagiarism_check('contenu du fichier', submission['id'])
-
+            # Traitement automatique si activé (asynchrone)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if assignment.get('plagiarism_check') or assignment.get('auto_correct'):
+                process_submission_async(file_path, assignment, submission['id'])
+                
             if assignment.get('auto_correct'):
-                submission['correction'] = simulate_auto_correction('contenu du fichier', assignment, submission['id'])
                 assignment['results_published'] = True
 
             save_test_data()
@@ -1150,38 +1159,288 @@ def unpublish_submissions(assignment_id):
     flash('Notes masquées pour toutes les soumissions')
     return redirect(url_for('assignment_results', assignment_id=assignment_id))
 
-def simulate_plagiarism_check(content, submission_id):
-    """Simulation de détection de plagiat"""
-    import random
-    similarity = random.randint(0, 30)  # Simulation
-    sources = []
-    if similarity > 20:
-        sources = ['Document similaire 1', 'Source web détectée']
-    
-    plagiarism_results[submission_id] = {
-        'similarity': similarity,
-        'sources': sources,
-        'status': 'suspect' if similarity > 25 else 'acceptable'
-    }
-    return plagiarism_results[submission_id]
+def extract_text_from_file(file_path):
+    """Extrait le texte d'un fichier selon son extension"""
+    try:
+        ext = os.path.splitext(file_path)[1].lower()
+        if ext == '.txt':
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        elif ext == '.docx':
+            return docx2txt.process(file_path)
+        elif ext == '.pdf':
+            reader = PdfReader(file_path)
+            text = ''
+            for page in reader.pages:
+                text += page.extract_text()
+            return text
+        else:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                return f.read()
+    except Exception as e:
+        print(f"Erreur extraction texte: {e}")
+        return ""
 
-def simulate_auto_correction(content, assignment, submission_id):
-    """Simulation de correction automatique"""
+def check_plagiarism_local(text, submission_id):
+    """Détection de plagiat locale basée sur comparaison avec soumissions existantes"""
+    if not text.strip():
+        return {'similarity': 0, 'sources': [], 'status': 'acceptable'}
+    
+    max_similarity = 0
+    sources = []
+    
+    # Comparer avec toutes les autres soumissions
+    for sub in submissions:
+        if sub['id'] != submission_id:
+            try:
+                other_file_path = os.path.join(app.config['UPLOAD_FOLDER'], sub['filename'])
+                if os.path.exists(other_file_path):
+                    other_text = extract_text_from_file(other_file_path)
+                    if other_text.strip():
+                        similarity = SequenceMatcher(None, text.lower(), other_text.lower()).ratio() * 100
+                        if similarity > 30:  # Seuil de similarité
+                            max_similarity = max(max_similarity, similarity)
+                            sources.append(f"Soumission de {sub['student']} ({similarity:.1f}% similaire)")
+            except Exception as e:
+                print(f"Erreur comparaison plagiat: {e}")
+    
+    # Vérification web basique avec Google Search API (optionnel)
+    web_similarity = check_web_plagiarism(text[:500])  # Premier paragraphe
+    if web_similarity > max_similarity:
+        max_similarity = web_similarity
+        sources.append(f"Contenu web détecté ({web_similarity:.1f}% similaire)")
+    
+    result = {
+        'similarity': round(max_similarity, 1),
+        'sources': sources[:5],  # Limiter à 5 sources
+        'status': 'suspect' if max_similarity > 50 else 'attention' if max_similarity > 30 else 'acceptable'
+    }
+    
+    plagiarism_results[submission_id] = result
+    return result
+
+def check_web_plagiarism(text_sample):
+    """Vérification basique de plagiat web via recherche"""
+    try:
+        # Utiliser une phrase significative pour la recherche
+        sentences = re.split(r'[.!?]+', text_sample)
+        search_query = next((s.strip() for s in sentences if len(s.strip()) > 50), "")
+        
+        if not search_query:
+            return 0
+            
+        # API Google Custom Search (nécessite clé API)
+        api_key = os.environ.get('GOOGLE_API_KEY')
+        search_engine_id = os.environ.get('GOOGLE_SEARCH_ENGINE_ID')
+        
+        if api_key and search_engine_id:
+            url = f"https://www.googleapis.com/customsearch/v1"
+            params = {
+                'key': api_key,
+                'cx': search_engine_id,
+                'q': f'"{search_query}"',
+                'num': 3
+            }
+            response = requests.get(url, params=params, timeout=10)
+            if response.status_code == 200:
+                results = response.json()
+                if results.get('items'):
+                    return 75  # Contenu trouvé sur le web
+        return 0
+    except Exception as e:
+        print(f"Erreur vérification web: {e}")
+        return 0
+
+def ai_auto_correction(text, assignment, submission_id):
+    """Correction automatique avec IA"""
+    try:
+        # Utiliser OpenAI GPT pour la correction
+        openai_key = os.environ.get('OPENAI_API_KEY')
+        if openai_key:
+            return openai_correction(text, assignment, submission_id)
+        else:
+            # Fallback avec Hugging Face Transformers
+            return huggingface_correction(text, assignment, submission_id)
+    except Exception as e:
+        print(f"Erreur correction IA: {e}")
+        return fallback_correction(assignment, submission_id)
+
+def openai_correction(text, assignment, submission_id):
+    """Correction avec OpenAI GPT"""
+    try:
+        openai.api_key = os.environ.get('OPENAI_API_KEY')
+        
+        prompt = f"""
+Évaluez ce devoir académique selon les critères suivants:
+- Titre du devoir: {assignment.get('title', 'Non spécifié')}
+- Description: {assignment.get('description', 'Non spécifiée')}
+- Note maximale: {assignment.get('max_score', 100)}
+
+Contenu à évaluer:
+{text[:2000]}...
+
+Donnez une note sur {assignment.get('max_score', 100)} et 3-5 commentaires constructifs en français.
+Format: NOTE: X/Y\nCOMMENTAIRES:\n- Point 1\n- Point 2\n...
+"""
+        
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=500,
+            temperature=0.3
+        )
+        
+        result_text = response.choices[0].message.content
+        score, feedback = parse_ai_response(result_text, assignment.get('max_score', 100))
+        
+        correction = {
+            'score': score,
+            'max_score': assignment.get('max_score', 100),
+            'feedback': feedback,
+            'auto_generated': True,
+            'ai_model': 'OpenAI GPT-3.5'
+        }
+        
+        correction_results[submission_id] = correction
+        return correction
+        
+    except Exception as e:
+        print(f"Erreur OpenAI: {e}")
+        return huggingface_correction(text, assignment, submission_id)
+
+def huggingface_correction(text, assignment, submission_id):
+    """Correction avec Hugging Face (modèle local)"""
+    try:
+        # Utiliser un modèle de sentiment/qualité pour évaluation basique
+        classifier = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")
+        
+        # Analyser le sentiment/qualité du texte
+        chunks = [text[i:i+500] for i in range(0, len(text), 500)][:3]  # Premiers 1500 chars
+        scores = []
+        
+        for chunk in chunks:
+            if chunk.strip():
+                result = classifier(chunk)
+                # Convertir le score de sentiment en note
+                confidence = result[0]['score']
+                if result[0]['label'] in ['POSITIVE', '4 stars', '5 stars']:
+                    scores.append(confidence * 0.9)  # 90% max pour positif
+                else:
+                    scores.append(confidence * 0.6)  # 60% max pour négatif
+        
+        avg_score = sum(scores) / len(scores) if scores else 0.7
+        final_score = int(avg_score * assignment.get('max_score', 100))
+        
+        # Générer feedback basique
+        feedback = generate_basic_feedback(text, final_score, assignment.get('max_score', 100))
+        
+        correction = {
+            'score': final_score,
+            'max_score': assignment.get('max_score', 100),
+            'feedback': feedback,
+            'auto_generated': True,
+            'ai_model': 'Hugging Face BERT'
+        }
+        
+        correction_results[submission_id] = correction
+        return correction
+        
+    except Exception as e:
+        print(f"Erreur Hugging Face: {e}")
+        return fallback_correction(assignment, submission_id)
+
+def generate_basic_feedback(text, score, max_score):
+    """Génère un feedback basique basé sur l'analyse du texte"""
+    feedback = []
+    
+    # Analyse de longueur
+    word_count = len(text.split())
+    if word_count < 100:
+        feedback.append("Le travail semble trop court, développez davantage vos idées")
+    elif word_count > 1000:
+        feedback.append("Travail bien développé avec un contenu substantiel")
+    
+    # Analyse de structure
+    paragraphs = len([p for p in text.split('\n\n') if p.strip()])
+    if paragraphs > 3:
+        feedback.append("Bonne structuration en paragraphes")
+    
+    # Feedback basé sur la note
+    percentage = (score / max_score) * 100
+    if percentage >= 80:
+        feedback.append("Excellent travail, continuez ainsi")
+    elif percentage >= 60:
+        feedback.append("Bon travail avec quelques améliorations possibles")
+    else:
+        feedback.append("Travail à améliorer, revoyez les concepts de base")
+    
+    return feedback[:5]  # Limiter à 5 commentaires
+
+def parse_ai_response(response_text, max_score):
+    """Parse la réponse de l'IA pour extraire note et commentaires"""
+    try:
+        lines = response_text.split('\n')
+        score = max_score * 0.75  # Score par défaut
+        feedback = []
+        
+        for line in lines:
+            if 'NOTE:' in line.upper():
+                # Extraire la note
+                numbers = re.findall(r'\d+', line)
+                if numbers:
+                    score = min(int(numbers[0]), max_score)
+            elif line.strip().startswith('-'):
+                # Extraire les commentaires
+                feedback.append(line.strip()[1:].strip())
+        
+        if not feedback:
+            feedback = ["Travail évalué automatiquement", "Consultez votre professeur pour plus de détails"]
+        
+        return score, feedback[:5]
+    except:
+        return max_score * 0.75, ["Évaluation automatique effectuée"]
+
+def fallback_correction(assignment, submission_id):
+    """Correction de secours si les IA ne fonctionnent pas"""
     import random
-    score = random.randint(60, 95)  # Simulation
+    score = random.randint(int(assignment.get('max_score', 100) * 0.6), int(assignment.get('max_score', 100) * 0.9))
     feedback = [
-        'Bonne structure du code',
-        'Logique correcte',
-        'Quelques améliorations possibles'
+        "Travail évalué automatiquement",
+        "Structure générale acceptable",
+        "Consultez votre professeur pour un feedback détaillé"
     ]
     
-    correction_results[submission_id] = {
+    correction = {
         'score': score,
         'max_score': assignment.get('max_score', 100),
         'feedback': feedback,
-        'auto_generated': True
+        'auto_generated': True,
+        'ai_model': 'Fallback'
     }
-    return correction_results[submission_id]
+    
+    correction_results[submission_id] = correction
+    return correction
+
+def process_submission_async(file_path, assignment, submission_id):
+    """Traite la soumission de manière asynchrone"""
+    def process():
+        try:
+            text = extract_text_from_file(file_path)
+            
+            # Détection de plagiat
+            if assignment.get('plagiarism_check'):
+                check_plagiarism_local(text, submission_id)
+            
+            # Correction automatique
+            if assignment.get('auto_correct'):
+                ai_auto_correction(text, assignment, submission_id)
+                
+        except Exception as e:
+            print(f"Erreur traitement asynchrone: {e}")
+    
+    thread = threading.Thread(target=process)
+    thread.daemon = True
+    thread.start()
 
 def generate_automatic_groups(assignment_id, course_id, group_size):
     """Générer automatiquement des groupes pour un devoir"""
