@@ -3,9 +3,10 @@ import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import json
+import secrets
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "your-secret-key-change-this")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
 # Configuration pour différents environnements
 if os.environ.get('VERCEL'):
     app.config['UPLOAD_FOLDER'] = '/tmp'
@@ -33,17 +34,17 @@ def load_test_data():
 
 def save_test_data():
     """Sauvegarde les données actuelles dans le fichier JSON"""
-    data = {
-        'users': users,
-        'admin_courses': admin_courses,
-        'course_assignments': course_assignments,
-        'course_enrollments': course_enrollments,
-        'assignments': assignments,
-        'submissions': submissions,
-        'next_course_admin_id': next_course_admin_id,
-        'next_assignment_id': next_assignment_id
-    }
     try:
+        data = {
+            'users': globals().get('users', {}),
+            'admin_courses': globals().get('admin_courses', []),
+            'course_assignments': globals().get('course_assignments', {}),
+            'course_enrollments': globals().get('course_enrollments', {}),
+            'assignments': globals().get('assignments', []),
+            'submissions': globals().get('submissions', []),
+            'next_course_admin_id': globals().get('next_course_admin_id', 1),
+            'next_assignment_id': globals().get('next_assignment_id', 1)
+        }
         with open('ulc_icam_data.json', 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
     except Exception as e:
@@ -133,8 +134,10 @@ def student_login():
         for username, user_data in users.items():
             if (user_data['role'] == 'student' and 
                 (user_data.get('cip') == identifier or user_data.get('email') == identifier)):
-                # Mode test : connexion avec CIP seulement (sans mot de passe)
-                if not password or user_data['password'] == password:
+                # Vérifier le mot de passe (requis sauf en mode développement)
+                if os.environ.get('FLASK_ENV') == 'development' and not password:
+                    pass  # Mode développement sans mot de passe
+                elif user_data['password'] == password:
                     user_found = user_data
                     username_found = username
                     break
@@ -165,8 +168,10 @@ def teacher_login():
         for username, user_data in users.items():
             if (user_data['role'] == 'teacher' and 
                 (user_data.get('cip') == identifier or user_data.get('email') == identifier)):
-                # Mode test : connexion avec CIP seulement (sans mot de passe)
-                if not password or user_data['password'] == password:
+                # Vérifier le mot de passe (requis sauf en mode développement)
+                if os.environ.get('FLASK_ENV') == 'development' and not password:
+                    pass  # Mode développement sans mot de passe
+                elif user_data['password'] == password:
                     user_found = user_data
                     username_found = username
                     break
@@ -1051,11 +1056,6 @@ def assignment_results(assignment_id):
     
     # Ajouter les résultats de correction et plagiat
     for sub in assignment_submissions:
-
-        sub['correction'] = correction_results.get(sub['id'], {})
-        sub['plagiarism'] = plagiarism_results.get(sub['id'], {})
-
-
         if not sub.get('correction') and sub['id'] in correction_results:
             sub['correction'] = correction_results[sub['id']]
         if not sub.get('plagiarism') and sub['id'] in plagiarism_results:
@@ -1365,13 +1365,8 @@ def student_grades():
             grade_info = {
                 'assignment': assignment,
                 'submission': submission,
-
                 'correction': correction,
                 'plagiarism': plagiarism,
-
-                'correction': submission.get('correction', {}) if results_available else {},
-                'plagiarism': plagiarism_results.get(submission['id'], {}) if results_available else {},
-
                 'results_available': results_available
             }
             grades_data.append(grade_info)
@@ -1448,7 +1443,8 @@ def is_results_published(assignment):
         try:
             release_date = datetime.fromisoformat(assignment['results_release_date'])
             return datetime.now() >= release_date
-        except:
+        except (ValueError, TypeError) as e:
+            print(f"Erreur de format de date: {e}")
             pass
     
     return False
