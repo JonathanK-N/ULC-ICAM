@@ -1,12 +1,26 @@
-{% extends "base.html" %}
+{% extends "base_clean.html" %}
+
+{% block title %}Ajouter Enseignant - ULC-ICAM{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card border-success">
-            <div class="card-header bg-success text-white">
-                <h4><i class="fas fa-chalkboard-teacher"></i> Ajouter un enseignant</h4>
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="fas fa-chalkboard-teacher me-3" style="color: #f093fb;"></i>
+                    Ajouter un enseignant
+                </h1>
+                <p class="text-muted">Créer un nouveau compte enseignant avec mot de passe temporaire</p>
             </div>
+            
+            <div class="card border-0 shadow-lg">
+                <div class="card-header text-center py-4" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                    <h4 class="mb-0 fw-bold">
+                        <i class="fas fa-user-plus me-2"></i>Nouveau compte enseignant
+                    </h4>
+                </div>
             <div class="card-body">
                 <form method="POST">
                     <div class="row">
@@ -97,17 +111,22 @@
                         <input type="password" class="form-control" id="password" name="password" required>
                     </div>
 
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        L'enseignant devra changer son mot de passe à sa première connexion
+                    <div class="alert border-0" style="background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); color: #7b1fa2;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-3 fa-lg"></i>
+                            <div>
+                                <strong>Information importante :</strong><br>
+                                Un mot de passe temporaire sera généré automatiquement. L'enseignant devra le changer à sa première connexion.
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Annuler
+                    <div class="d-flex justify-content-between pt-3">
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Annuler
                         </a>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-save"></i> Ajouter Enseignant
+                        <button type="submit" class="btn btn-lg" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none; color: white;">
+                            <i class="fas fa-user-plus me-2"></i>Créer le compte
                         </button>
                     </div>
                 </form>

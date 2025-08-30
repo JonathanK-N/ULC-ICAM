@@ -67,8 +67,7 @@
             <div class="col-md-3 col-lg-2 sidebar p-0">
                 <div class="p-4">
                     <h4 class="mb-4">
-                        <i class="fas fa-graduation-cap me-2"></i>
-                        ULC-ICAM
+                        <img src="{{ url_for('static', filename='images/ulc-icam-logo.png') }}" alt="ULC-ICAM" height="40">
                     </h4>
                     <div class="text-center mb-4">
                         <div class="bg-white bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
@@ -88,16 +87,16 @@
                     <a class="nav-link" href="{{ url_for('admin_users') }}">
                         <i class="fas fa-users me-2"></i>Utilisateurs
                     </a>
-                    <a class="nav-link" href="{{ url_for('admin_courses') }}">
+                    <a class="nav-link" href="{{ url_for('admin_courses_view') }}">
                         <i class="fas fa-book me-2"></i>Cours
                     </a>
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="{{ url_for('admin_assignments') }}">
                         <i class="fas fa-file-alt me-2"></i>Devoirs
                     </a>
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="{{ url_for('system_report') }}">
                         <i class="fas fa-chart-bar me-2"></i>Rapports
                     </a>
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="{{ url_for('system_config_view') }}">
                         <i class="fas fa-cog me-2"></i>Configuration
                     </a>
                     
@@ -118,7 +117,7 @@
                         <div class="navbar-nav ms-auto">
                             <span class="nav-link">
                                 <i class="fas fa-calendar me-2"></i>
-                                {{ moment().format('DD MMMM YYYY') }}
+                                <span id="current-date"></span>
                             </span>
                         </div>
                     </div>
@@ -126,13 +125,24 @@
                 
                 <!-- Content -->
                 <div class="p-4">
+                    <!-- DEBUG INFO -->
+                    <div class="alert alert-info mb-4">
+                        <strong>DEBUG:</strong> 
+                        Users: {{ users_count or 'UNDEFINED' }} | 
+                        Students: {{ students_count or 'UNDEFINED' }} | 
+                        Teachers: {{ teachers_count or 'UNDEFINED' }} | 
+                        Courses: {{ courses_count or 'UNDEFINED' }} | 
+                        Assignments: {{ assignments_count or 'UNDEFINED' }} | 
+                        Submissions: {{ submissions_count or 'UNDEFINED' }}
+                    </div>
+                    
                     <!-- Statistiques -->
                     <div class="row mb-4">
                         <div class="col-md-3 mb-3">
                             <div class="card stats-card primary">
                                 <div class="card-body text-center">
                                     <i class="fas fa-users fa-3x mb-3"></i>
-                                    <h3 class="fw-bold">{{ users_count }}</h3>
+                                    <h3 class="fw-bold">{{ users_count or 0 }}</h3>
                                     <p class="mb-0">Utilisateurs Total</p>
                                 </div>
                             </div>
@@ -141,7 +151,7 @@
                             <div class="card stats-card success">
                                 <div class="card-body text-center">
                                     <i class="fas fa-user-graduate fa-3x mb-3"></i>
-                                    <h3 class="fw-bold">{{ students_count }}</h3>
+                                    <h3 class="fw-bold">{{ students_count or 0 }}</h3>
                                     <p class="mb-0">Étudiants</p>
                                 </div>
                             </div>
@@ -150,7 +160,7 @@
                             <div class="card stats-card warning">
                                 <div class="card-body text-center">
                                     <i class="fas fa-chalkboard-teacher fa-3x mb-3"></i>
-                                    <h3 class="fw-bold">{{ teachers_count }}</h3>
+                                    <h3 class="fw-bold">{{ teachers_count or 0 }}</h3>
                                     <p class="mb-0">Professeurs</p>
                                 </div>
                             </div>
@@ -159,7 +169,7 @@
                             <div class="card stats-card info">
                                 <div class="card-body text-center">
                                     <i class="fas fa-book fa-3x mb-3"></i>
-                                    <h3 class="fw-bold">{{ courses_count }}</h3>
+                                    <h3 class="fw-bold">{{ courses_count or 0 }}</h3>
                                     <p class="mb-0">Cours Actifs</p>
                                 </div>
                             </div>
@@ -172,25 +182,25 @@
                             <h4 class="mb-3">Actions Rapides</h4>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('add_user') }}" class="quick-action-btn" style="background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);">
+                            <a href="{{ url_for('admin_users') }}" class="quick-action-btn" style="background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);">
                                 <i class="fas fa-user-plus fa-2x mb-2"></i>
-                                <br>Ajouter Utilisateur
+                                <br>Gérer Utilisateurs
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('add_course') }}" class="quick-action-btn" style="background: linear-gradient(45deg, #56ab2f 0%, #a8e6cf 100%);">
+                            <a href="{{ url_for('admin_add_course') }}" class="quick-action-btn" style="background: linear-gradient(45deg, #56ab2f 0%, #a8e6cf 100%);">
                                 <i class="fas fa-plus-circle fa-2x mb-2"></i>
                                 <br>Créer Cours
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="#" class="quick-action-btn" style="background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);">
+                            <a href="{{ url_for('import_csv') }}" class="quick-action-btn" style="background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);">
                                 <i class="fas fa-file-import fa-2x mb-2"></i>
                                 <br>Import CSV
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="#" class="quick-action-btn" style="background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);">
+                            <a href="{{ url_for('system_report') }}" class="quick-action-btn" style="background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);">
                                 <i class="fas fa-chart-line fa-2x mb-2"></i>
                                 <br>Rapports
                             </a>
@@ -251,15 +261,15 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <span>Devoirs Actifs</span>
-                                        <span class="badge bg-primary">{{ assignments_count }}</span>
+                                        <span class="badge bg-primary">{{ assignments_count or 0 }}</span>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <span>Soumissions Totales</span>
-                                        <span class="badge bg-success">{{ submissions_count }}</span>
+                                        <span class="badge bg-success">{{ submissions_count or 0 }}</span>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <span>Cours Actifs</span>
-                                        <span class="badge bg-info">{{ courses_count }}</span>
+                                        <span class="badge bg-info">{{ courses_count or 0 }}</span>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span>Système</span>
@@ -285,9 +295,9 @@
         
         // Mise à jour de la date en temps réel
         function updateDateTime() {
-            const dateElement = document.querySelector('.navbar-nav .nav-link');
+            const dateElement = document.getElementById('current-date');
             if (dateElement) {
-                dateElement.innerHTML = '<i class="fas fa-calendar me-2"></i>' + moment().format('DD MMMM YYYY, HH:mm');
+                dateElement.textContent = moment().format('DD MMMM YYYY, HH:mm');
             }
         }
         

@@ -11,7 +11,8 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-graduation-cap me-2"></i>Cognito Web
+                <img src="{{ url_for('static', filename='images/ulc-icam-logo.png') }}" alt="ULC-ICAM" height="40" class="me-2">
+                ULC-ICAM Turnin
             </a>
             
             {% if session.user %}
@@ -39,6 +40,17 @@
 
         {% block content %}{% endblock %}
     </main>
+
+    <footer class="text-center py-4 mt-5 bg-light">
+        <div class="container">
+            <p class="text-muted mb-0">
+                &copy; 2024 Université Loyola du Congo - ULC-ICAM. Tous droits réservés.
+            </p>
+            <p class="text-muted small">
+                Logiciel Propriétaire - Utilisation Restreinte
+            </p>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

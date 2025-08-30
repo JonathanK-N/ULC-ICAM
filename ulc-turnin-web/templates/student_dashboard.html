@@ -1,73 +1,107 @@
-{% extends "base.html" %}
+{% extends "base_clean.html" %}
+
+{% block title %}Dashboard Étudiant - ULC-ICAM{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-tachometer-alt"></i> Tableau de bord étudiant</h2>
-    <div class="d-flex gap-2">
-        <a href="{{ url_for('student_courses') }}" class="btn btn-primary">
-            <i class="fas fa-book-open"></i> Mes cours
-        </a>
-        <a href="{{ url_for('student_grades') }}" class="btn btn-success">
-            <i class="fas fa-chart-line"></i> Mes Notes
-        </a>
-    </div>
-</div>
-
-<div class="row">
-    {% for assignment in assignments %}
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">{{ assignment.title }}</h5>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Header -->
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <span class="badge bg-info">{{ assignment.course }}</span>
-                    {% if assignment.is_group_work %}
-                        <span class="badge bg-primary">Groupe</span>
-                    {% endif %}
+                    <h1 class="display-6 fw-bold mb-2">
+                        <img src="{{ url_for('static', filename='images/ulc-icam-logo.png') }}" alt="ULC-ICAM" height="50" class="me-3">
+                        Tableau de bord étudiant
+                    </h1>
+                    <p class="text-muted mb-0">Bienvenue {{ session.name }}</p>
                 </div>
-            </div>
-            <div class="card-body">
-                <p class="card-text">{{ assignment.description }}</p>
-                
-                {% if assignment.is_group_work %}
-                    {% set student_group_id = student_groups.get(assignment.id, {}).get(session.user) %}
-                    {% if student_group_id is not none %}
-                        <div class="alert alert-success">
-                            <i class="fas fa-users"></i> Vous êtes dans le <strong>Groupe {{ student_group_id + 1 }}</strong>
-                        </div>
-                    {% elif assignment.group_formation == 'manual' %}
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle"></i> Vous devez former un groupe
-                        </div>
-                    {% endif %}
-                {% endif %}
-                
-                <p class="text-muted">
-                    <i class="fas fa-calendar"></i> 
-                    Date limite : {{ assignment.due_date }}
-                </p>
-                
                 <div class="d-flex gap-2">
-                    {% if assignment.is_group_work and assignment.group_formation == 'manual' and student_groups.get(assignment.id, {}).get(session.user) is none %}
-                        <a href="{{ url_for('join_group', assignment_id=assignment.id) }}" class="btn btn-warning btn-sm">
-                            <i class="fas fa-users"></i> Former groupe
-                        </a>
-                    {% endif %}
-                    <a href="{{ url_for('submit_assignment', assignment_id=assignment.id) }}" 
-                       class="btn btn-primary">
-                        <i class="fas fa-upload"></i> Soumettre
+                    <a href="{{ url_for('student_courses') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-book-open me-2"></i>Mes cours
+                    </a>
+                    <a href="{{ url_for('student_grades') }}" class="btn btn-outline-success">
+                        <i class="fas fa-chart-line me-2"></i>Mes Notes
                     </a>
                 </div>
             </div>
         </div>
     </div>
-    {% endfor %}
+    
+    <!-- Devoirs disponibles -->
+    <div class="row">
+        {% for assignment in assignments %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="card border-0 shadow-sm h-100" style="transition: transform 0.2s;" 
+                 onmouseover="this.style.transform='translateY(-5px)'" 
+                 onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">{{ assignment.title }}</h5>
+                        <div>
+                            <span class="badge bg-light text-dark">{{ assignment.course }}</span>
+                            {% if assignment.is_group_work %}
+                                <span class="badge bg-warning"><i class="fas fa-users me-1"></i>Groupe</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <p class="card-text text-muted mb-3">{{ assignment.description }}</p>
+                    
+                    {% if assignment.is_group_work %}
+                        {% set student_group_id = student_groups.get(assignment.id, {}).get(session.user) %}
+                        {% if student_group_id is not none %}
+                            <div class="alert alert-success border-0" style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);">
+                                <i class="fas fa-users me-2"></i>
+                                <strong>Groupe {{ student_group_id + 1 }}</strong> - Vous êtes inscrit
+                            </div>
+                        {% elif assignment.group_formation == 'manual' %}
+                            <div class="alert alert-warning border-0" style="background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Action requise :</strong> Former un groupe
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                        <small class="text-muted">Date limite : <strong>{{ assignment.due_date }}</strong></small>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        {% if assignment.is_group_work and assignment.group_formation == 'manual' and student_groups.get(assignment.id, {}).get(session.user) is none %}
+                            <a href="{{ url_for('join_group', assignment_id=assignment.id) }}" 
+                               class="btn btn-warning btn-sm flex-fill">
+                                <i class="fas fa-users me-1"></i>Former groupe
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('submit_assignment', assignment_id=assignment.id) }}" 
+                           class="btn btn-primary flex-fill">
+                            <i class="fas fa-upload me-2"></i>Soumettre
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if not assignments %}
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-inbox" style="font-size: 5rem; color: #e9ecef;"></i>
+                </div>
+                <h3 class="text-muted mb-3">Aucun devoir disponible</h3>
+                <p class="text-muted">Vous n'avez actuellement aucun devoir à rendre.</p>
+                <a href="{{ url_for('student_courses') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-book-open me-2"></i>Voir mes cours
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
-
-{% if not assignments %}
-<div class="text-center">
-    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-    <h4 class="text-muted">Aucun devoir disponible</h4>
-</div>
-{% endif %}
 {% endblock %}

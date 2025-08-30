@@ -1,12 +1,26 @@
-{% extends "base.html" %}
+{% extends "base_clean.html" %}
+
+{% block title %}Ajouter Cours - ULC-ICAM{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card border-success">
-            <div class="card-header bg-success text-white">
-                <h4><i class="fas fa-plus"></i> Ajouter un cours</h4>
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="fas fa-book-open me-3" style="color: #56ab2f;"></i>
+                    Ajouter un cours
+                </h1>
+                <p class="text-muted">Créer un nouveau cours pour l'université</p>
             </div>
+            
+            <div class="card border-0 shadow-lg">
+                <div class="card-header text-center py-4" style="background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%); color: white;">
+                    <h4 class="mb-0 fw-bold">
+                        <i class="fas fa-plus me-2"></i>Nouveau cours
+                    </h4>
+                </div>
             <div class="card-body">
                 <form method="POST">
                     <div class="row">
@@ -69,12 +83,12 @@
                                   placeholder="Description du cours, objectifs, prérequis..."></textarea>
                     </div>
 
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('admin_courses_view') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Annuler
+                    <div class="d-flex justify-content-between pt-3">
+                        <a href="{{ url_for('admin_courses_view') }}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Annuler
                         </a>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-save"></i> Créer le cours
+                        <button type="submit" class="btn btn-lg" style="background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%); border: none; color: white;">
+                            <i class="fas fa-plus me-2"></i>Créer le cours
                         </button>
                     </div>
                 </form>

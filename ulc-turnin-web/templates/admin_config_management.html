@@ -1,0 +1,268 @@
+{% extends "base_clean.html" %}
+
+{% block title %}Gestion Configuration - ULC-ICAM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="display-6 fw-bold mb-2">
+                        <img src="{{ url_for('static', filename='images/ulc-icam-logo.png') }}" alt="ULC-ICAM" height="50" class="me-3">
+                        Gestion de la Configuration Système
+                    </h1>
+                    <p class="text-muted mb-0">Configuration dynamique des entités académiques</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour au Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration actuelle -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Configuration Actuelle
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6 class="text-primary">Facultés ({{ config.facultes|length }})</h6>
+                            <ul class="list-unstyled">
+                                {% for faculte in config.facultes %}
+                                <li><i class="fas fa-university me-2 text-muted"></i>{{ faculte }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-success">Départements ({{ config.departements|length }})</h6>
+                            <ul class="list-unstyled">
+                                {% for dept in config.departements %}
+                                <li><i class="fas fa-building me-2 text-muted"></i>{{ dept }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-warning">Promotions ({{ config.promotions|length }})</h6>
+                            <ul class="list-unstyled">
+                                {% for promo in config.promotions %}
+                                <li><i class="fas fa-graduation-cap me-2 text-muted"></i>{{ promo }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-info">Grades ({{ config.grades|length }})</h6>
+                            <ul class="list-unstyled">
+                                {% for grade in config.grades %}
+                                <li><i class="fas fa-medal me-2 text-muted"></i>{{ grade }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gestion des entités -->
+    <div class="row">
+        <!-- Facultés -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-university me-2"></i>Gestion des Facultés
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('manage_config', config_type='facultes') }}" class="mb-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="new_item" 
+                                   placeholder="Nouvelle faculté (ex: Faculté de Médecine (ULC-ICAM))" required>
+                            <input type="hidden" name="action" value="add">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-plus"></i> Ajouter
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="list-group">
+                        {% for faculte in config.facultes %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-university me-2 text-primary"></i>{{ faculte }}
+                                {% if faculte == 'Faculté des Sciences et Technologies (ULC-ICAM)' %}
+                                <span class="badge bg-success ms-2">Défaut</span>
+                                {% endif %}
+                            </span>
+                            {% if faculte != 'Faculté des Sciences et Technologies (ULC-ICAM)' %}
+                            <form method="POST" action="{{ url_for('manage_config', config_type='facultes') }}" class="d-inline">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="item" value="{{ faculte }}">
+                                <button class="btn btn-outline-danger btn-sm" type="submit" 
+                                        onclick="return confirm('Supprimer cette faculté ?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Départements -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-building me-2"></i>Gestion des Départements
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('manage_config', config_type='departements') }}" class="mb-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="new_item" 
+                                   placeholder="Nouveau département" required>
+                            <input type="hidden" name="action" value="add">
+                            <button class="btn btn-success" type="submit">
+                                <i class="fas fa-plus"></i> Ajouter
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="list-group" style="max-height: 300px; overflow-y: auto;">
+                        {% for dept in config.departements %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-building me-2 text-success"></i>{{ dept }}
+                            </span>
+                            <form method="POST" action="{{ url_for('manage_config', config_type='departements') }}" class="d-inline">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="item" value="{{ dept }}">
+                                <button class="btn btn-outline-danger btn-sm" type="submit" 
+                                        onclick="return confirm('Supprimer ce département ?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Promotions -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>Gestion des Promotions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('manage_config', config_type='promotions') }}" class="mb-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="new_item" 
+                                   placeholder="Nouvelle promotion (ex: M3, D1)" required>
+                            <input type="hidden" name="action" value="add">
+                            <button class="btn btn-warning" type="submit">
+                                <i class="fas fa-plus"></i> Ajouter
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="list-group">
+                        {% for promo in config.promotions %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-graduation-cap me-2 text-warning"></i>{{ promo }}
+                            </span>
+                            {% if promo not in ['L1', 'L2', 'L3', 'M1', 'M2'] %}
+                            <form method="POST" action="{{ url_for('manage_config', config_type='promotions') }}" class="d-inline">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="item" value="{{ promo }}">
+                                <button class="btn btn-outline-danger btn-sm" type="submit" 
+                                        onclick="return confirm('Supprimer cette promotion ?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="badge bg-secondary">Standard</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grades -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-medal me-2"></i>Gestion des Grades Académiques
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('manage_config', config_type='grades') }}" class="mb-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="new_item" 
+                                   placeholder="Nouveau grade (ex: Prof. Émérite)" required>
+                            <input type="hidden" name="action" value="add">
+                            <button class="btn btn-info" type="submit">
+                                <i class="fas fa-plus"></i> Ajouter
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="list-group">
+                        {% for grade in config.grades %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-medal me-2 text-info"></i>{{ grade }}
+                            </span>
+                            <form method="POST" action="{{ url_for('manage_config', config_type='grades') }}" class="d-inline">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="item" value="{{ grade }}">
+                                <button class="btn btn-outline-danger btn-sm" type="submit" 
+                                        onclick="return confirm('Supprimer ce grade ?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations importantes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info border-0">
+                <h6 class="alert-heading">
+                    <i class="fas fa-info-circle me-2"></i>Informations Importantes
+                </h6>
+                <ul class="mb-0">
+                    <li>La <strong>Faculté des Sciences et Technologies (ULC-ICAM)</strong> est la faculté par défaut et ne peut pas être supprimée.</li>
+                    <li>Les promotions standard (L1, L2, L3, M1, M2) ne peuvent pas être supprimées.</li>
+                    <li>Toute modification affectera immédiatement la création de nouveaux utilisateurs et cours.</li>
+                    <li>Assurez-vous que les entités supprimées ne sont pas utilisées par des utilisateurs ou cours existants.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

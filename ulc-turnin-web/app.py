@@ -1,8 +1,14 @@
 # ===============================================================================
+# ULC-ICAM TURNIN SYSTEM - PROPRIÉTÉ INTELLECTUELLE
+# Copyright (c) 2024 Université Loyola du Congo - ULC-ICAM
+# Tous droits réservés - Logiciel Propriétaire
+# 
 # Développeur: Jonathan Kakesa | Date: 19/12/2024 | Heure: 18:30
 # Description: Application Flask principale pour ULC-ICAM Turnin System
 # Fonctionnalités: Gestion académique, devoirs, plagiat, notifications email
 # Nouvelles: Compression fichiers, téléchargement lot, rapports avancés
+# 
+# UTILISATION RESTREINTE - Voir LICENSE pour les conditions d'utilisation
 # ===============================================================================
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory, make_response
@@ -17,6 +23,7 @@ import requests
 import hashlib
 from difflib import SequenceMatcher
 import re
+from code_execution import CodeExecutor, save_code_submission
 # Imports optionnels pour traitement de fichiers
 try:
     import docx2txt
@@ -97,18 +104,14 @@ if MAIL_AVAILABLE:
 # Créer le dossier uploads s'il n'existe pas
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Charger les données de test ULC-ICAM
 def load_test_data():
-    """Charge les données de test depuis le fichier JSON"""
+    """Charge les données depuis le fichier JSON"""
     try:
         with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
             data = json.load(f)
             return data
-    except FileNotFoundError:
-        print("Fichier de données non trouvé, utilisation des données par défaut")
-        return None
     except Exception as e:
-        print(f"Erreur lors du chargement des données: {e}")
+        print(f"Erreur chargement: {e}")
         return None
 
 def save_test_data():
@@ -129,22 +132,36 @@ def save_test_data():
     except Exception as e:
         print(f"Erreur lors de l'enregistrement des données: {e}")
 
-# Charger les données de test
-test_data = load_test_data()
+# Charger les données depuis le fichier JSON
+print("=== CHARGEMENT DES DONNÉES ===")
+try:
+    with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+        users = data.get('users', {'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur ULC-ICAM'}})
+        admin_courses = data.get('admin_courses', [])
+        course_assignments = data.get('course_assignments', {})
+        course_enrollments = data.get('course_enrollments', {})
+        assignments = data.get('assignments', [])
+        submissions = data.get('submissions', [])
+        next_course_admin_id = data.get('next_course_admin_id', 1)
+        next_assignment_id = data.get('next_assignment_id', 1)
+        print("Données chargées depuis ulc_icam_data.json")
+except Exception as e:
+    print(f"Erreur chargement: {e}")
+    users = {'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur ULC-ICAM'}}
+    admin_courses = []
+    course_assignments = {}
+    course_enrollments = {}
+    assignments = []
+    submissions = []
+    next_course_admin_id = 1
+    next_assignment_id = 1
 
-# Données par défaut - seulement l'administrateur
-users = {
-    'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur ULC-ICAM'}
-}
-admin_courses = []
-course_assignments = {}
-course_enrollments = {}
-assignments = []
-submissions = []
-next_course_admin_id = 1
-next_assignment_id = 1
-
-# Les données sont maintenant chargées depuis le fichier JSON ci-dessus
+print(f"Utilisateurs chargés: {len(users)}")
+print(f"Cours chargés: {len(admin_courses)}")
+print(f"Devoirs chargés: {len(assignments)}")
+print(f"Soumissions chargées: {len(submissions)}")
+print("=== CHARGEMENT TERMINÉ ===")
 
 # Résultats de correction et plagiat
 correction_results = {}  # {submission_id: {'score': 85, 'feedback': 'Bon travail'}}
@@ -166,10 +183,20 @@ next_course_id = 1
 # Inscriptions des étudiants aux cours chargées depuis le fichier JSON ci-dessus
 
 # Configuration système (modifiable par l'admin)
+# Démarrage avec uniquement la Faculté des Sciences et Technologies (ULC-ICAM)
 system_config = {
     'promotions': ['L1', 'L2', 'L3', 'M1', 'M2'],
-    'facultes': ['Sciences', 'Médecine', 'Droit', 'Sciences Économiques', 'Polytechnique', 'Lettres et Sciences Humaines'],
-    'departements': ['Mathématiques-Informatique', 'Physique', 'Chimie', 'Biologie', 'Médecine Interne', 'Chirurgie', 'Droit Privé', 'Droit Public'],
+    'facultes': ['Faculté des Sciences et Technologies (ULC-ICAM)'],
+    'departements': [
+        'Mathématiques & Informatique',
+        'Génie Mécanique', 
+        'Génie Électrique',
+        'Physique & Chimie',
+        'Génie Informatique',
+        'Maintenance & Génie Industriels',
+        'Énergie/Environnement/Matériaux',
+        'Polytechnique Générale'
+    ],
     'grades': ['Prof. Ordinaire', 'Prof. Associé', 'Prof. Extraordinaire', 'CT', 'Ass.', 'Attaché']
 }
 
@@ -468,7 +495,25 @@ def dashboard():
                              teacher_courses_count=sum(1 for teachers in course_assignments.values() if session['user'] in teachers),
                              assignment_stats=assignment_stats)
     else:
-        return render_template('admin_dashboard.html', users=users, assignments=assignments, submissions=submissions, admin_courses=admin_courses)
+        # Calculer les statistiques pour l'admin
+        users_count = len(users)
+        students_count = sum(1 for u in users.values() if u.get('role') == 'student')
+        teachers_count = sum(1 for u in users.values() if u.get('role') == 'teacher')
+        courses_count = len(admin_courses)
+        assignments_count = len(assignments)
+        submissions_count = len(submissions)
+        
+        return render_template('admin_dashboard.html', 
+                             users=users, 
+                             assignments=assignments, 
+                             submissions=submissions, 
+                             admin_courses=admin_courses,
+                             users_count=users_count,
+                             students_count=students_count,
+                             teachers_count=teachers_count,
+                             courses_count=courses_count,
+                             assignments_count=assignments_count,
+                             submissions_count=submissions_count)
 
 @app.route('/submit/<int:assignment_id>', methods=['GET', 'POST'])
 def submit_assignment(assignment_id):
@@ -488,45 +533,77 @@ def submit_assignment(assignment_id):
             return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
-        if 'file' not in request.files:
-            flash('Aucun fichier sélectionné')
-            return redirect(request.url)
-        
-        file = request.files['file']
-        if file.filename == '':
-            flash('Aucun fichier sélectionné')
-            return redirect(request.url)
-        
-        if file:
-            filename = secure_filename(file.filename)
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            filename = f"{session['user']}_{assignment_id}_{timestamp}_{filename}"
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        # Soumission de code via éditeur
+        if 'code_content' in request.form:
+            code = request.form['code_content']
+            language = request.form.get('language', 'python')
             
-            submission = {
-                'id': len(submissions) + 1,
-                'student': session['user'],
-                'assignment_id': assignment_id,
-                'filename': filename,
-                'submitted_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'results_available': False
-            }
-            submissions.append(submission)
-
-            # Traitement automatique si activé (asynchrone)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            if assignment.get('plagiarism_check') or assignment.get('auto_correct'):
-                process_submission_async(file_path, assignment, submission['id'])
+            if code.strip():
+                # Exécution automatique du code
+                executor = CodeExecutor()
+                test_cases = assignment.get('test_cases', [])
+                execution_result = executor.execute_code(code, language, test_cases=test_cases)
                 
-            if assignment.get('auto_correct'):
-                assignment['results_published'] = True
+                # Sauvegarde de la soumission
+                file_info = save_code_submission(session['user'], assignment_id, code, language, execution_result)
+                
+                submission = {
+                    'id': len(submissions) + 1,
+                    'student': session['user'],
+                    'assignment_id': assignment_id,
+                    'filename': file_info['code_file'],
+                    'submitted_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'results_available': True,
+                    'code_submission': True,
+                    'language': language,
+                    'execution_result': execution_result
+                }
+                submissions.append(submission)
+                save_test_data()
+                
+                return jsonify({
+                    'success': True,
+                    'execution_result': execution_result,
+                    'submission_id': submission['id']
+                })
+        
+        # Soumission de fichier classique
+        elif 'file' in request.files:
+            file = request.files['file']
+            if file.filename == '':
+                flash('Aucun fichier sélectionné')
+                return redirect(request.url)
+            
+            if file:
+                filename = secure_filename(file.filename)
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                filename = f"{session['user']}_{assignment_id}_{timestamp}_{filename}"
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                
+                submission = {
+                    'id': len(submissions) + 1,
+                    'student': session['user'],
+                    'assignment_id': assignment_id,
+                    'filename': filename,
+                    'submitted_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'results_available': False
+                }
+                submissions.append(submission)
 
-            save_test_data()
+                # Traitement automatique si activé (asynchrone)
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                if assignment.get('plagiarism_check') or assignment.get('auto_correct'):
+                    process_submission_async(file_path, assignment, submission['id'])
+                    
+                if assignment.get('auto_correct'):
+                    assignment['results_published'] = True
 
-            flash('Fichier soumis avec succès!')
-            return redirect(url_for('dashboard'))
+                save_test_data()
+
+                flash('Fichier soumis avec succès!')
+                return redirect(url_for('dashboard'))
     
-    return render_template('submit.html', assignment=assignment)
+    return render_template('submit_code.html', assignment=assignment)
 
 @app.route('/admin/users')
 def admin_users():
@@ -629,22 +706,99 @@ def import_csv():
             import io
             stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
             csv_input = csv.reader(stream)
-            next(csv_input)  # Skip header
+            header = next(csv_input)  # Lire l'en-tête
             
             added_count = 0
-            for row in csv_input:
-                if len(row) >= 4:
-                    username, name, role, password = row[0], row[1], row[2], row[3]
-                    if username not in users and role in ['student', 'teacher']:
-                        users[username] = {'password': password, 'role': role, 'name': name, 'must_change_password': True}
-                        added_count += 1
+            errors = []
             
-            flash(f'{added_count} utilisateurs importés avec succès')
+            for row_num, row in enumerate(csv_input, start=2):
+                if len(row) < 2:
+                    continue
+                    
+                try:
+                    username = row[0].strip()
+                    role = row[1].strip()
+                    
+                    if not username or role not in ['student', 'teacher']:
+                        errors.append(f'Ligne {row_num}: Nom d\'utilisateur ou rôle invalide')
+                        continue
+                        
+                    if username in users:
+                        errors.append(f'Ligne {row_num}: Utilisateur {username} existe déjà')
+                        continue
+                    
+                    temp_password = generate_temp_password()
+                    
+                    if role == 'student' and len(row) >= 13:
+                        # Format étudiant: username,role,cip,nom,postnom,prenom,sexe,date_naissance,promotion,faculte,telephone,email,adresse
+                        user_data = {
+                            'username': username,
+                            'password': temp_password,
+                            'temp_password': temp_password,
+                            'role': 'student',
+                            'must_change_password': True,
+                            'cip': row[2].strip(),
+                            'nom': row[3].strip(),
+                            'postnom': row[4].strip(),
+                            'prenom': row[5].strip(),
+                            'sexe': row[6].strip(),
+                            'date_naissance': row[7].strip(),
+                            'promotion': row[8].strip(),
+                            'faculte': row[9].strip(),
+                            'telephone': row[10].strip(),
+                            'email': row[11].strip(),
+                            'adresse': row[12].strip()
+                        }
+                        user_data['name'] = f"{user_data['prenom']} {user_data['nom']}"
+                        
+                    elif role == 'teacher' and len(row) >= 14:
+                        # Format enseignant: username,role,cip,nom,postnom,prenom,sexe,date_naissance,cours_dispenses,departement,grade,telephone,email,bureau
+                        user_data = {
+                            'username': username,
+                            'password': temp_password,
+                            'temp_password': temp_password,
+                            'role': 'teacher',
+                            'must_change_password': True,
+                            'cip': row[2].strip(),
+                            'nom': row[3].strip(),
+                            'postnom': row[4].strip(),
+                            'prenom': row[5].strip(),
+                            'sexe': row[6].strip(),
+                            'date_naissance': row[7].strip(),
+                            'cours_dispenses': row[8].strip(),
+                            'departement': row[9].strip(),
+                            'grade': row[10].strip(),
+                            'telephone': row[11].strip(),
+                            'email': row[12].strip(),
+                            'bureau': row[13].strip()
+                        }
+                        user_data['name'] = f"{user_data['grade']} {user_data['prenom']} {user_data['nom']}"
+                        
+                    else:
+                        errors.append(f'Ligne {row_num}: Nombre de colonnes insuffisant pour le rôle {role}')
+                        continue
+                    
+                    users[username] = user_data
+                    added_count += 1
+                    
+                except Exception as e:
+                    errors.append(f'Ligne {row_num}: Erreur de traitement - {str(e)}')
+            
+            save_test_data()
+            
+            if added_count > 0:
+                flash(f'{added_count} utilisateurs importés avec succès')
+            
+            if errors:
+                flash(f'Erreurs rencontrées: {"; ".join(errors[:5])}', 'warning')
+                if len(errors) > 5:
+                    flash(f'... et {len(errors) - 5} autres erreurs', 'warning')
+            
             return redirect(url_for('admin_users'))
         else:
             flash('Format de fichier non valide. Utilisez un fichier CSV.')
     
-    return render_template('import_csv_congo.html')
+    return render_template('import_csv.html')
 
 @app.route('/admin/delete_user/<username>')
 def delete_user(username):
@@ -817,8 +971,26 @@ def edit_user(username):
                 'email': request.form.get('email', user_data.get('email', '')),
                 'bureau': request.form.get('bureau', user_data.get('bureau', ''))
             })
+        elif user_data['role'] == 'admin':
+            user_data.update({
+                'nom': request.form.get('nom', user_data.get('nom', '')),
+                'postnom': request.form.get('postnom', user_data.get('postnom', '')),
+                'prenom': request.form.get('prenom', user_data.get('prenom', '')),
+                'sexe': request.form.get('sexe', user_data.get('sexe', '')),
+                'date_naissance': request.form.get('date_naissance', user_data.get('date_naissance', '')),
+                'telephone': request.form.get('telephone', user_data.get('telephone', '')),
+                'email': request.form.get('email', user_data.get('email', '')),
+                'adresse': request.form.get('adresse', user_data.get('adresse', '')),
+                'fonction': request.form.get('fonction', user_data.get('fonction', 'Administrateur Système'))
+            })
         
-        user_data['name'] = f"{user_data.get('prenom', '')} {user_data.get('nom', '')}"
+        # Mise à jour du nom d'affichage
+        if user_data['role'] == 'admin':
+            user_data['name'] = f"{user_data.get('prenom', '')} {user_data.get('nom', '')}" if user_data.get('prenom') and user_data.get('nom') else user_data.get('name', 'Administrateur ULC-ICAM')
+        else:
+            user_data['name'] = f"{user_data.get('prenom', '')} {user_data.get('nom', '')}"
+        
+        save_test_data()
         flash('Profil mis à jour avec succès')
         return redirect(url_for('user_profile', username=username))
     
@@ -828,7 +1000,7 @@ def edit_user(username):
 def system_config_view():
     if 'user' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
-    return render_template('system_config.html', config=system_config)
+    return render_template('admin_config_management.html', config=system_config)
 
 @app.route('/admin/config/<config_type>', methods=['GET', 'POST'])
 def manage_config(config_type):
@@ -848,9 +1020,22 @@ def manage_config(config_type):
                 flash(f'{new_item} ajouté avec succès')
         elif action == 'delete':
             item_to_delete = request.form.get('item')
-            if item_to_delete in system_config[config_type]:
+            
+            # Protection pour les éléments critiques
+            protected_items = {
+                'facultes': ['Faculté des Sciences et Technologies (ULC-ICAM)'],
+                'promotions': ['L1', 'L2', 'L3', 'M1', 'M2'],
+                'departements': [],
+                'grades': []
+            }
+            
+            if item_to_delete in protected_items.get(config_type, []):
+                flash(f'{item_to_delete} ne peut pas être supprimé (élément protégé)', 'error')
+            elif item_to_delete in system_config[config_type]:
                 system_config[config_type].remove(item_to_delete)
                 flash(f'{item_to_delete} supprimé avec succès')
+            else:
+                flash(f'{item_to_delete} non trouvé', 'error')
         return redirect(url_for('manage_config', config_type=config_type))
     
     return render_template('manage_config.html', config_type=config_type, items=system_config[config_type])
@@ -1166,6 +1351,18 @@ def create_assignment():
                     file.save(os.path.join(file_path, filename))
                     uploaded_files.append(filename)
         
+        # Gestion des cas de test pour les devoirs de code
+        test_cases = []
+        if 'is_code_assignment' in request.form:
+            test_inputs = request.form.getlist('test_input')
+            test_outputs = request.form.getlist('test_output')
+            for i, (input_val, output_val) in enumerate(zip(test_inputs, test_outputs)):
+                if input_val.strip() or output_val.strip():
+                    test_cases.append({
+                        'input': input_val,
+                        'expected_output': output_val
+                    })
+        
         assignment = {
             'id': next_assignment_id,
             'title': request.form['title'],
@@ -1183,7 +1380,9 @@ def create_assignment():
             'group_formation': request.form.get('group_formation', 'manual'),
             'group_size': int(request.form.get('group_size', 2)) if request.form.get('group_size') else 2,
             'results_release_date': request.form.get('results_release_date', ''),
-            'results_published': False
+            'results_published': False,
+            'is_code_assignment': 'is_code_assignment' in request.form,
+            'test_cases': test_cases
         }
         
         # Générer les groupes automatiquement si nécessaire
@@ -1201,7 +1400,7 @@ def create_assignment():
         if course['id'] in course_assignments and session['user'] in course_assignments[course['id']]:
             teacher_courses.append(course)
     
-    return render_template('create_assignment.html', admin_courses=admin_courses, course_assignments=course_assignments)
+    return render_template('create_assignment.html', admin_courses=admin_courses, course_assignments=course_assignments, system_config=system_config)
 
 @app.route('/download_assignment_file/<filename>')
 def download_assignment_file(filename):
@@ -2038,6 +2237,101 @@ def system_report():
     }
     
     return render_template('system_report.html', stats=stats)
+
+@app.route('/admin/export_all_data')
+def export_all_data():
+    """Exporte toutes les données système"""
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    
+    data = {
+        'users': users,
+        'admin_courses': admin_courses,
+        'course_assignments': course_assignments,
+        'course_enrollments': course_enrollments,
+        'assignments': assignments,
+        'submissions': submissions,
+        'correction_results': correction_results,
+        'plagiarism_results': plagiarism_results
+    }
+    
+    response = make_response(json.dumps(data, ensure_ascii=False, indent=2))
+    response.headers['Content-Type'] = 'application/json'
+    response.headers['Content-Disposition'] = 'attachment; filename="ulc_export_complet.json"'
+    return response
+
+@app.route('/admin/generate_full_report')
+def generate_full_report():
+    """Génère un rapport PDF complet"""
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    
+    if not REPORTLAB_AVAILABLE:
+        flash('ReportLab non disponible - génération PDF impossible')
+        return redirect(url_for('system_report'))
+    
+    try:
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = []
+        
+        # Titre
+        title = Paragraph("Rapport Système - Université Loyola du Congo", styles['Title'])
+        story.append(title)
+        story.append(Spacer(1, 12))
+        
+        # Statistiques
+        stats_data = [
+            ['Utilisateurs totaux:', str(len(users))],
+            ['Étudiants:', str(sum(1 for u in users.values() if u.get('role') == 'student'))],
+            ['Professeurs:', str(sum(1 for u in users.values() if u.get('role') == 'teacher'))],
+            ['Cours:', str(len(admin_courses))],
+            ['Devoirs:', str(len(assignments))],
+            ['Soumissions:', str(len(submissions))]
+        ]
+        stats_table = Table(stats_data)
+        story.append(stats_table)
+        
+        doc.build(story)
+        buffer.seek(0)
+        
+        response = make_response(buffer.getvalue())
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = 'attachment; filename="rapport_systeme_ulc.pdf"'
+        return response
+    except Exception as e:
+        flash(f'Erreur génération PDF: {e}')
+        return redirect(url_for('system_report'))
+
+@app.route('/admin/download_backup')
+def download_backup():
+    """Télécharge une sauvegarde complète"""
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    
+    # Créer une sauvegarde avec timestamp
+    from datetime import datetime
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    
+    backup_data = {
+        'timestamp': timestamp,
+        'version': '1.0',
+        'university': 'Université Loyola du Congo',
+        'data': {
+            'users': users,
+            'admin_courses': admin_courses,
+            'course_assignments': course_assignments,
+            'course_enrollments': course_enrollments,
+            'assignments': assignments,
+            'submissions': submissions
+        }
+    }
+    
+    response = make_response(json.dumps(backup_data, ensure_ascii=False, indent=2))
+    response.headers['Content-Type'] = 'application/json'
+    response.headers['Content-Disposition'] = f'attachment; filename="sauvegarde_ulc_{timestamp}.json"'
+    return response
 
 if __name__ == '__main__':
     import os

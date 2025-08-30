@@ -1,97 +1,143 @@
-{% extends "base.html" %}
+{% extends "base_clean.html" %}
+
+{% block title %}Configuration Système - ULC-ICAM{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-cogs"></i> Configuration du Système</h2>
-</div>
-
-<div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card border-primary">
-            <div class="card-header bg-primary text-white">
-                <h5><i class="fas fa-layer-group"></i> Promotions</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted">Gérer les niveaux d'études (L1, L2, L3, M1, M2)</p>
-                <div class="mb-3">
-                    {% for promotion in config.promotions %}
-                        <span class="badge bg-info me-1">{{ promotion }}</span>
-                    {% endfor %}
-                </div>
-                <a href="{{ url_for('manage_config', config_type='promotions') }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-edit"></i> Gérer
-                </a>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="fas fa-cogs me-3" style="color: #4facfe;"></i>
+                    Configuration du Système
+                </h1>
+                <p class="text-muted">Gérer les paramètres et options de l'université</p>
             </div>
         </div>
     </div>
 
-    <div class="col-md-6 mb-4">
-        <div class="card border-success">
-            <div class="card-header bg-success text-white">
-                <h5><i class="fas fa-university"></i> Facultés</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted">Gérer les facultés de l'université</p>
-                <div class="mb-3">
-                    {% for faculte in config.facultes %}
-                        <span class="badge bg-success me-1 mb-1">{{ faculte }}</span>
-                    {% endfor %}
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100" style="transition: transform 0.2s;" 
+                 onmouseover="this.style.transform='translateY(-5px)'" 
+                 onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-layer-group me-2"></i>Promotions
+                    </h5>
                 </div>
-                <a href="{{ url_for('manage_config', config_type='facultes') }}" class="btn btn-success btn-sm">
-                    <i class="fas fa-edit"></i> Gérer
-                </a>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Gérer les niveaux d'études disponibles</p>
+                    <div class="mb-4">
+                        {% for promotion in config.promotions %}
+                            <span class="badge bg-light text-dark border me-2 mb-2 px-3 py-2">{{ promotion }}</span>
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('manage_config', config_type='promotions') }}" 
+                       class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-2"></i>Gérer les promotions
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100" style="transition: transform 0.2s;" 
+                 onmouseover="this.style.transform='translateY(-5px)'" 
+                 onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%); color: white;">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-university me-2"></i>Facultés
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Gérer les facultés de l'université</p>
+                    <div class="mb-4">
+                        {% for faculte in config.facultes %}
+                            <span class="badge bg-light text-dark border me-2 mb-2 px-3 py-2">{{ faculte }}</span>
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('manage_config', config_type='facultes') }}" 
+                       class="btn btn-outline-success">
+                        <i class="fas fa-edit me-2"></i>Gérer les facultés
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100" style="transition: transform 0.2s;" 
+                 onmouseover="this.style.transform='translateY(-5px)'" 
+                 onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-building me-2"></i>Départements
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Gérer les départements par faculté</p>
+                    <div class="mb-4">
+                        {% for dept in config.departements %}
+                            <span class="badge bg-light text-dark border me-2 mb-2 px-3 py-2">{{ dept }}</span>
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('manage_config', config_type='departements') }}" 
+                       class="btn btn-outline-danger">
+                        <i class="fas fa-edit me-2"></i>Gérer les départements
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100" style="transition: transform 0.2s;" 
+                 onmouseover="this.style.transform='translateY(-5px)'" 
+                 onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-medal me-2"></i>Grades Académiques
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Gérer les grades des enseignants</p>
+                    <div class="mb-4">
+                        {% for grade in config.grades %}
+                            <span class="badge bg-light text-dark border me-2 mb-2 px-3 py-2">{{ grade }}</span>
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('manage_config', config_type='grades') }}" 
+                       class="btn btn-outline-info">
+                        <i class="fas fa-edit me-2"></i>Gérer les grades
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-6 mb-4">
-        <div class="card border-warning">
-            <div class="card-header bg-warning text-dark">
-                <h5><i class="fas fa-building"></i> Départements</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted">Gérer les départements par faculté</p>
-                <div class="mb-3">
-                    {% for dept in config.departements %}
-                        <span class="badge bg-warning text-dark me-1 mb-1">{{ dept }}</span>
-                    {% endfor %}
+    <!-- Information importante -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="alert border-0" style="background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); color: #856404;">
+                <div class="d-flex align-items-start">
+                    <i class="fas fa-exclamation-triangle me-3 fa-lg mt-1"></i>
+                    <div>
+                        <strong>Attention :</strong><br>
+                        Les modifications de configuration affectent immédiatement tous les formulaires du système.
+                        Assurez-vous de la cohérence avant de supprimer des éléments utilisés.
+                    </div>
                 </div>
-                <a href="{{ url_for('manage_config', config_type='departements') }}" class="btn btn-warning btn-sm">
-                    <i class="fas fa-edit"></i> Gérer
-                </a>
             </div>
         </div>
     </div>
-
-    <div class="col-md-6 mb-4">
-        <div class="card border-info">
-            <div class="card-header bg-info text-white">
-                <h5><i class="fas fa-medal"></i> Grades Académiques</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted">Gérer les grades des enseignants</p>
-                <div class="mb-3">
-                    {% for grade in config.grades %}
-                        <span class="badge bg-info me-1 mb-1">{{ grade }}</span>
-                    {% endfor %}
-                </div>
-                <a href="{{ url_for('manage_config', config_type='grades') }}" class="btn btn-info btn-sm">
-                    <i class="fas fa-edit"></i> Gérer
-                </a>
-            </div>
+    
+    <!-- Actions -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
+            </a>
         </div>
     </div>
-</div>
-
-<div class="alert alert-info">
-    <i class="fas fa-info-circle"></i>
-    <strong>Note :</strong> Les modifications de configuration affectent immédiatement tous les formulaires du système.
-    Assurez-vous de la cohérence avant de supprimer des éléments utilisés.
-</div>
-
-<div class="mt-4">
-    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Retour au tableau de bord
-    </a>
 </div>
 {% endblock %}

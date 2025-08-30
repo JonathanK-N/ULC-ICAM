@@ -1,12 +1,26 @@
-{% extends "base.html" %}
+{% extends "base_clean.html" %}
+
+{% block title %}Créer Devoir - ULC-ICAM{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card border-success">
-            <div class="card-header bg-success text-white">
-                <h4><i class="fas fa-plus"></i> Créer un devoir</h4>
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="fas fa-tasks me-3" style="color: #f093fb;"></i>
+                    Créer un devoir
+                </h1>
+                <p class="text-muted">Configurer un nouveau devoir pour vos étudiants</p>
             </div>
+            
+            <div class="card border-0 shadow-lg">
+                <div class="card-header text-center py-4" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                    <h4 class="mb-0 fw-bold">
+                        <i class="fas fa-plus me-2"></i>Nouveau devoir
+                    </h4>
+                </div>
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data">
                     <div class="row">
@@ -62,10 +76,10 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="card border-primary">
-                            <div class="card-header bg-primary text-white">
-                                <h6><i class="fas fa-users"></i> Travail de Groupe</h6>
+                    <div class="mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                <h6 class="mb-0 fw-bold"><i class="fas fa-users me-2"></i>Travail de Groupe</h6>
                             </div>
                             <div class="card-body">
                                 <div class="form-check mb-3">
@@ -108,11 +122,49 @@
                         </div>
                     </div>
 
-                    <div class="row">
+                    <!-- Devoir de Code -->
+                    <div class="mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header py-3" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white;">
+                                <h6 class="mb-0 fw-bold"><i class="fas fa-code me-2"></i>Devoir de Programmation</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="is_code_assignment" name="is_code_assignment">
+                                    <label class="form-check-label" for="is_code_assignment">
+                                        <strong>Ce devoir nécessite la soumission de code</strong>
+                                    </label>
+                                </div>
+                                
+                                <div id="code_options" style="display: none;">
+                                    <h6 class="mb-3"><i class="fas fa-vial me-2"></i>Cas de test</h6>
+                                    <div id="test_cases">
+                                        <div class="test-case mb-3">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Entrée (stdin)</label>
+                                                    <textarea class="form-control" name="test_input" rows="3" placeholder="Données d'entrée pour le test"></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Sortie attendue</label>
+                                                    <textarea class="form-control" name="test_output" rows="3" placeholder="Résultat attendu"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="add_test_case">
+                                        <i class="fas fa-plus me-1"></i>Ajouter un cas de test
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
                         <div class="col-md-6">
-                            <div class="card border-info">
-                                <div class="card-header bg-info text-white">
-                                    <h6><i class="fas fa-robot"></i> Correction Automatique</h6>
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-header py-3" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+                                    <h6 class="mb-0 fw-bold"><i class="fas fa-robot me-2"></i>Correction Automatique</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="form-check">
@@ -128,9 +180,9 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="card border-warning">
-                                <div class="card-header bg-warning text-dark">
-                                    <h6><i class="fas fa-search"></i> Détection de Plagiat</h6>
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-header py-3" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                                    <h6 class="mb-0 fw-bold"><i class="fas fa-search me-2"></i>Détection de Plagiat</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="form-check">
@@ -147,12 +199,12 @@
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{{ url_for('teacher_assignments') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Annuler
+                    <div class="d-flex justify-content-between pt-4">
+                        <a href="{{ url_for('teacher_assignments') }}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Annuler
                         </a>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-save"></i> Créer le devoir
+                        <button type="submit" class="btn btn-lg" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none; color: white;">
+                            <i class="fas fa-plus me-2"></i>Créer le devoir
                         </button>
                     </div>
                 </form>
@@ -175,6 +227,46 @@ document.getElementById('is_group_work').addEventListener('change', function() {
     } else {
         groupOptions.style.display = 'none';
     }
+});
+
+// Gestion des devoirs de code
+document.getElementById('is_code_assignment').addEventListener('change', function() {
+    const codeOptions = document.getElementById('code_options');
+    if (this.checked) {
+        codeOptions.style.display = 'block';
+    } else {
+        codeOptions.style.display = 'none';
+    }
+});
+
+// Ajout de cas de test
+document.getElementById('add_test_case').addEventListener('click', function() {
+    const testCases = document.getElementById('test_cases');
+    const newTestCase = document.createElement('div');
+    newTestCase.className = 'test-case mb-3';
+    newTestCase.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <label class="form-label">Entrée (stdin)</label>
+                <textarea class="form-control" name="test_input" rows="3" placeholder="Données d'entrée pour le test"></textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Sortie attendue</label>
+                <textarea class="form-control" name="test_output" rows="3" placeholder="Résultat attendu"></textarea>
+            </div>
+            <div class="col-12 mt-2">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-test-case">
+                    <i class="fas fa-trash me-1"></i>Supprimer
+                </button>
+            </div>
+        </div>
+    `;
+    testCases.appendChild(newTestCase);
+    
+    // Ajouter l'événement de suppression
+    newTestCase.querySelector('.remove-test-case').addEventListener('click', function() {
+        newTestCase.remove();
+    });
 });
 </script>
 {% endblock %}

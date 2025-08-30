@@ -173,6 +173,62 @@
                         <label for="cours_dispenses" class="form-label">Cours dispensés</label>
                         <textarea class="form-control" id="cours_dispenses" name="cours_dispenses" rows="3">{{ user_data.get('cours_dispenses', '') }}</textarea>
                     </div>
+                    
+                    {% elif user_data.role == 'admin' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Profil Administrateur</strong> - Vous pouvez modifier vos informations personnelles ci-dessous.
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="nom" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="nom" name="nom" value="{{ user_data.get('nom', '') }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="postnom" class="form-label">Post-nom</label>
+                            <input type="text" class="form-control" id="postnom" name="postnom" value="{{ user_data.get('postnom', '') }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="prenom" class="form-label">Prénom</label>
+                            <input type="text" class="form-control" id="prenom" name="prenom" value="{{ user_data.get('prenom', '') }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="sexe" class="form-label">Sexe</label>
+                            <select class="form-select" id="sexe" name="sexe">
+                                <option value="">Sélectionner</option>
+                                <option value="M" {% if user_data.get('sexe') == 'M' %}selected{% endif %}>Masculin</option>
+                                <option value="F" {% if user_data.get('sexe') == 'F' %}selected{% endif %}>Féminin</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="date_naissance" class="form-label">Date de naissance</label>
+                            <input type="date" class="form-control" id="date_naissance" name="date_naissance" value="{{ user_data.get('date_naissance', '') }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="fonction" class="form-label">Fonction</label>
+                            <input type="text" class="form-control" id="fonction" name="fonction" value="{{ user_data.get('fonction', 'Administrateur Système') }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="telephone" class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="telephone" name="telephone" value="{{ user_data.get('telephone', '') }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user_data.get('email', '') }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="adresse" class="form-label">Adresse</label>
+                        <textarea class="form-control" id="adresse" name="adresse" rows="2">{{ user_data.get('adresse', '') }}</textarea>
+                    </div>
                     {% endif %}
 
                     <div class="d-flex justify-content-between">

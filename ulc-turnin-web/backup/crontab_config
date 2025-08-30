@@ -1,0 +1,25 @@
+# Configuration crontab pour les backups ULC-ICAM
+# Installer avec: crontab crontab_config
+
+# Variables d'environnement
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=admin@ulc-icam.cd
+
+# Répertoire des scripts
+SCRIPT_DIR=/opt/ulc-icam/backup
+
+# Backup quotidien - tous les jours à 2h00
+0 2 * * * $SCRIPT_DIR/cron_scripts.sh daily >> /var/log/ulc-icam-backup.log 2>&1
+
+# Backup hebdomadaire complet - dimanche à 1h00
+0 1 * * 0 $SCRIPT_DIR/cron_scripts.sh weekly >> /var/log/ulc-icam-backup.log 2>&1
+
+# Test mensuel de restauration - 1er de chaque mois à 3h00
+0 3 1 * * $SCRIPT_DIR/cron_scripts.sh monthly_test >> /var/log/ulc-icam-backup.log 2>&1
+
+# Rotation des logs - tous les dimanches à 23h55
+55 23 * * 0 /usr/sbin/logrotate /etc/logrotate.d/ulc-icam-backup
+
+# Vérification de l'espace disque - tous les jours à 6h00
+0 6 * * * df -h /opt/ulc-icam/backups | tail -1 | awk '{if($5+0 > 85) print "ALERTE: Espace disque backup à " $5}' | mail -s "Alerte Espace Disque ULC-ICAM" admin@ulc-icam.cd
