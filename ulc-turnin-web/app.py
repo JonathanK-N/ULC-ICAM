@@ -13,6 +13,15 @@ from PyPDF2 import PdfReader
 import openai
 from transformers import pipeline
 import threading
+# Ajout pour les notifications email
+try:
+    from flask_mail import Mail, Message
+    from dotenv import load_dotenv
+    load_dotenv()
+    MAIL_AVAILABLE = True
+except ImportError:
+    MAIL_AVAILABLE = False
+    print("Flask-Mail non installé - notifications désactivées")
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
@@ -23,6 +32,19 @@ else:
     app.config['UPLOAD_FOLDER'] = 'uploads'
     
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+
+# Configuration email pour notifications
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', '587'))
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@ulc-icam.cd')
+app.config['NOTIFICATIONS_ENABLED'] = os.environ.get('NOTIFICATIONS_ENABLED', 'true').lower() == 'true'
+
+# Initialiser Flask-Mail
+if MAIL_AVAILABLE:
+    mail = Mail(app)
 
 # Créer le dossier uploads s'il n'existe pas
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -122,6 +144,50 @@ course_content = {}  # {course_id: {'description': '', 'documents': [], 'chapter
 course_chapters = {}  # {course_id: [{id, title, description, content, exercises, documents}]}
 next_chapter_id = 1
 
+# Fonctions de notification email
+def send_email_notification(subject, recipients, html_body):
+    """Envoie une notification email"""
+    if not MAIL_AVAILABLE or not app.config.get('NOTIFICATIONS_ENABLED'):
+        print(f"Notification désactivée: {subject}")
+        return
+    
+    if not recipients:
+        return
+    
+    try:
+        msg = Message(
+            subject=f"[ULC-ICAM] {subject}",
+            recipients=recipients,
+            html=html_body
+        )
+        
+        def send_async():
+            with app.app_context():
+                try:
+                    mail.send(msg)
+                    print(f"Email envoyé: {subject}")
+                except Exception as e:
+                    print(f"Erreur envoi email: {e}")
+        
+        thread = threading.Thread(target=send_async)
+        thread.start()
+        
+    except Exception as e:
+        print(f"Erreur création email: {e}")
+
+def get_student_emails_for_course(course_id):
+    """Récupère les emails des étudiants inscrits à un cours"""
+    emails = []
+    enrolled_students = course_enrollments.get(course_id, [])
+    
+    for student_username in enrolled_students:
+        if student_username in users:
+            student = users[student_username]
+            if student.get('email') and student.get('role') == 'student':
+                emails.append(student['email'])
+    
+    return emails
+
 @app.route('/')
 def index():
     teachers = sum(1 for u in users.values() if u.get('role') == 'teacher')
@@ -215,6 +281,63 @@ def admin_login():
         password = request.form['password']
         
         if username in users and users[username]['password'] == password and users[username]['role'] == 'admin':
+            session['user'] = username
+            session['role'] = users[username]['role']
+            session['name'] = users[username]['name']
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Identifiants incorrects')
+    
+    return render_template('admin_login.html')
+
+@app.route('/dashboard')
+def dashboard():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    role = session.get('role')
+    if role == 'admin':
+        return render_template('admin_dashboard.html')
+    elif role == 'teacher':
+        return render_template('teacher_dashboard.html')
+    elif role == 'student':
+        return render_template('student_dashboard.html')
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/create_assignment', methods=['POST'])
+def create_assignment():
+    if 'user' not in session or session.get('role') != 'teacher':
+        return redirect(url_for('login'))
+    
+    title = request.form.get('title')
+    course_id = int(request.form.get('course_id', 0))
+    
+    global next_assignment_id
+    new_assignment = {
+        'id': next_assignment_id,
+        'title': title,
+        'course_id': course_id,
+        'teacher': session['user'],
+        'created_at': datetime.now().isoformat()
+    }
+    
+    assignments.append(new_assignment)
+    next_assignment_id += 1
+    save_test_data()
+    
+    # Notification email
+    student_emails = get_student_emails_for_course(course_id)
+    if student_emails:
+        subject = f"Nouveau devoir: {title}"
+        html_body = f"<h2>Nouveau devoir: {title}</h2><p>Connectez-vous pour plus de détails.</p>"
+        send_email_notification(subject, student_emails, html_body)
+    
+    flash(f'Devoir créé avec succès!')
+    return redirect(url_for('dashboard'))
+
+if __name__ == '__main__':
+    app.run(debug=True) users[username]['role'] == 'admin':
             session['user'] = username
             session['role'] = users[username]['role']
             session['name'] = users[username]['name']
