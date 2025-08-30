@@ -1,0 +1,29 @@
+# ===============================================================================
+# Développeur: Jonathan Kakesa | Date: 19/12/2024 | Heure: 19:10
+# Description: Dépendances essentielles pour ULC-ICAM Turnin System
+# Fonctionnalités: Flask, email, documents, sécurité, production
+# Nouvelles: ReportLab pour PDF, compression ZIP, exports CSV
+# ===============================================================================
+
+# Framework web principal
+Flask==2.3.3
+Werkzeug==2.3.7
+
+# Gestion des fichiers et sécurité
+python-dotenv==1.0.0
+
+# Traitement de documents
+docx2txt==0.8
+PyPDF2==3.0.1
+
+# Outils système
+psutil==5.9.6
+
+# Notifications email
+Flask-Mail==0.9.1
+
+# Nouvelles fonctionnalités avancées
+reportlab==4.0.7
+
+# Serveur de production
+gunicorn==21.2.0

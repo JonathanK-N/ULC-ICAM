@@ -1,4 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
+# ===============================================================================
+# Développeur: Jonathan Kakesa | Date: 19/12/2024 | Heure: 18:30
+# Description: Application Flask principale pour ULC-ICAM Turnin System
+# Fonctionnalités: Gestion académique, devoirs, plagiat, notifications email
+# Nouvelles: Compression fichiers, téléchargement lot, rapports avancés
+# ===============================================================================
+
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory, make_response
 import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -13,6 +20,15 @@ from PyPDF2 import PdfReader
 import openai
 from transformers import pipeline
 import threading
+# Nouveaux imports pour fonctionnalités avancées
+import zipfile
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+import csv
 # Ajout pour les notifications email
 try:
     from flask_mail import Mail, Message
@@ -187,6 +203,95 @@ def get_student_emails_for_course(course_id):
                 emails.append(student['email'])
     
     return emails
+
+# ===============================================================================
+# Développeur: Jonathan Kakesa | Date: 19/12/2024 | Heure: 18:35
+# Description: Fonctionnalités avancées - Compression et téléchargement
+# Fonctionnalités: Compression ZIP, téléchargement en lot, rapports PDF/CSV
+# ===============================================================================
+
+def create_zip_archive(files_data, archive_name):
+    """Crée une archive ZIP avec les fichiers fournis"""
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for file_path, file_name in files_data:
+            if os.path.exists(file_path):
+                zip_file.write(file_path, file_name)
+    zip_buffer.seek(0)
+    return zip_buffer
+
+def generate_assignment_report_pdf(assignment_id):
+    """Génère un rapport PDF pour un devoir"""
+    try:
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = []
+        
+        # Trouver le devoir
+        assignment = next((a for a in assignments if a['id'] == assignment_id), None)
+        if not assignment:
+            return None
+        
+        # Titre du rapport
+        title = Paragraph(f"Rapport - {assignment['title']}", styles['Title'])
+        story.append(title)
+        story.append(Spacer(1, 12))
+        
+        # Informations du devoir
+        info_data = [
+            ['Devoir:', assignment['title']],
+            ['Date limite:', assignment.get('due_date', 'Non définie')],
+            ['Note max:', str(assignment.get('max_score', 100))]
+        ]
+        info_table = Table(info_data)
+        story.append(info_table)
+        story.append(Spacer(1, 12))
+        
+        # Statistiques des soumissions
+        assignment_submissions = [s for s in submissions if s['assignment_id'] == assignment_id]
+        stats_data = [
+            ['Soumissions totales:', str(len(assignment_submissions))],
+            ['Corrigées:', str(sum(1 for s in assignment_submissions if s['id'] in correction_results))]
+        ]
+        stats_table = Table(stats_data)
+        story.append(stats_table)
+        
+        doc.build(story)
+        buffer.seek(0)
+        return buffer
+    except Exception as e:
+        print(f"Erreur génération PDF: {e}")
+        return None
+
+def generate_course_report_csv(course_id):
+    """Génère un rapport CSV pour un cours"""
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # En-têtes
+    writer.writerow(['Étudiant', 'Email', 'Devoirs soumis', 'Note moyenne'])
+    
+    # Données des étudiants
+    enrolled_students = course_enrollments.get(course_id, [])
+    for student_username in enrolled_students:
+        if student_username in users:
+            student = users[student_username]
+            student_submissions = [s for s in submissions if s['student'] == student_username]
+            avg_score = 0
+            if student_submissions:
+                scores = [correction_results.get(s['id'], {}).get('score', 0) for s in student_submissions]
+                avg_score = sum(scores) / len(scores) if scores else 0
+            
+            writer.writerow([
+                student.get('name', student_username),
+                student.get('email', ''),
+                len(student_submissions),
+                f"{avg_score:.1f}"
+            ])
+    
+    output.seek(0)
+    return output.getvalue()
 
 @app.route('/')
 def index():
@@ -1840,6 +1945,114 @@ def is_results_published(assignment):
             pass
     
     return False
+
+# ===============================================================================
+# Développeur: Jonathan Kakesa | Date: 19/12/2024 | Heure: 18:40
+# Description: Routes pour fonctionnalités avancées
+# Fonctionnalités: Compression ZIP, téléchargement lot, rapports PDF/CSV
+# ===============================================================================
+
+@app.route('/teacher/download_all_submissions/<int:assignment_id>')
+def download_all_submissions(assignment_id):
+    """Télécharge toutes les soumissions d'un devoir en ZIP"""
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    assignment = next((a for a in assignments if a['id'] == assignment_id and a.get('teacher') == session['user']), None)
+    if not assignment:
+        flash('Devoir non trouvé')
+        return redirect(url_for('teacher_assignments'))
+    
+    # Collecter les fichiers de soumission
+    assignment_submissions = [s for s in submissions if s['assignment_id'] == assignment_id]
+    files_data = []
+    
+    for sub in assignment_submissions:
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], sub['filename'])
+        if os.path.exists(file_path):
+            student_name = users.get(sub['student'], {}).get('name', sub['student'])
+            archive_name = f"{student_name}_{sub['filename']}"
+            files_data.append((file_path, archive_name))
+    
+    if not files_data:
+        flash('Aucune soumission à télécharger')
+        return redirect(url_for('assignment_results', assignment_id=assignment_id))
+    
+    # Créer l'archive ZIP
+    zip_buffer = create_zip_archive(files_data, f"soumissions_{assignment['title']}")
+    
+    response = make_response(zip_buffer.getvalue())
+    response.headers['Content-Type'] = 'application/zip'
+    response.headers['Content-Disposition'] = f'attachment; filename="soumissions_{assignment["title"]}.zip"'
+    
+    return response
+
+@app.route('/teacher/generate_report/<int:assignment_id>')
+def generate_assignment_report(assignment_id):
+    """Génère un rapport PDF pour un devoir"""
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    assignment = next((a for a in assignments if a['id'] == assignment_id and a.get('teacher') == session['user']), None)
+    if not assignment:
+        flash('Devoir non trouvé')
+        return redirect(url_for('teacher_assignments'))
+    
+    # Générer le rapport PDF
+    pdf_buffer = generate_assignment_report_pdf(assignment_id)
+    if not pdf_buffer:
+        flash('Erreur lors de la génération du rapport')
+        return redirect(url_for('assignment_results', assignment_id=assignment_id))
+    
+    response = make_response(pdf_buffer.getvalue())
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename="rapport_{assignment["title"]}.pdf"'
+    
+    return response
+
+@app.route('/teacher/export_course_data/<int:course_id>')
+def export_course_data(course_id):
+    """Exporte les données d'un cours en CSV"""
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    # Vérifier l'accès au cours
+    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+        flash('Accès non autorisé')
+        return redirect(url_for('teacher_assigned_courses'))
+    
+    course = next((c for c in admin_courses if c['id'] == course_id), None)
+    if not course:
+        flash('Cours non trouvé')
+        return redirect(url_for('teacher_assigned_courses'))
+    
+    # Générer le CSV
+    csv_data = generate_course_report_csv(course_id)
+    
+    response = make_response(csv_data)
+    response.headers['Content-Type'] = 'text/csv'
+    response.headers['Content-Disposition'] = f'attachment; filename="donnees_{course["name"]}.csv"'
+    
+    return response
+
+@app.route('/admin/system_report')
+def system_report():
+    """Génère un rapport système complet"""
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    
+    # Statistiques générales
+    stats = {
+        'total_users': len(users),
+        'students': sum(1 for u in users.values() if u.get('role') == 'student'),
+        'teachers': sum(1 for u in users.values() if u.get('role') == 'teacher'),
+        'courses': len(admin_courses),
+        'assignments': len(assignments),
+        'submissions': len(submissions),
+        'corrected': len(correction_results)
+    }
+    
+    return render_template('system_report.html', stats=stats)
 
 if __name__ == '__main__':
     import os

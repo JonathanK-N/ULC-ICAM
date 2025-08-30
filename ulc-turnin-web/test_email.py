@@ -1,4 +1,25 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+=============================================================================
+                    TEST NOTIFICATIONS EMAIL ULC-ICAM
+=============================================================================
+
+Script de test pour vérifier la configuration des notifications email
+du système ULC-ICAM Turnin.
+
+Fonctionnalités testées:
+- Configuration des variables d'environnement email
+- Présence des données utilisateurs avec emails
+- Validation de la configuration complète
+
+Auteur: Jonathan Kakesa
+Date: Décembre 2024
+Version: 1.0
+
+=============================================================================
+"""
+
 # Test simple des notifications email
 
 import os

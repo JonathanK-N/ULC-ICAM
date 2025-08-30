@@ -1,112 +1,88 @@
-"""
-Configuration centralisée pour toutes les clés API et paramètres
-ULC-ICAM Turnin System
-"""
+# ===============================================================================
+# Développeur: Jonathan Kakesa | Date: 19/12/2024 | Heure: 18:55
+# Description: Configuration centralisée pour ULC-ICAM Turnin System
+# Fonctionnalités: Paramètres app, email, uploads, sécurité, environnements
+# Nouvelles: Support compression, rapports, téléchargement lot
+# ===============================================================================
 
 import os
 from dotenv import load_dotenv
 
-# Charger les variables d'environnement depuis .env
+# Chargement des variables d'environnement
 load_dotenv()
 
 class Config:
-    """Configuration principale de l'application"""
+    """Configuration principale de l'application ULC-ICAM"""
     
-    # === FLASK CONFIGURATION ===
-    SECRET_KEY = os.environ.get('FLASK_SECRET_KEY') or 'dev-secret-key-change-in-production'
-    FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
-    DEBUG = FLASK_ENV == 'development'
+    # Configuration Flask de base
+    SECRET_KEY = os.environ.get('FLASK_SECRET_KEY') or 'ulc-icam-secret-key-2024'
+    DEBUG = os.environ.get('FLASK_ENV') == 'development'
     
-    # === UPLOAD CONFIGURATION ===
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
+    # Configuration des uploads
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', 'uploads')
-    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'docx', 'doc', 'py', 'java', 'cpp', 'c', 'js', 'html', 'css', 'md'}
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB maximum
+    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'docx', 'doc', 'py', 'java', 'cpp', 'c'}
     
-    # === AI SERVICES API KEYS ===
+    # Configuration de la correction automatique
+    AUTO_CORRECTION_ENABLED = True
+    CORRECTION_TIMEOUT = 30  # secondes
     
-    # OpenAI (GPT-3.5/4) - Pour correction automatique avancée
-    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
-    OPENAI_MODEL = os.environ.get('OPENAI_MODEL', 'gpt-3.5-turbo')
-    OPENAI_MAX_TOKENS = int(os.environ.get('OPENAI_MAX_TOKENS', '500'))
+    # Configuration de la détection de plagiat
+    PLAGIARISM_THRESHOLD = 30.0  # Pourcentage de similarité
+    PLAGIARISM_ENABLED = True
     
-    # Google Custom Search - Pour détection de plagiat web
-    GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
-    GOOGLE_SEARCH_ENGINE_ID = os.environ.get('GOOGLE_SEARCH_ENGINE_ID')
+    # Configuration de sécurité
+    SESSION_TIMEOUT = 3600  # 1 heure
+    MAX_LOGIN_ATTEMPTS = 5
     
-    # Hugging Face - Pour modèles locaux
-    HUGGINGFACE_API_KEY = os.environ.get('HUGGINGFACE_API_KEY')  # Optionnel
-    HUGGINGFACE_MODEL = os.environ.get('HUGGINGFACE_MODEL', 'nlptown/bert-base-multilingual-uncased-sentiment')
+    # Configuration des données
+    DATA_FILE = 'data.json'
+    BACKUP_ENABLED = True
     
-    # === PLAGIARISM DETECTION SETTINGS ===
-    PLAGIARISM_THRESHOLD_SUSPECT = float(os.environ.get('PLAGIARISM_THRESHOLD_SUSPECT', '50.0'))
-    PLAGIARISM_THRESHOLD_ATTENTION = float(os.environ.get('PLAGIARISM_THRESHOLD_ATTENTION', '30.0'))
-    PLAGIARISM_MAX_SOURCES = int(os.environ.get('PLAGIARISM_MAX_SOURCES', '5'))
-    
-    # === AUTO CORRECTION SETTINGS ===
-    AUTO_CORRECTION_ENABLED = os.environ.get('AUTO_CORRECTION_ENABLED', 'true').lower() == 'true'
-    CORRECTION_TIMEOUT = int(os.environ.get('CORRECTION_TIMEOUT', '30'))  # secondes
-    
-    # === DATABASE CONFIGURATION ===
-    # Pour future migration vers vraie DB
-    DATABASE_URL = os.environ.get('DATABASE_URL')
-    
-    # === EMAIL CONFIGURATION ===
-    # Pour notifications futures
-    MAIL_SERVER = os.environ.get('MAIL_SERVER')
+    # Configuration email pour notifications
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
+    MAIL_USE_TLS = True
+    MAIL_USE_SSL = False
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() == 'true'
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@ulc-icam.cd')
     
-    # === SECURITY SETTINGS ===
-    SESSION_TIMEOUT = int(os.environ.get('SESSION_TIMEOUT', '3600'))  # 1 heure
-    MAX_LOGIN_ATTEMPTS = int(os.environ.get('MAX_LOGIN_ATTEMPTS', '5'))
-    
-    # === LOGGING CONFIGURATION ===
-    LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
-    LOG_FILE = os.environ.get('LOG_FILE', 'ulc_icam.log')
+    # Configuration des notifications
+    NOTIFICATIONS_ENABLED = os.environ.get('NOTIFICATIONS_ENABLED', 'true').lower() == 'true'
+    NOTIFICATION_TYPES = {
+        'new_assignment': True,
+        'grades_published': True,
+        'assignment_reminder': True
+    }
     
     @classmethod
-    def validate_config(cls):
-        """Valide la configuration et affiche les warnings"""
+    def validate(cls):
+        """Valide la configuration et retourne les avertissements"""
         warnings = []
         
-        if not cls.OPENAI_API_KEY:
-            warnings.append("⚠️  OpenAI API key manquante - correction basique utilisée")
+        if cls.SECRET_KEY == 'ulc-icam-secret-key-2024':
+            warnings.append("⚠️ Changez la clé secrète en production")
         
-        if not cls.GOOGLE_API_KEY:
-            warnings.append("⚠️  Google API key manquante - détection plagiat locale uniquement")
-        
-        if cls.SECRET_KEY == 'dev-secret-key-change-in-production' and cls.FLASK_ENV == 'production':
-            warnings.append("🚨 ATTENTION: Changez la clé secrète en production!")
+        if not os.path.exists(cls.UPLOAD_FOLDER):
+            warnings.append(f"📁 Dossier {cls.UPLOAD_FOLDER} sera créé")
         
         return warnings
 
 # Configuration pour différents environnements
 class DevelopmentConfig(Config):
-    """Configuration pour développement"""
+    """Configuration pour le développement"""
     DEBUG = True
-    FLASK_ENV = 'development'
-
-class ProductionConfig(Config):
-    """Configuration pour production"""
-    DEBUG = False
-    FLASK_ENV = 'production'
     
-class TestingConfig(Config):
-    """Configuration pour tests"""
-    TESTING = True
-    DEBUG = True
+class ProductionConfig(Config):
+    """Configuration pour la production"""
+    DEBUG = False
+    SECRET_KEY = os.environ.get('FLASK_SECRET_KEY') or 'CHANGE-ME-IN-PRODUCTION'
 
 # Sélection automatique de la configuration
-config = {
-    'development': DevelopmentConfig,
-    'production': ProductionConfig,
-    'testing': TestingConfig,
-    'default': DevelopmentConfig
-}
-
 def get_config():
     """Retourne la configuration selon l'environnement"""
     env = os.environ.get('FLASK_ENV', 'development')
-    return config.get(env, config['default'])
+    if env == 'production':
+        return ProductionConfig
+    return DevelopmentConfig
