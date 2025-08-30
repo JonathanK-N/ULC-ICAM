@@ -15,20 +15,50 @@ import requests
 import hashlib
 from difflib import SequenceMatcher
 import re
-import docx2txt
-from PyPDF2 import PdfReader
-import openai
-from transformers import pipeline
+# Imports optionnels pour traitement de fichiers
+try:
+    import docx2txt
+    DOCX_AVAILABLE = True
+except ImportError:
+    DOCX_AVAILABLE = False
+    print("docx2txt non installé - lecture DOCX désactivée")
+
+try:
+    from PyPDF2 import PdfReader
+    PDF_AVAILABLE = True
+except ImportError:
+    PDF_AVAILABLE = False
+    print("PyPDF2 non installé - lecture PDF désactivée")
+
+try:
+    import openai
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    print("OpenAI non installé - correction IA désactivée")
+
+try:
+    from transformers import pipeline
+    TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    TRANSFORMERS_AVAILABLE = False
+    print("Transformers non installé - IA locale désactivée")
 import threading
 # Nouveaux imports pour fonctionnalités avancées
 import zipfile
 import io
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib import colors
 import csv
+# Imports optionnels pour PDF
+try:
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import letter
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib import colors
+    REPORTLAB_AVAILABLE = True
+except ImportError:
+    REPORTLAB_AVAILABLE = False
+    print("ReportLab non installé - génération PDF désactivée")
 # Ajout pour les notifications email
 try:
     from flask_mail import Mail, Message
@@ -222,6 +252,10 @@ def create_zip_archive(files_data, archive_name):
 
 def generate_assignment_report_pdf(assignment_id):
     """Génère un rapport PDF pour un devoir"""
+    if not REPORTLAB_AVAILABLE:
+        print("ReportLab non disponible - génération PDF impossible")
+        return None
+        
     try:
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=letter)
@@ -392,63 +426,6 @@ def admin_login():
             return redirect(url_for('dashboard'))
         else:
             flash('Identifiants incorrects')
-    
-    return render_template('admin_login.html')
-
-@app.route('/dashboard')
-def dashboard():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    role = session.get('role')
-    if role == 'admin':
-        return render_template('admin_dashboard.html')
-    elif role == 'teacher':
-        return render_template('teacher_dashboard.html')
-    elif role == 'student':
-        return render_template('student_dashboard.html')
-    else:
-        return redirect(url_for('login'))
-
-@app.route('/create_assignment', methods=['POST'])
-def create_assignment():
-    if 'user' not in session or session.get('role') != 'teacher':
-        return redirect(url_for('login'))
-    
-    title = request.form.get('title')
-    course_id = int(request.form.get('course_id', 0))
-    
-    global next_assignment_id
-    new_assignment = {
-        'id': next_assignment_id,
-        'title': title,
-        'course_id': course_id,
-        'teacher': session['user'],
-        'created_at': datetime.now().isoformat()
-    }
-    
-    assignments.append(new_assignment)
-    next_assignment_id += 1
-    save_test_data()
-    
-    # Notification email
-    student_emails = get_student_emails_for_course(course_id)
-    if student_emails:
-        subject = f"Nouveau devoir: {title}"
-        html_body = f"<h2>Nouveau devoir: {title}</h2><p>Connectez-vous pour plus de détails.</p>"
-        send_email_notification(subject, student_emails, html_body)
-    
-    flash(f'Devoir créé avec succès!')
-    return redirect(url_for('dashboard'))
-
-if __name__ == '__main__':
-    app.run(debug=True) users[username]['role'] == 'admin':
-            session['user'] = username
-            session['role'] = users[username]['role']
-            session['name'] = users[username]['name']
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Identifiants incorrects ou accès non autorisé')
     
     return render_template('admin_login.html')
 
@@ -1394,9 +1371,9 @@ def extract_text_from_file(file_path):
         if ext == '.txt':
             with open(file_path, 'r', encoding='utf-8') as f:
                 return f.read()
-        elif ext == '.docx':
+        elif ext == '.docx' and DOCX_AVAILABLE:
             return docx2txt.process(file_path)
-        elif ext == '.pdf':
+        elif ext == '.pdf' and PDF_AVAILABLE:
             reader = PdfReader(file_path)
             text = ''
             for page in reader.pages:
@@ -1484,17 +1461,22 @@ def ai_auto_correction(text, assignment, submission_id):
     try:
         # Utiliser OpenAI GPT pour la correction
         openai_key = os.environ.get('OPENAI_API_KEY')
-        if openai_key:
+        if openai_key and OPENAI_AVAILABLE:
             return openai_correction(text, assignment, submission_id)
-        else:
+        elif TRANSFORMERS_AVAILABLE:
             # Fallback avec Hugging Face Transformers
             return huggingface_correction(text, assignment, submission_id)
+        else:
+            return fallback_correction(assignment, submission_id)
     except Exception as e:
         print(f"Erreur correction IA: {e}")
         return fallback_correction(assignment, submission_id)
 
 def openai_correction(text, assignment, submission_id):
     """Correction avec OpenAI GPT"""
+    if not OPENAI_AVAILABLE:
+        return huggingface_correction(text, assignment, submission_id)
+        
     try:
         openai.api_key = os.environ.get('OPENAI_API_KEY')
         
@@ -1538,6 +1520,9 @@ Format: NOTE: X/Y\nCOMMENTAIRES:\n- Point 1\n- Point 2\n...
 
 def huggingface_correction(text, assignment, submission_id):
     """Correction avec Hugging Face (modèle local)"""
+    if not TRANSFORMERS_AVAILABLE:
+        return fallback_correction(assignment, submission_id)
+        
     try:
         # Utiliser un modèle de sentiment/qualité pour évaluation basique
         classifier = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")

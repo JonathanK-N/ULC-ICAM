@@ -1,0 +1,10 @@
+Flask==2.3.3
+Werkzeug==2.3.7
+requests==2.31.0
+docx2txt==0.8
+PyPDF2==3.0.1
+python-dotenv==1.0.0
+Flask-Mail==1.0.1
+reportlab==4.0.4
+psutil==5.9.6
+gunicorn==21.2.0
