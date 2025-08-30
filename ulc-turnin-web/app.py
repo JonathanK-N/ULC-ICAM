@@ -11,6 +11,8 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import json
 import secrets
+import string
+import random
 import requests
 import hashlib
 from difflib import SequenceMatcher
@@ -130,29 +132,17 @@ def save_test_data():
 # Charger les données de test
 test_data = load_test_data()
 
-if test_data:
-    # Utiliser les données de test
-    users = test_data.get('users', {})
-    admin_courses = test_data.get('admin_courses', [])
-    course_assignments = {int(k): v for k, v in test_data.get('course_assignments', {}).items()}
-    course_enrollments = {int(k): v for k, v in test_data.get('course_enrollments', {}).items()}
-    assignments = test_data.get('assignments', [])
-    submissions = test_data.get('submissions', [])
-    next_course_admin_id = test_data.get('next_course_admin_id', 1)
-    next_assignment_id = test_data.get('next_assignment_id', 1)
-    print(f"Donnees de test chargees: {len(users)} utilisateurs, {len(admin_courses)} cours")
-else:
-    # Données par défaut
-    users = {
-        'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur Cognito Web'}
-    }
-    admin_courses = []
-    course_assignments = {}
-    course_enrollments = {}
-    assignments = []
-    submissions = []
-    next_course_admin_id = 1
-    next_assignment_id = 1
+# Données par défaut - seulement l'administrateur
+users = {
+    'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur ULC-ICAM'}
+}
+admin_courses = []
+course_assignments = {}
+course_enrollments = {}
+assignments = []
+submissions = []
+next_course_admin_id = 1
+next_assignment_id = 1
 
 # Les données sont maintenant chargées depuis le fichier JSON ci-dessus
 
@@ -220,6 +210,12 @@ def send_email_notification(subject, recipients, html_body):
         
     except Exception as e:
         print(f"Erreur création email: {e}")
+
+def generate_temp_password():
+    """Génère un mot de passe temporaire"""
+    length = 8
+    characters = string.ascii_letters + string.digits
+    return ''.join(random.choice(characters) for _ in range(length))
 
 def get_student_emails_for_course(course_id):
     """Récupère les emails des étudiants inscrits à un cours"""
@@ -349,7 +345,7 @@ def login():
 def student_login():
     if request.method == 'POST':
         identifier = request.form['identifier']  # CIP ou email
-        password = request.form.get('password', '')  # Mot de passe optionnel pour les tests
+        password = request.form['password']
         
         # Chercher l'utilisateur par CIP ou email
         user_found = None
@@ -358,10 +354,7 @@ def student_login():
         for username, user_data in users.items():
             if (user_data['role'] == 'student' and 
                 (user_data.get('cip') == identifier or user_data.get('email') == identifier)):
-                # Vérifier le mot de passe (requis sauf en mode développement)
-                if os.environ.get('FLASK_ENV') == 'development' and not password:
-                    pass  # Mode développement sans mot de passe
-                elif user_data['password'] == password:
+                if user_data['password'] == password:
                     user_found = user_data
                     username_found = username
                     break
@@ -370,8 +363,8 @@ def student_login():
             session['user'] = username_found
             session['role'] = user_found['role']
             session['name'] = user_found['name']
-            # Ignorer le changement de mot de passe obligatoire en mode test
-            if password and user_found.get('must_change_password', False):
+            # Forcer le changement de mot de passe si nécessaire
+            if user_found.get('must_change_password', False):
                 return redirect(url_for('change_password'))
             return redirect(url_for('dashboard'))
         else:
@@ -383,7 +376,7 @@ def student_login():
 def teacher_login():
     if request.method == 'POST':
         identifier = request.form['identifier']  # CIP ou email
-        password = request.form.get('password', '')  # Mot de passe optionnel pour les tests
+        password = request.form['password']
         
         # Chercher l'utilisateur par CIP ou email
         user_found = None
@@ -392,10 +385,7 @@ def teacher_login():
         for username, user_data in users.items():
             if (user_data['role'] == 'teacher' and 
                 (user_data.get('cip') == identifier or user_data.get('email') == identifier)):
-                # Vérifier le mot de passe (requis sauf en mode développement)
-                if os.environ.get('FLASK_ENV') == 'development' and not password:
-                    pass  # Mode développement sans mot de passe
-                elif user_data['password'] == password:
+                if user_data['password'] == password:
                     user_found = user_data
                     username_found = username
                     break
@@ -404,8 +394,8 @@ def teacher_login():
             session['user'] = username_found
             session['role'] = user_found['role']
             session['name'] = user_found['name']
-            # Ignorer le changement de mot de passe obligatoire en mode test
-            if password and user_found.get('must_change_password', False):
+            # Forcer le changement de mot de passe si nécessaire
+            if user_found.get('must_change_password', False):
                 return redirect(url_for('change_password'))
             return redirect(url_for('dashboard'))
         else:
@@ -550,9 +540,11 @@ def add_student():
         return redirect(url_for('login'))
     
     if request.method == 'POST':
+        temp_password = generate_temp_password()
         student_data = {
             'username': request.form['username'],
-            'password': request.form['password'],
+            'password': temp_password,
+            'temp_password': temp_password,
             'role': 'student',
             'must_change_password': True,
             'cip': request.form['cip'],
@@ -573,10 +565,11 @@ def add_student():
         else:
             student_data['name'] = f"{student_data['prenom']} {student_data['nom']}"
             users[student_data['username']] = student_data
-            flash(f'Étudiant {student_data["username"]} ajouté avec succès')
+            save_test_data()
+            flash(f'Étudiant {student_data["username"]} ajouté avec mot de passe temporaire: {temp_password}')
             return redirect(url_for('admin_users'))
     
-    return render_template('add_student.html')
+    return render_template('add_student.html', system_config=system_config)
 
 @app.route('/admin/add_teacher', methods=['GET', 'POST'])
 def add_teacher():
@@ -584,9 +577,11 @@ def add_teacher():
         return redirect(url_for('login'))
     
     if request.method == 'POST':
+        temp_password = generate_temp_password()
         teacher_data = {
             'username': request.form['username'],
-            'password': request.form['password'],
+            'password': temp_password,
+            'temp_password': temp_password,
             'role': 'teacher',
             'must_change_password': True,
             'cip': request.form['cip'],
@@ -608,10 +603,11 @@ def add_teacher():
         else:
             teacher_data['name'] = f"{teacher_data['grade']} {teacher_data['prenom']} {teacher_data['nom']}"
             users[teacher_data['username']] = teacher_data
-            flash(f'Enseignant {teacher_data["username"]} ajouté avec succès')
+            save_test_data()
+            flash(f'Enseignant {teacher_data["username"]} ajouté avec mot de passe temporaire: {temp_password}')
             return redirect(url_for('admin_users'))
     
-    return render_template('add_teacher.html')
+    return render_template('add_teacher.html', system_config=system_config)
 
 @app.route('/admin/import_csv', methods=['GET', 'POST'])
 def import_csv():
@@ -678,6 +674,10 @@ def change_password():
         else:
             users[session['user']]['password'] = new_password
             users[session['user']]['must_change_password'] = False
+            # Supprimer le mot de passe temporaire après changement
+            if 'temp_password' in users[session['user']]:
+                del users[session['user']]['temp_password']
+            save_test_data()
             flash('Mot de passe changé avec succès')
             return redirect(url_for('dashboard'))
     
