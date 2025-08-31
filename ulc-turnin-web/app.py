@@ -157,19 +157,24 @@ except Exception as e:
     next_course_admin_id = 1
     next_assignment_id = 1
 
-print(f"Utilisateurs chargés: {len(users)}")
-print(f"Cours chargés: {len(admin_courses)}")
-print(f"Devoirs chargés: {len(assignments)}")
-print(f"Soumissions chargées: {len(submissions)}")
-print("=== CHARGEMENT TERMINÉ ===")
-
 # Résultats de correction et plagiat
 correction_results = {}  # {submission_id: {'score': 85, 'feedback': 'Bon travail'}}
 plagiarism_results = {}  # {submission_id: {'similarity': 15, 'sources': []}}
 
+print(f"Utilisateurs chargés: {len(users)}")
+print(f"Cours chargés: {len(admin_courses)}")
+print(f"Devoirs chargés: {len(assignments)}")
+print(f"Soumissions chargées: {len(submissions)}")
+print(f"Résultats de correction: {len(correction_results)}")
+print(f"Résultats de plagiat: {len(plagiarism_results)}")
+print("=== CHARGEMENT TERMINÉ ===")
+
+# Charger les corrections existantes depuis les soumissions
 for sub in submissions:
     if 'correction' in sub:
         correction_results[sub['id']] = sub['correction']
+    if 'plagiarism' in sub:
+        plagiarism_results[sub['id']] = sub['plagiarism']
 
 # Gestion des groupes pour les devoirs
 group_assignments = {}  # {assignment_id: {'groups': [[student1, student2], [student3, student4]], 'type': 'manual/auto'}}
@@ -485,14 +490,22 @@ def dashboard():
         all_students = set()
         for course_id, teachers in course_assignments.items():
             if session['user'] in teachers:
-                all_students.update(course_enrollments.get(course_id, []))
+                all_students.update(course_enrollments.get(int(course_id), []))
+        
+        # Récupérer les cours assignés au professeur
+        teacher_courses = []
+        for course in admin_courses:
+            if str(course['id']) in course_assignments and session['user'] in course_assignments[str(course['id'])]:
+                teacher_courses.append(course)
         
         return render_template('teacher_dashboard.html', 
                              teacher_assignments=teacher_assignments,
                              teacher_assignments_count=len(teacher_assignments),
                              total_submissions=len(teacher_submissions),
                              total_students=len(all_students),
-                             teacher_courses_count=sum(1 for teachers in course_assignments.values() if session['user'] in teachers),
+                             teacher_courses_count=len(teacher_courses),
+                             teacher_courses=teacher_courses,
+                             course_enrollments=course_enrollments,
                              assignment_stats=assignment_stats)
     else:
         # Calculer les statistiques pour l'admin
@@ -508,6 +521,7 @@ def dashboard():
                              assignments=assignments, 
                              submissions=submissions, 
                              admin_courses=admin_courses,
+                             course_assignments=course_assignments,
                              users_count=users_count,
                              students_count=students_count,
                              teachers_count=teachers_count,
@@ -535,17 +549,80 @@ def submit_assignment(assignment_id):
     if request.method == 'POST':
         # Soumission de code via éditeur
         if 'code_content' in request.form:
-            code = request.form['code_content']
-            language = request.form.get('language', 'python')
-            
-            if code.strip():
+            try:
+                code = request.form['code_content']
+                language = request.form.get('language', 'python')
+                
+                if not code.strip():
+                    return jsonify({
+                        'success': False,
+                        'error': 'Le code ne peut pas être vide'
+                    })
+                
                 # Exécution automatique du code
                 executor = CodeExecutor()
                 test_cases = assignment.get('test_cases', [])
                 execution_result = executor.execute_code(code, language, test_cases=test_cases)
                 
+                # Calculer la note basée sur les résultats réels d'exécution
+                max_score = assignment.get('max_score', 100)
+                
+                # Pour les devoirs mixtes, le code ne vaut que 50% de la note
+                if assignment.get('is_mixed_assignment'):
+                    code_max_score = max_score // 2
+                    remaining_score = max_score - code_max_score
+                else:
+                    code_max_score = max_score
+                    remaining_score = 0
+                
+                has_compilation_error = bool(execution_result.get('compile_output', '').strip())
+                has_runtime_error = bool(execution_result.get('stderr', '').strip())
+                execution_success = execution_result.get('success', False)
+                
+                status = execution_result.get('status', '')
+                is_system_error = 'non installé' in status or 'non trouvé' in status or 'non supporté' in status
+                
+                if execution_success and not has_compilation_error and not has_runtime_error:
+                    code_score = code_max_score
+                    if assignment.get('is_mixed_assignment'):
+                        feedback = ["✅ Code compilé et exécuté avec succès", f"📝 Note code: {code_score}/{code_max_score}", f"⏳ En attente des fichiers d'analyse ({remaining_score} points)"]
+                    else:
+                        feedback = ["✅ Code compilé et exécuté avec succès", f"🎉 Note maximale obtenue: {code_score}/{code_max_score}"]
+                elif is_system_error:
+                    code_score = 0
+                    feedback = [f"⚠️ {status}", "🔧 Contactez l'administrateur pour installer les outils nécessaires"]
+                else:
+                    code_score = 0
+                    feedback = []
+                    if has_compilation_error:
+                        feedback.append("❌ Erreurs de compilation")
+                    if has_runtime_error:
+                        feedback.append("❌ Erreurs d'exécution")
+                    if not execution_success:
+                        feedback.append("❌ Échec de l'exécution")
+                    feedback.append("🔧 Corrigez les erreurs pour obtenir des points")
+                
+                score = code_score
+                
+                execution_result['score'] = score
+                execution_result['max_score'] = max_score
+                execution_result['feedback'] = feedback
+                
                 # Sauvegarde de la soumission
                 file_info = save_code_submission(session['user'], assignment_id, code, language, execution_result)
+                
+                # Créer la correction automatique basée sur l'exécution
+                correction = {
+                    'score': score,
+                    'max_score': max_score,
+                    'feedback': feedback,
+                    'auto_generated': True
+                }
+                
+                # Détection de plagiat pour le code si activée
+                plagiarism = {'similarity': 0, 'status': 'non_verifie', 'sources': []}
+                if assignment.get('plagiarism_check'):
+                    plagiarism = check_plagiarism_local(code, len(submissions) + 1)
                 
                 submission = {
                     'id': len(submissions) + 1,
@@ -556,15 +633,27 @@ def submit_assignment(assignment_id):
                     'results_available': True,
                     'code_submission': True,
                     'language': language,
-                    'execution_result': execution_result
+                    'execution_result': execution_result,
+                    'correction': correction,
+                    'plagiarism': plagiarism
                 }
+                
+                # Sauvegarder aussi dans correction_results
+                correction_results[submission['id']] = correction
                 submissions.append(submission)
                 save_test_data()
                 
                 return jsonify({
                     'success': True,
                     'execution_result': execution_result,
-                    'submission_id': submission['id']
+                    'submission_id': submission['id'],
+                    'score': score,
+                    'max_score': max_score
+                })
+            except Exception as e:
+                return jsonify({
+                    'success': False,
+                    'error': f'Erreur lors de l\'exécution: {str(e)}'
                 })
         
         # Soumission de fichier classique
@@ -632,6 +721,7 @@ def add_student():
             'date_naissance': request.form['date_naissance'],
             'promotion': request.form['promotion'],
             'faculte': request.form['faculte'],
+            'departement': request.form['departement'],
             'telephone': request.form['telephone'],
             'email': request.form['email'],
             'adresse': request.form['adresse']
@@ -844,7 +934,12 @@ def course_detail(course_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    course = next((c for c in courses if c['id'] == course_id and c['teacher'] == session['user']), None)
+    # Vérifier que le professeur est assigné à ce cours
+    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+        flash('Accès non autorisé à ce cours')
+        return redirect(url_for('teacher_assigned_courses'))
+    
+    course = next((c for c in admin_courses if c['id'] == course_id), None)
     if not course:
         flash('Cours non trouvé')
         return redirect(url_for('teacher_assigned_courses'))
@@ -853,8 +948,11 @@ def course_detail(course_id):
     eligible_students = []
     for username, user in users.items():
         if user['role'] == 'student':
-            if (not course['target_promotions'] or user.get('promotion') in course['target_promotions']) and \
-               (not course['target_facultes'] or user.get('faculte') in course['target_facultes']):
+            # Vérifier si l'étudiant correspond aux critères du cours
+            promotion_match = not course.get('promotions') or user.get('promotion') in course.get('promotions', [])
+            faculte_match = not course.get('faculte') or user.get('faculte') == course.get('faculte')
+            
+            if promotion_match and faculte_match:
                 eligible_students.append({'username': username, 'data': user})
     
     # Étudiants inscrits
@@ -869,13 +967,23 @@ def enroll_student(course_id, username):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    course = next((c for c in courses if c['id'] == course_id and c['teacher'] == session['user']), None)
+    # Vérifier que le professeur est assigné à ce cours
+    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+        flash('Accès non autorisé à ce cours')
+        return redirect(url_for('teacher_assigned_courses'))
+    
+    course = next((c for c in admin_courses if c['id'] == course_id), None)
     if course and username in users and users[username]['role'] == 'student':
         if course_id not in course_enrollments:
             course_enrollments[course_id] = []
         if username not in course_enrollments[course_id]:
             course_enrollments[course_id].append(username)
-            flash(f'Étudiant {username} inscrit au cours')
+            save_test_data()  # Sauvegarder les changements
+            flash(f'Étudiant {users[username].get("name", username)} inscrit au cours')
+        else:
+            flash('Étudiant déjà inscrit à ce cours')
+    else:
+        flash('Erreur lors de l\'inscription')
     
     return redirect(url_for('course_detail', course_id=course_id))
 
@@ -884,10 +992,18 @@ def unenroll_student(course_id, username):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    course = next((c for c in courses if c['id'] == course_id and c['teacher'] == session['user']), None)
+    # Vérifier que le professeur est assigné à ce cours
+    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+        flash('Accès non autorisé à ce cours')
+        return redirect(url_for('teacher_assigned_courses'))
+    
+    course = next((c for c in admin_courses if c['id'] == course_id), None)
     if course and course_id in course_enrollments and username in course_enrollments[course_id]:
         course_enrollments[course_id].remove(username)
-        flash(f'Étudiant {username} désinscrit du cours')
+        save_test_data()  # Sauvegarder les changements
+        flash(f'Étudiant {users[username].get("name", username)} désinscrit du cours')
+    else:
+        flash('Erreur lors de la désinscription')
     
     return redirect(url_for('course_detail', course_id=course_id))
 
@@ -952,6 +1068,7 @@ def edit_user(username):
                 'date_naissance': request.form.get('date_naissance', user_data.get('date_naissance', '')),
                 'promotion': request.form.get('promotion', user_data.get('promotion', '')),
                 'faculte': request.form.get('faculte', user_data.get('faculte', '')),
+                'departement': request.form.get('departement', user_data.get('departement', '')),
                 'telephone': request.form.get('telephone', user_data.get('telephone', '')),
                 'email': request.form.get('email', user_data.get('email', '')),
                 'adresse': request.form.get('adresse', user_data.get('adresse', ''))
@@ -994,7 +1111,7 @@ def edit_user(username):
         flash('Profil mis à jour avec succès')
         return redirect(url_for('user_profile', username=username))
     
-    return render_template('edit_user.html', username=username, user_data=users[username])
+    return render_template('edit_user.html', username=username, user_data=users[username], system_config=system_config)
 
 @app.route('/admin/system_config')
 def system_config_view():
@@ -1116,7 +1233,7 @@ def teacher_assigned_courses():
     # Trouver les cours assignés à ce professeur
     teacher_courses = []
     for course in admin_courses:
-        if course['id'] in course_assignments and session['user'] in course_assignments[course['id']]:
+        if str(course['id']) in course_assignments and session['user'] in course_assignments[str(course['id'])]:
             teacher_courses.append(course)
     
     return render_template('teacher_assigned_courses.html', courses=teacher_courses)
@@ -1131,7 +1248,7 @@ def course_content_view(course_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
         flash('Accès non autorisé à ce cours')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -1147,12 +1264,50 @@ def course_content_view(course_id):
     
     return render_template('course_content.html', course=course, content=course_content[course_id], chapters=course_chapters[course_id])
 
+@app.route('/teacher/upload_syllabus/<int:course_id>', methods=['POST'])
+def upload_syllabus(course_id):
+    if 'user' not in session or session['role'] != 'teacher':
+        return redirect(url_for('login'))
+    
+    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+        flash('Accès non autorisé')
+        return redirect(url_for('teacher_assigned_courses'))
+    
+    if 'syllabus' not in request.files:
+        flash('Aucun fichier sélectionné')
+        return redirect(url_for('course_content_view', course_id=course_id))
+    
+    file = request.files['syllabus']
+    allowed_extensions = ['.pdf', '.ppt', '.pptx']
+    if file.filename == '' or not any(file.filename.lower().endswith(ext) for ext in allowed_extensions):
+        flash('Veuillez sélectionner un fichier PDF, PPT ou PPTX')
+        return redirect(url_for('course_content_view', course_id=course_id))
+    
+    filename = secure_filename(f"syllabus_{course_id}_{file.filename}")
+    syllabus_path = os.path.join('uploads', 'syllabus')
+    os.makedirs(syllabus_path, exist_ok=True)
+    file.save(os.path.join(syllabus_path, filename))
+    
+    if course_id not in course_content:
+        course_content[course_id] = {'description': '', 'documents': []}
+    
+    course_content[course_id]['syllabus_file'] = filename
+    flash('Plan de cours téléversé avec succès')
+    return redirect(url_for('course_content_view', course_id=course_id))
+
+@app.route('/download_syllabus/<int:course_id>/<filename>')
+def download_syllabus(course_id, filename):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    return send_from_directory(os.path.join('uploads', 'syllabus'), filename)
+
 @app.route('/teacher/update_course_description/<int:course_id>', methods=['POST'])
 def update_course_description(course_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -1168,11 +1323,29 @@ def add_chapter(course_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     
     global next_chapter_id
+    
+    # Traiter les fichiers uploadés
+    uploaded_documents = []
+    if 'chapter_files' in request.files:
+        files = request.files.getlist('chapter_files')
+        for file in files:
+            allowed_extensions = ['.pdf', '.ppt', '.pptx']
+            if file and file.filename != '' and any(file.filename.lower().endswith(ext) for ext in allowed_extensions):
+                filename = secure_filename(f"chapter_{next_chapter_id}_{file.filename}")
+                doc_path = os.path.join('uploads', 'chapters')
+                os.makedirs(doc_path, exist_ok=True)
+                file.save(os.path.join(doc_path, filename))
+                
+                uploaded_documents.append({
+                    'filename': filename,
+                    'original_name': file.filename,
+                    'uploaded_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                })
     
     chapter = {
         'id': next_chapter_id,
@@ -1180,7 +1353,7 @@ def add_chapter(course_id):
         'description': request.form.get('description', ''),
         'content': '',
         'exercises': [],
-        'documents': []
+        'documents': uploaded_documents
     }
     
     if course_id not in course_chapters:
@@ -1189,7 +1362,10 @@ def add_chapter(course_id):
     course_chapters[course_id].append(chapter)
     next_chapter_id += 1
     
-    flash('Chapitre ajouté avec succès')
+    if uploaded_documents:
+        flash(f'Chapitre ajouté avec {len(uploaded_documents)} fichier(s) PDF')
+    else:
+        flash('Chapitre ajouté avec succès')
     return redirect(url_for('course_content_view', course_id=course_id))
 
 @app.route('/teacher/chapter/<int:course_id>/<int:chapter_id>')
@@ -1197,7 +1373,7 @@ def chapter_detail(course_id, chapter_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -1218,7 +1394,7 @@ def update_chapter(course_id, chapter_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -1237,7 +1413,7 @@ def add_exercise(course_id, chapter_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -1259,7 +1435,7 @@ def upload_chapter_document(course_id, chapter_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -1268,25 +1444,25 @@ def upload_chapter_document(course_id, chapter_id):
         return redirect(url_for('chapter_detail', course_id=course_id, chapter_id=chapter_id))
     
     file = request.files['document']
-    if file.filename == '':
-        flash('Aucun document sélectionné')
+    allowed_extensions = ['.pdf', '.ppt', '.pptx']
+    if file.filename == '' or not any(file.filename.lower().endswith(ext) for ext in allowed_extensions):
+        flash('Veuillez sélectionner un fichier PDF, PPT ou PPTX')
         return redirect(url_for('chapter_detail', course_id=course_id, chapter_id=chapter_id))
     
-    if file:
-        filename = secure_filename(f"chapter_{chapter_id}_{file.filename}")
-        doc_path = os.path.join('uploads', 'chapters')
-        os.makedirs(doc_path, exist_ok=True)
-        file.save(os.path.join(doc_path, filename))
-        
-        if course_id in course_chapters:
-            chapter = next((ch for ch in course_chapters[course_id] if ch['id'] == chapter_id), None)
-            if chapter:
-                chapter['documents'].append({
-                    'filename': filename,
-                    'original_name': file.filename,
-                    'uploaded_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                })
-                flash('Document ajouté au chapitre')
+    filename = secure_filename(f"chapter_{chapter_id}_{file.filename}")
+    doc_path = os.path.join('uploads', 'chapters')
+    os.makedirs(doc_path, exist_ok=True)
+    file.save(os.path.join(doc_path, filename))
+    
+    if course_id in course_chapters:
+        chapter = next((ch for ch in course_chapters[course_id] if ch['id'] == chapter_id), None)
+        if chapter:
+            chapter['documents'].append({
+                'filename': filename,
+                'original_name': file.filename,
+                'uploaded_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            })
+            flash('Document PDF ajouté au chapitre')
     
     return redirect(url_for('chapter_detail', course_id=course_id, chapter_id=chapter_id))
 
@@ -1307,7 +1483,18 @@ def admin_assignments():
 def admin_submissions():
     if 'user' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
-    return render_template('admin_submissions.html', submissions=submissions, assignments=assignments, users=users, correction_results=correction_results, plagiarism_results=plagiarism_results)
+    
+    # S'assurer que correction_results est défini
+    global correction_results
+    if 'correction_results' not in globals():
+        correction_results = {}
+    
+    return render_template('admin_submissions.html', 
+                         submissions=submissions, 
+                         assignments=assignments, 
+                         users=users, 
+                         correction_results=correction_results, 
+                         plagiarism_results=plagiarism_results)
 
 @app.route('/admin/students')
 def admin_students():
@@ -1382,6 +1569,7 @@ def create_assignment():
             'results_release_date': request.form.get('results_release_date', ''),
             'results_published': False,
             'is_code_assignment': 'is_code_assignment' in request.form,
+            'is_mixed_assignment': 'is_mixed_assignment' in request.form,
             'test_cases': test_cases
         }
         
@@ -1397,10 +1585,18 @@ def create_assignment():
     # Récupérer les cours assignés au professeur
     teacher_courses = []
     for course in admin_courses:
-        if course['id'] in course_assignments and session['user'] in course_assignments[course['id']]:
+        if str(course['id']) in course_assignments and session['user'] in course_assignments[str(course['id'])]:
             teacher_courses.append(course)
     
-    return render_template('create_assignment.html', admin_courses=admin_courses, course_assignments=course_assignments, system_config=system_config)
+    # Cours pré-sélectionné depuis l'URL
+    preselected_course_id = request.args.get('course_id', type=int)
+    
+    return render_template('create_assignment.html', 
+                         admin_courses=admin_courses, 
+                         course_assignments=course_assignments, 
+                         system_config=system_config,
+                         teacher_courses=teacher_courses,
+                         preselected_course_id=preselected_course_id)
 
 @app.route('/download_assignment_file/<filename>')
 def download_assignment_file(filename):
@@ -1413,24 +1609,41 @@ def download_assignment_file(filename):
 def download_file(filename):
     if 'user' not in session:
         return redirect(url_for('login'))
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    if not os.path.exists(file_path):
+    
+    # Chercher le fichier dans différents dossiers
+    possible_paths = [
+        os.path.join(app.config['UPLOAD_FOLDER'], filename),
+        os.path.join(app.config['UPLOAD_FOLDER'], 'code_submissions', filename),
+        os.path.join(app.config['UPLOAD_FOLDER'], 'submissions', filename)
+    ]
+    
+    file_path = None
+    for path in possible_paths:
+        if os.path.exists(path):
+            file_path = path
+            break
+    
+    if not file_path:
         flash('Fichier introuvable')
         return redirect(url_for('dashboard'))
 
+    # Admin peut tout télécharger
+    if session['role'] == 'admin':
+        return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path), as_attachment=True)
+    
     # Vérifier que le professeur a le droit de télécharger ce fichier
     if session['role'] == 'teacher':
-        # Trouver la soumission correspondante
         submission = next((s for s in submissions if s['filename'] == filename), None)
         if submission:
-            # Vérifier que le devoir appartient au professeur
             assignment = next((a for a in assignments if a['id'] == submission['assignment_id']), None)
             if assignment and assignment.get('teacher') == session['user']:
-                return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
-
-    # Admin peut tout télécharger
-    elif session['role'] == 'admin':
-        return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+                return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path), as_attachment=True)
+    
+    # Étudiant peut télécharger ses propres fichiers
+    if session['role'] == 'student':
+        submission = next((s for s in submissions if s['filename'] == filename and s['student'] == session['user']), None)
+        if submission:
+            return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path), as_attachment=True)
 
     flash('Accès non autorisé à ce fichier')
     return redirect(url_for('dashboard'))
@@ -1483,6 +1696,12 @@ def assignment_results(assignment_id):
             sub['correction'] = correction_results[sub['id']]
         if not sub.get('plagiarism') and sub['id'] in plagiarism_results:
             sub['plagiarism'] = plagiarism_results[sub['id']]
+        # Assurer que correction existe même si vide
+        if not sub.get('correction'):
+            sub['correction'] = {'score': 0, 'max_score': assignment.get('max_score', 100), 'feedback': [], 'auto_generated': False}
+        # Assurer que plagiarism existe même si vide
+        if not sub.get('plagiarism'):
+            sub['plagiarism'] = {'similarity': 0, 'status': 'non_verifie', 'sources': []}
     
 
     return render_template('assignment_results.html', assignment=assignment, submissions=assignment_submissions)
@@ -1585,10 +1804,25 @@ def extract_text_from_file(file_path):
         print(f"Erreur extraction texte: {e}")
         return ""
 
+def normalize_code_line(line):
+    """Normalise une ligne de code pour la comparaison"""
+    # Supprimer les espaces, tabulations et commentaires
+    line = line.strip()
+    if '//' in line:
+        line = line.split('//')[0].strip()
+    if '#' in line and not line.startswith('#include'):
+        line = line.split('#')[0].strip()
+    # Supprimer les espaces multiples
+    line = ' '.join(line.split())
+    return line.lower()
+
 def check_plagiarism_local(text, submission_id):
-    """Détection de plagiat locale basée sur comparaison avec soumissions existantes"""
+    """Détection de plagiat ligne par ligne"""
     if not text.strip():
         return {'similarity': 0, 'sources': [], 'status': 'acceptable'}
+    
+    # Diviser le texte en lignes et normaliser
+    lines1 = [normalize_code_line(line) for line in text.split('\n') if normalize_code_line(line)]
     
     max_similarity = 0
     sources = []
@@ -1597,27 +1831,52 @@ def check_plagiarism_local(text, submission_id):
     for sub in submissions:
         if sub['id'] != submission_id:
             try:
-                other_file_path = os.path.join(app.config['UPLOAD_FOLDER'], sub['filename'])
-                if os.path.exists(other_file_path):
-                    other_text = extract_text_from_file(other_file_path)
-                    if other_text.strip():
-                        similarity = SequenceMatcher(None, text.lower(), other_text.lower()).ratio() * 100
-                        if similarity > 30:  # Seuil de similarité
-                            max_similarity = max(max_similarity, similarity)
-                            sources.append(f"Soumission de {sub['student']} ({similarity:.1f}% similaire)")
+                other_text = ""
+                if sub.get('code_submission'):
+                    code_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'code_submissions', sub['filename'])
+                    if os.path.exists(code_file_path):
+                        with open(code_file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                            other_text = f.read()
+                else:
+                    other_file_path = os.path.join(app.config['UPLOAD_FOLDER'], sub['filename'])
+                    if os.path.exists(other_file_path):
+                        other_text = extract_text_from_file(other_file_path)
+                
+                if other_text.strip():
+                    # Diviser l'autre texte en lignes et normaliser
+                    lines2 = [normalize_code_line(line) for line in other_text.split('\n') if normalize_code_line(line)]
+                    
+                    if len(lines1) == 0 or len(lines2) == 0:
+                        continue
+                    
+                    # Compter les lignes identiques
+                    identical_lines = 0
+                    total_lines = max(len(lines1), len(lines2))
+                    
+                    # Comparaison ligne par ligne
+                    for line1 in lines1:
+                        if line1 in lines2:
+                            identical_lines += 1
+                    
+                    # Calculer le pourcentage de similarité
+                    similarity = (identical_lines / total_lines) * 100
+                    
+                    # Si plus de 80% des lignes sont identiques, c'est suspect
+                    if similarity > 20:  # Seuil plus bas pour détecter même de petites similitudes
+                        max_similarity = max(max_similarity, similarity)
+                        student_name = users.get(sub['student'], {}).get('name', sub['student'])
+                        sources.append(f"Soumission de {student_name} ({similarity:.1f}% lignes similaires)")
+                        
+                        # Debug: afficher les détails
+                        print(f"Comparaison {submission_id} vs {sub['id']}: {identical_lines}/{total_lines} lignes identiques = {similarity:.1f}%")
+                        
             except Exception as e:
                 print(f"Erreur comparaison plagiat: {e}")
     
-    # Vérification web basique avec Google Search API (optionnel)
-    web_similarity = check_web_plagiarism(text[:500])  # Premier paragraphe
-    if web_similarity > max_similarity:
-        max_similarity = web_similarity
-        sources.append(f"Contenu web détecté ({web_similarity:.1f}% similaire)")
-    
     result = {
         'similarity': round(max_similarity, 1),
-        'sources': sources[:5],  # Limiter à 5 sources
-        'status': 'suspect' if max_similarity > 50 else 'attention' if max_similarity > 30 else 'acceptable'
+        'sources': sources[:5],
+        'status': 'suspect' if max_similarity > 60 else 'attention' if max_similarity > 30 else 'acceptable'
     }
     
     plagiarism_results[submission_id] = result
@@ -1964,7 +2223,7 @@ def teacher_submissions():
         return redirect(url_for('login'))
     
     teacher_submissions = [s for s in submissions if any(a['id'] == s['assignment_id'] and a.get('teacher') == session['user'] for a in assignments)]
-    return render_template('teacher_submissions.html', submissions=teacher_submissions, assignments=assignments, users=users)
+    return render_template('teacher_submissions.html', submissions=teacher_submissions, assignments=assignments, users=users, correction_results=correction_results, plagiarism_results=plagiarism_results)
 
 @app.route('/teacher/students')
 def teacher_students():
@@ -1974,12 +2233,14 @@ def teacher_students():
     # Récupérer tous les étudiants des cours du professeur
     teacher_students = set()
     teacher_courses = []
-    for course_id, teachers in course_assignments.items():
+    for course_id_str, teachers in course_assignments.items():
         if session['user'] in teachers:
+            course_id = int(course_id_str)
             course = next((c for c in admin_courses if c['id'] == course_id), None)
             if course:
                 teacher_courses.append(course)
-                teacher_students.update(course_enrollments.get(course_id, []))
+                # Utiliser course_id_str (chaîne) pour accéder aux inscriptions
+                teacher_students.update(course_enrollments.get(course_id_str, []))
     
     students_data = []
     for student_username in teacher_students:
@@ -2201,7 +2462,7 @@ def export_course_data(course_id):
         return redirect(url_for('login'))
     
     # Vérifier l'accès au cours
-    if course_id not in course_assignments or session['user'] not in course_assignments[course_id]:
+    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -2332,6 +2593,190 @@ def download_backup():
     response.headers['Content-Type'] = 'application/json'
     response.headers['Content-Disposition'] = f'attachment; filename="sauvegarde_ulc_{timestamp}.json"'
     return response
+
+@app.route('/admin/check_all_plagiarism')
+def check_all_plagiarism():
+    """Vérifie le plagiat pour toutes les soumissions de code"""
+    if 'user' not in session or session['role'] not in ['admin', 'teacher']:
+        return redirect(url_for('login'))
+    
+    checked_count = 0
+    for submission in submissions:
+        if submission.get('code_submission'):
+            try:
+                code_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'code_submissions', submission['filename'])
+                if os.path.exists(code_file_path):
+                    with open(code_file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        code_content = f.read()
+                    
+                    plagiarism_result = check_plagiarism_local(code_content, submission['id'])
+                    submission['plagiarism'] = plagiarism_result
+                    checked_count += 1
+            except Exception as e:
+                print(f"Erreur vérification plagiat pour {submission['id']}: {e}")
+    
+    save_test_data()
+    flash(f'Plagiat vérifié pour {checked_count} soumissions de code')
+    if session['role'] == 'admin':
+        return redirect(url_for('admin_submissions'))
+    else:
+        return redirect(url_for('teacher_submissions'))
+
+@app.route('/admin/recheck_plagiarism/<int:submission_id>')
+def recheck_plagiarism(submission_id):
+    """Force la revérification du plagiat pour une soumission"""
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    
+    submission = next((s for s in submissions if s['id'] == submission_id), None)
+    if not submission:
+        flash('Soumission non trouvée')
+        return redirect(url_for('admin_submissions'))
+    
+    try:
+        # Récupérer le contenu du code
+        if submission.get('code_submission'):
+            code_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'code_submissions', submission['filename'])
+            if os.path.exists(code_file_path):
+                with open(code_file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    code_content = f.read()
+                
+                # Relancer la détection de plagiat
+                plagiarism_result = check_plagiarism_local(code_content, submission_id)
+                submission['plagiarism'] = plagiarism_result
+                save_test_data()
+                
+                flash(f'Plagiat revérifié: {plagiarism_result["similarity"]}% de similarité')
+            else:
+                flash('Fichier de code non trouvé')
+        else:
+            flash('Cette soumission n\'est pas une soumission de code')
+    except Exception as e:
+        flash(f'Erreur lors de la revérification: {str(e)}')
+    
+    return redirect(url_for('admin_submissions'))
+
+@app.route('/upload_analysis_files/<int:assignment_id>', methods=['POST'])
+def upload_analysis_files(assignment_id):
+    """Upload des fichiers d'analyse pour devoirs mixtes"""
+    if 'user' not in session or session['role'] != 'student':
+        return jsonify({'success': False, 'error': 'Non autorisé'})
+    
+    assignment = next((a for a in assignments if a['id'] == assignment_id), None)
+    if not assignment or not assignment.get('is_mixed_assignment'):
+        return jsonify({'success': False, 'error': 'Devoir non trouvé ou pas un devoir mixte'})
+    
+    if 'analysis_files' not in request.files:
+        return jsonify({'success': False, 'error': 'Aucun fichier fourni'})
+    
+    files = request.files.getlist('analysis_files')
+    uploaded_files = []
+    
+    for file in files:
+        if file and file.filename != '':
+            filename = secure_filename(file.filename)
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f"analysis_{session['user']}_{assignment_id}_{timestamp}_{filename}"
+            
+            analysis_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'analysis')
+            os.makedirs(analysis_folder, exist_ok=True)
+            file.save(os.path.join(analysis_folder, filename))
+            uploaded_files.append(filename)
+    
+    # Mettre à jour la soumission existante ou créer une nouvelle
+    submission = next((s for s in submissions if s['student'] == session['user'] and s['assignment_id'] == assignment_id), None)
+    
+    if submission:
+        submission['analysis_files'] = uploaded_files
+        submission['analysis_submitted_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        # Créer une nouvelle soumission pour les fichiers d'analyse uniquement
+        submission = {
+            'id': len(submissions) + 1,
+            'student': session['user'],
+            'assignment_id': assignment_id,
+            'analysis_files': uploaded_files,
+            'analysis_submitted_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'results_available': False,
+            'analysis_only': True
+        }
+        submissions.append(submission)
+    
+    save_test_data()
+    
+    return jsonify({
+        'success': True,
+        'message': f'{len(uploaded_files)} fichier(s) d\'analyse téléversé(s) avec succès',
+        'files': uploaded_files
+    })
+
+@app.route('/test_submit', methods=['POST'])
+def test_submit():
+    """Route de test pour la soumission"""
+    try:
+        code = request.form.get('code_content', '')
+        language = request.form.get('language', 'python')
+        
+        if not code.strip():
+            return jsonify({
+                'success': False,
+                'error': 'Code vide'
+            })
+        
+        # Test d'exécution simple
+        executor = CodeExecutor()
+        result = executor.execute_code(code, language)
+        
+        # Note basée sur le résultat réel de compilation/exécution
+        max_score = 100
+        
+        # Vérifier si le code s'est exécuté sans erreur
+        has_compilation_error = bool(result.get('compile_output', '').strip())
+        has_runtime_error = bool(result.get('stderr', '').strip())
+        execution_success = result.get('success', False)
+        
+        # Déterminer la note selon les résultats réels
+        status = result.get('status', '')
+        is_system_error = 'non installé' in status or 'non trouvé' in status or 'non supporté' in status
+        
+        if execution_success and not has_compilation_error and not has_runtime_error:
+            score = max_score
+            feedback = [
+                "✅ Compilation réussie",
+                "✅ Exécution sans erreur", 
+                f"🎉 Félicitations ! Note maximale obtenue: {max_score}/{max_score}"
+            ]
+        elif is_system_error:
+            score = 0
+            feedback = [
+                f"⚠️ {status}",
+                "🔧 Contactez l'administrateur pour installer les outils nécessaires"
+            ]
+        else:
+            score = 0
+            feedback = []
+            if has_compilation_error:
+                feedback.append("❌ Erreurs de compilation détectées")
+            if has_runtime_error:
+                feedback.append("❌ Erreurs d'exécution détectées")
+            if not execution_success:
+                feedback.append("❌ Le programme ne s'exécute pas correctement")
+            feedback.append("🔧 Corrigez les erreurs pour obtenir des points")
+        
+        result['score'] = score
+        result['max_score'] = max_score
+        result['feedback'] = feedback
+        
+        return jsonify({
+            'success': True,
+            'execution_result': result
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
 
 if __name__ == '__main__':
     import os

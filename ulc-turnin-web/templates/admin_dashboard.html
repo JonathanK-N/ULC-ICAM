@@ -250,33 +250,56 @@
                             </div>
                         </div>
                         
-                        <!-- Activité Système -->
+                        <!-- Assignations Cours-Professeurs -->
                         <div class="col-md-6 mb-4">
                             <div class="card">
                                 <div class="card-header bg-success text-white">
                                     <h5 class="mb-0">
-                                        <i class="fas fa-activity me-2"></i>Activité Système
+                                        <i class="fas fa-chalkboard-teacher me-2"></i>Assignations Récentes
                                     </h5>
                                 </div>
                                 <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <span>Devoirs Actifs</span>
-                                        <span class="badge bg-primary">{{ assignments_count or 0 }}</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <span>Soumissions Totales</span>
-                                        <span class="badge bg-success">{{ submissions_count or 0 }}</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <span>Cours Actifs</span>
-                                        <span class="badge bg-info">{{ courses_count or 0 }}</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span>Système</span>
-                                        <span class="badge bg-success">
-                                            <i class="fas fa-check me-1"></i>Opérationnel
-                                        </span>
-                                    </div>
+                                    {% if course_assignments %}
+                                        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Cours</th>
+                                                        <th>Professeur</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for course in admin_courses[:8] %}
+                                                    <tr>
+                                                        <td>
+                                                            <small class="text-muted">{{ course.code }}</small><br>
+                                                            <strong>{{ course.name[:25] }}...</strong>
+                                                        </td>
+                                                        <td>
+                                                            {% if course_assignments.get(course.id|string) %}
+                                                                {% set teacher_username = course_assignments[course.id|string][0] %}
+                                                                {% if users.get(teacher_username) %}
+                                                                    <span class="badge bg-primary">{{ users[teacher_username].name[:20] }}</span>
+                                                                {% else %}
+                                                                    <span class="badge bg-secondary">Non assigné</span>
+                                                                {% endif %}
+                                                            {% else %}
+                                                                <span class="badge bg-secondary">Non assigné</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="text-center mt-2">
+                                            <a href="{{ url_for('admin_courses_view') }}" class="btn btn-sm btn-outline-success">
+                                                Voir tous les cours
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted mb-0">Aucune assignation disponible</p>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>

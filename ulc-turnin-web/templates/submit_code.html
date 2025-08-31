@@ -29,6 +29,29 @@
                         <textarea id="code-content" name="code_content" style="display: none;"></textarea>
                     </div>
 
+                    <!-- Section fichiers supplémentaires pour devoirs mixtes -->
+                    {% if assignment.is_mixed_assignment %}
+                    <div class="mb-4">
+                        <div class="card border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0"><i class="fas fa-file-alt"></i> Fichiers d'analyse requis (50% de la note)</h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="file-upload-form" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="analysis-files" class="form-label">Fichiers d'analyse et conception</label>
+                                        <input type="file" class="form-control" id="analysis-files" name="analysis_files" multiple accept=".pdf,.doc,.docx,.txt">
+                                        <div class="form-text">Formats acceptés: PDF, DOC, DOCX, TXT</div>
+                                    </div>
+                                    <button type="button" class="btn btn-warning" id="upload-files">
+                                        <i class="fas fa-upload"></i> Téléverser les fichiers
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <!-- Boutons d'action -->
                     <div class="d-flex justify-content-between mb-3">
                         <div>
@@ -173,8 +196,8 @@ document.getElementById('submit-code').addEventListener('click', function() {
     document.getElementById('execution-loader').style.display = 'block';
     document.getElementById('execution-results').style.display = 'none';
 
-    // Envoyer le code au serveur
-    fetch('{{ url_for("submit_assignment", assignment_id=assignment.id) }}', {
+    // Envoyer le code au serveur (vraie route de soumission)
+    fetch('/submit/{{ assignment.id }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -184,9 +207,26 @@ document.getElementById('submit-code').addEventListener('click', function() {
             'language': currentLanguage
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return response.text().then(text => {
+            console.log('Response text:', text);
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                throw new Error('Réponse non-JSON du serveur: ' + text.substring(0, 100));
+            }
+        });
+    })
     .then(data => {
         document.getElementById('execution-loader').style.display = 'none';
+        console.log('Parsed data:', data);
         
         if (data.success) {
             displayExecutionResults(data.execution_result);
@@ -196,7 +236,8 @@ document.getElementById('submit-code').addEventListener('click', function() {
     })
     .catch(error => {
         document.getElementById('execution-loader').style.display = 'none';
-        displayError('Erreur de communication avec le serveur');
+        console.error('Fetch error:', error);
+        displayError('Erreur: ' + error.message);
     });
 });
 
@@ -205,10 +246,31 @@ function displayExecutionResults(result) {
     const resultsDiv = document.getElementById('result-content');
     let html = '';
 
+    // Note obtenue (si disponible)
+    if (result.score !== undefined) {
+        const scorePercentage = (result.score / result.max_score) * 100;
+        const scoreClass = scorePercentage >= 80 ? 'success' : scorePercentage >= 60 ? 'warning' : 'danger';
+        
+        html += `<div class="alert alert-${scoreClass} mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0"><i class="fas fa-star"></i> Note obtenue</h5>
+                    <h3 class="mb-0 mt-2">${result.score}/${result.max_score}</h3>
+                </div>
+                <div class="text-end">
+                    <div class="progress" style="width: 100px; height: 20px;">
+                        <div class="progress-bar bg-${scoreClass}" style="width: ${scorePercentage}%"></div>
+                    </div>
+                    <small>${scorePercentage.toFixed(1)}%</small>
+                </div>
+            </div>
+        </div>`;
+    }
+
     // Statut d'exécution
     const statusClass = result.success ? 'success' : 'danger';
     html += `<div class="alert alert-${statusClass}">
-        <strong>Statut:</strong> ${result.status}
+        <strong>Résultat final:</strong> ${result.success ? '✅ Succès' : '❌ Échec'}
         <span class="float-end">
             <i class="fas fa-clock"></i> ${result.time}s | 
             <i class="fas fa-memory"></i> ${result.memory} KB
@@ -223,19 +285,46 @@ function displayExecutionResults(result) {
         </div>`;
     }
 
-    // Erreurs de compilation
-    if (result.compile_output) {
+    // Commentaires du professeur/système
+    if (result.feedback && result.feedback.length > 0) {
         html += `<div class="mb-3">
-            <h6><i class="fas fa-exclamation-triangle text-warning"></i> Erreurs de compilation:</h6>
-            <pre class="bg-warning-light p-3">${escapeHtml(result.compile_output)}</pre>
+            <h6><i class="fas fa-comments"></i> Commentaires:</h6>
+            <div class="card">
+                <div class="card-body">
+                    <ul class="mb-0">`;
+        result.feedback.forEach(comment => {
+            html += `<li>${escapeHtml(comment)}</li>`;
+        });
+        html += `</ul>
+                </div>
+            </div>
         </div>`;
     }
 
-    // Erreurs d'exécution
-    if (result.stderr) {
+    // État de la compilation
+    const hasCompileError = result.compile_output && result.compile_output.trim();
+    const hasRuntimeError = result.stderr && result.stderr.trim();
+    
+    html += `<div class="mb-3">
+        <h6><i class="fas fa-cogs"></i> État de la compilation:</h6>
+        <div class="alert ${hasCompileError ? 'alert-danger' : 'alert-success'}">
+            ${hasCompileError ? '❌ Erreurs de compilation détectées' : '✅ Compilation réussie'}
+        </div>
+    </div>`;
+
+    // Erreurs de compilation (si présentes)
+    if (hasCompileError) {
+        html += `<div class="mb-3">
+            <h6><i class="fas fa-exclamation-triangle text-danger"></i> Détails des erreurs de compilation:</h6>
+            <pre class="bg-danger text-white p-3 rounded">${escapeHtml(result.compile_output)}</pre>
+        </div>`;
+    }
+
+    // Erreurs d'exécution (si présentes)
+    if (hasRuntimeError) {
         html += `<div class="mb-3">
             <h6><i class="fas fa-bug text-danger"></i> Erreurs d'exécution:</h6>
-            <pre class="bg-danger-light p-3">${escapeHtml(result.stderr)}</pre>
+            <pre class="bg-danger text-white p-3 rounded">${escapeHtml(result.stderr)}</pre>
         </div>`;
     }
 
@@ -271,7 +360,7 @@ function displayExecutionResults(result) {
 function displayError(message) {
     const resultsDiv = document.getElementById('result-content');
     resultsDiv.innerHTML = `<div class="alert alert-danger">
-        <i class="fas fa-exclamation-circle"></i> ${message}
+        <i class="fas fa-exclamation-circle"></i> ${escapeHtml(message)}
     </div>`;
     document.getElementById('execution-results').style.display = 'block';
 }
@@ -285,7 +374,7 @@ function escapeHtml(text) {
 // Sauvegarde de brouillon
 document.getElementById('save-draft').addEventListener('click', function() {
     const code = editor.getValue();
-    localStorage.setItem(`draft_${{{ assignment.id }}}_${currentLanguage}`, code);
+    localStorage.setItem(`draft_{{ assignment.id }}_${currentLanguage}`, code);
     
     // Notification temporaire
     const btn = this;
@@ -303,11 +392,58 @@ document.getElementById('save-draft').addEventListener('click', function() {
 
 // Charger le brouillon au changement de langage
 document.getElementById('language').addEventListener('change', function() {
-    const draft = localStorage.getItem(`draft_${{{ assignment.id }}}_${currentLanguage}`);
+    const draft = localStorage.getItem(`draft_{{ assignment.id }}_${currentLanguage}`);
     if (draft) {
         editor.setValue(draft);
     }
 });
+
+// Gestion de l'upload des fichiers d'analyse (devoirs mixtes)
+{% if assignment.is_mixed_assignment %}
+document.getElementById('upload-files').addEventListener('click', function() {
+    const fileInput = document.getElementById('analysis-files');
+    const files = fileInput.files;
+    
+    if (files.length === 0) {
+        alert('Veuillez sélectionner au moins un fichier.');
+        return;
+    }
+    
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+        formData.append('analysis_files', files[i]);
+    }
+    
+    // Afficher un indicateur de chargement
+    const btn = this;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Téléversement...';
+    btn.disabled = true;
+    
+    fetch('/upload_analysis_files/{{ assignment.id }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        
+        if (data.success) {
+            alert(data.message);
+            // Optionnel: vider le champ de fichier
+            fileInput.value = '';
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        alert('Erreur lors du téléversement: ' + error.message);
+    });
+});
+{% endif %}
 </script>
 
 <style>

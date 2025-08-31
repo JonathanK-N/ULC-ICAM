@@ -49,14 +49,14 @@
                     </div>
                     <div class="col-md-3 text-center">
                         <h4 class="text-success">
-                            {% set corrected = submissions|selectattr('correction')|list|length %}
+                            {% set corrected = submissions|selectattr('correction.score', 'defined')|list|length %}
                             {{ corrected }}
                         </h4>
                         <p class="text-muted">Corrigées</p>
                     </div>
                     <div class="col-md-3 text-center">
                         <h4 class="text-warning">
-                            {% set plagiarism_suspects = submissions|selectattr('plagiarism.status', 'equalto', 'suspect')|list|length %}
+                            {% set plagiarism_suspects = submissions|selectattr('plagiarism')|selectattr('plagiarism.status', 'equalto', 'suspect')|list|length %}
                             {{ plagiarism_suspects }}
                         </h4>
                         <p class="text-muted">Plagiat Suspect</p>
@@ -64,9 +64,13 @@
                     <div class="col-md-3 text-center">
                         <h4 class="text-info">
                             {% if submissions %}
-                                {% set total_score = submissions|selectattr('correction.score')|map(attribute='correction.score')|sum %}
-                                {% set count = submissions|selectattr('correction.score')|list|length %}
-                                {{ (total_score / count)|round(1) if count > 0 else 'N/A' }}
+                                {% set scored_submissions = submissions|selectattr('correction.score', 'defined')|list %}
+                                {% if scored_submissions %}
+                                    {% set total_score = scored_submissions|map(attribute='correction.score')|sum %}
+                                    {{ (total_score / scored_submissions|length)|round(1) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
                             {% else %}
                                 N/A
                             {% endif %}
@@ -127,25 +131,21 @@
                                 {% endif %}
                             </td>
                             <td>
-
-                                <a href="{{ url_for('grade_submission', submission_id=submission.id) }}" class="btn btn-success btn-sm me-1">
-                                    <i class="fas fa-pen"></i> Noter
-                                </a>
-                                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detailModal{{ submission.id }}">
-
-
-                                <button class="btn btn-primary btn-sm mb-1" data-bs-toggle="modal"
+                                <button class="btn btn-primary btn-sm me-1" data-bs-toggle="modal"
                                         data-bs-target="#gradeModal{{ submission.id }}">
                                     <i class="fas fa-pen"></i> Noter
                                 </button>
-
-                                <button class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                <button class="btn btn-info btn-sm me-1" data-bs-toggle="modal"
                                         data-bs-target="#detailModal{{ submission.id }}">
-
                                     <i class="fas fa-eye"></i> Détails
                                 </button>
-                                <a href="{{ url_for('download_file', filename=submission.filename) }}"
-                                   class="btn btn-primary btn-sm"><i class="fas fa-download"></i></a>
+                                {% if submission.code_submission %}
+                                    <a href="{{ url_for('download_file', filename=submission.filename) }}"
+                                       class="btn btn-success btn-sm"><i class="fas fa-download"></i></a>
+                                {% else %}
+                                    <a href="{{ url_for('download_file', filename=submission.filename) }}"
+                                       class="btn btn-success btn-sm"><i class="fas fa-download"></i></a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}

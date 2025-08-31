@@ -52,7 +52,13 @@
                     {% for doc in chapter.documents %}
                     <div class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
-                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                            {% if doc.original_name.lower().endswith('.pdf') %}
+                                <i class="fas fa-file-pdf text-danger me-2"></i>
+                            {% elif doc.original_name.lower().endswith(('.ppt', '.pptx')) %}
+                                <i class="fas fa-file-powerpoint text-warning me-2"></i>
+                            {% else %}
+                                <i class="fas fa-file text-secondary me-2"></i>
+                            {% endif %}
                             {{ doc.original_name }}
                             <small class="text-muted d-block">Ajouté le {{ doc.uploaded_at }}</small>
                         </div>
@@ -143,8 +149,8 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Sélectionner un fichier</label>
-                        <input type="file" class="form-control" name="document" required>
-                        <div class="form-text">Formats acceptés : PDF, DOC, DOCX, PPT, PPTX, TXT</div>
+                        <input type="file" class="form-control" name="document" accept=".pdf,.ppt,.pptx" required>
+                        <div class="form-text">Formats acceptés : PDF, PPT, PPTX</div>
                     </div>
                 </div>
                 <div class="modal-footer">

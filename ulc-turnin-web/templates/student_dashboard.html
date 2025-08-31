@@ -31,55 +31,95 @@
     <div class="row">
         {% for assignment in assignments %}
         <div class="col-lg-6 col-xl-4 mb-4">
-            <div class="card border-0 shadow-sm h-100" style="transition: transform 0.2s;" 
-                 onmouseover="this.style.transform='translateY(-5px)'" 
-                 onmouseout="this.style.transform='translateY(0)'">
-                <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 fw-bold">{{ assignment.title }}</h5>
-                        <div>
-                            <span class="badge bg-light text-dark">{{ assignment.course }}</span>
-                            {% if assignment.is_group_work %}
-                                <span class="badge bg-warning"><i class="fas fa-users me-1"></i>Groupe</span>
+            <div class="card border-0 shadow-sm h-100 assignment-card" 
+                 style="cursor: pointer; transition: all 0.3s ease;" 
+                 onclick="window.location.href='{{ url_for('submit_assignment', assignment_id=assignment.id) }}'">
+                
+                <!-- Badge de statut -->
+                <div class="position-absolute top-0 end-0 m-2">
+                    <span class="badge bg-success">Ouvert</span>
+                </div>
+                
+                <div class="card-header border-0 pb-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 0.5rem 0.5rem 0 0;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1 fw-bold">{{ assignment.title }}</h5>
+                            <small class="opacity-75">{{ assignment.course }}</small>
+                        </div>
+                        <div class="ms-2">
+                            {% if assignment.is_code_assignment %}
+                                <i class="fas fa-code fa-lg"></i>
+                            {% else %}
+                                <i class="fas fa-file-alt fa-lg"></i>
                             {% endif %}
                         </div>
                     </div>
                 </div>
                 
-                <div class="card-body">
-                    <p class="card-text text-muted mb-3">{{ assignment.description }}</p>
+                <div class="card-body pt-3">
+                    <p class="card-text text-muted mb-3" style="font-size: 0.9rem; line-height: 1.4;">
+                        {{ assignment.description[:100] }}{% if assignment.description|length > 100 %}...{% endif %}
+                    </p>
                     
+                    <!-- Informations du devoir -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                                <small class="text-muted">{{ assignment.due_date }}</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-star me-2 text-warning"></i>
+                                <small class="text-muted">{{ assignment.max_score or 100 }} pts</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Badges d'information -->
+                    <div class="d-flex flex-wrap gap-1 mb-3">
+                        {% if assignment.is_group_work %}
+                            <span class="badge bg-info"><i class="fas fa-users me-1"></i>Groupe</span>
+                        {% endif %}
+                        {% if assignment.auto_correct %}
+                            <span class="badge bg-success"><i class="fas fa-robot me-1"></i>Auto-corrigé</span>
+                        {% endif %}
+                        {% if assignment.plagiarism_check %}
+                            <span class="badge bg-warning"><i class="fas fa-search me-1"></i>Anti-plagiat</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Statut du groupe si applicable -->
                     {% if assignment.is_group_work %}
                         {% set student_group_id = student_groups.get(assignment.id, {}).get(session.user) %}
                         {% if student_group_id is not none %}
-                            <div class="alert alert-success border-0" style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);">
-                                <i class="fas fa-users me-2"></i>
-                                <strong>Groupe {{ student_group_id + 1 }}</strong> - Vous êtes inscrit
+                            <div class="alert alert-success py-2 px-3 mb-3" style="font-size: 0.85rem;">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>Groupe {{ student_group_id + 1 }}</strong> - Inscrit
                             </div>
                         {% elif assignment.group_formation == 'manual' %}
-                            <div class="alert alert-warning border-0" style="background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);">
+                            <div class="alert alert-warning py-2 px-3 mb-3" style="font-size: 0.85rem;">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
-                                <strong>Action requise :</strong> Former un groupe
+                                <strong>Former un groupe requis</strong>
                             </div>
                         {% endif %}
                     {% endif %}
-                    
-                    <div class="d-flex align-items-center mb-3">
-                        <i class="fas fa-calendar-alt me-2 text-primary"></i>
-                        <small class="text-muted">Date limite : <strong>{{ assignment.due_date }}</strong></small>
-                    </div>
-                    
+                </div>
+                
+                <div class="card-footer border-0 bg-transparent pt-0">
                     <div class="d-flex gap-2">
                         {% if assignment.is_group_work and assignment.group_formation == 'manual' and student_groups.get(assignment.id, {}).get(session.user) is none %}
-                            <a href="{{ url_for('join_group', assignment_id=assignment.id) }}" 
-                               class="btn btn-warning btn-sm flex-fill">
+                            <button class="btn btn-outline-warning btn-sm flex-fill" 
+                                    onclick="event.stopPropagation(); window.location.href='{{ url_for('join_group', assignment_id=assignment.id) }}'">
                                 <i class="fas fa-users me-1"></i>Former groupe
-                            </a>
+                            </button>
                         {% endif %}
-                        <a href="{{ url_for('submit_assignment', assignment_id=assignment.id) }}" 
-                           class="btn btn-primary flex-fill">
-                            <i class="fas fa-upload me-2"></i>Soumettre
-                        </a>
+                        <button class="btn btn-primary btn-sm flex-fill" 
+                                onclick="event.stopPropagation(); window.location.href='{{ url_for('submit_assignment', assignment_id=assignment.id) }}'">
+                            <i class="fas fa-{{ 'code' if assignment.is_code_assignment else 'upload' }} me-1"></i>
+                            {{ 'Coder' if assignment.is_code_assignment else 'Soumettre' }}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -104,4 +144,61 @@
     </div>
     {% endif %}
 </div>
+
+<style>
+.assignment-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.assignment-card:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+}
+
+.assignment-card:hover .card-header {
+    background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%) !important;
+}
+
+.assignment-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.5s;
+    z-index: 1;
+}
+
+.assignment-card:hover::before {
+    left: 100%;
+}
+
+.badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.alert {
+    border-radius: 0.5rem;
+    border: none;
+}
+
+.btn-sm {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .assignment-card {
+        margin-bottom: 1rem;
+    }
+    
+    .assignment-card:hover {
+        transform: none !important;
+    }
+}
+</style>
 {% endblock %}

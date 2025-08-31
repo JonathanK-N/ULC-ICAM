@@ -39,10 +39,11 @@
                             <label for="course_id" class="form-label">Cours assigné *</label>
                             <select class="form-select" id="course_id" name="course_id" required>
                                 <option value="">Sélectionner un cours</option>
-                                {% for course in admin_courses %}
-                                    {% if course.id in course_assignments and session.user in course_assignments[course.id] %}
-                                        <option value="{{ course.id }}" data-name="{{ course.name }}">{{ course.name }} ({{ course.code }})</option>
-                                    {% endif %}
+                                {% for course in teacher_courses %}
+                                    <option value="{{ course.id }}" data-name="{{ course.name }}" 
+                                            {{ 'selected' if preselected_course_id == course.id else '' }}>
+                                        {{ course.name }} ({{ course.code }})
+                                    </option>
                                 {% endfor %}
                             </select>
                             <input type="hidden" id="course" name="course">
@@ -134,6 +135,14 @@
                                     <label class="form-check-label" for="is_code_assignment">
                                         <strong>Ce devoir nécessite la soumission de code</strong>
                                     </label>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="is_mixed_assignment" name="is_mixed_assignment">
+                                    <label class="form-check-label" for="is_mixed_assignment">
+                                        <strong>Devoir mixte (code + fichiers d'analyse)</strong>
+                                    </label>
+                                    <div class="form-text">Le code vaudra 50% de la note, les fichiers d'analyse 50%</div>
                                 </div>
                                 
                                 <div id="code_options" style="display: none;">

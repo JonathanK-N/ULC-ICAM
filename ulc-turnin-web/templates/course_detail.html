@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-book"></i> {{ course.title }}</h2>
+    <h2><i class="fas fa-book"></i> {{ course.name }}</h2>
     <span class="badge bg-info fs-6">{{ course.credits }} crédits</span>
 </div>
 
@@ -14,8 +14,8 @@
                 <div class="row">
                     <div class="col-md-6">
                         <strong>Promotions ciblées:</strong>
-                        {% if course.target_promotions %}
-                            {% for promo in course.target_promotions %}
+                        {% if course.promotions %}
+                            {% for promo in course.promotions %}
                                 <span class="badge bg-secondary me-1">{{ promo }}</span>
                             {% endfor %}
                         {% else %}
@@ -23,13 +23,11 @@
                         {% endif %}
                     </div>
                     <div class="col-md-6">
-                        <strong>Facultés ciblées:</strong>
-                        {% if course.target_facultes %}
-                            {% for faculte in course.target_facultes %}
-                                <span class="badge bg-secondary me-1">{{ faculte }}</span>
-                            {% endfor %}
+                        <strong>Faculté:</strong>
+                        {% if course.faculte %}
+                            <span class="badge bg-secondary me-1">{{ course.faculte }}</span>
                         {% else %}
-                            <span class="text-muted">Toutes les facultés</span>
+                            <span class="text-muted">Non spécifiée</span>
                         {% endif %}
                     </div>
                 </div>

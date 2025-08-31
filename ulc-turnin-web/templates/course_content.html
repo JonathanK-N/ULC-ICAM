@@ -21,6 +21,39 @@
         </div>
     </div>
 
+    <!-- Plan de cours -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Plan de cours</h5>
+        </div>
+        <div class="card-body">
+            {% if content.syllabus_file %}
+                <div class="mb-3">
+                    <p>
+                    {% if content.syllabus_file.lower().endswith('.pdf') %}
+                        <i class="fas fa-file-pdf text-danger"></i>
+                    {% elif content.syllabus_file.lower().endswith(('.ppt', '.pptx')) %}
+                        <i class="fas fa-file-powerpoint text-warning"></i>
+                    {% else %}
+                        <i class="fas fa-file text-secondary"></i>
+                    {% endif %}
+                    <a href="{{ url_for('download_syllabus', course_id=course.id, filename=content.syllabus_file) }}" target="_blank">
+                        {{ content.syllabus_file }}
+                    </a></p>
+                </div>
+            {% endif %}
+            <form method="POST" action="{{ url_for('upload_syllabus', course_id=course.id) }}" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <input type="file" class="form-control" name="syllabus" accept=".pdf,.ppt,.pptx" required>
+                    <div class="form-text">Formats acceptés: PDF, PPT, PPTX</div>
+                </div>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-upload"></i> Téléverser le plan de cours
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Chapitres -->
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -55,7 +88,7 @@
 <div class="modal fade" id="addChapterModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{ url_for('add_chapter', course_id=course.id) }}">
+            <form method="POST" action="{{ url_for('add_chapter', course_id=course.id) }}" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title">Ajouter un chapitre</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -68,6 +101,11 @@
                     <div class="mb-3">
                         <label class="form-label">Description</label>
                         <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fichiers du chapitre (optionnel)</label>
+                        <input type="file" class="form-control" name="chapter_files" accept=".pdf,.ppt,.pptx" multiple>
+                        <div class="form-text">Formats acceptés: PDF, PPT, PPTX</div>
                     </div>
                 </div>
                 <div class="modal-footer">

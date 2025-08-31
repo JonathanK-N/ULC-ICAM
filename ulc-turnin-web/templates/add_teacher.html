@@ -66,7 +66,7 @@
                             <label for="grade" class="form-label">Grade *</label>
                             <select class="form-select" id="grade" name="grade" required>
                                 <option value="">Sélectionner</option>
-                                {% for grade in ['Prof. Ordinaire', 'Prof. Associé', 'Prof. Extraordinaire', 'CT', 'Ass.', 'Attaché'] %}
+                                {% for grade in system_config.grades %}
                                     <option value="{{ grade }}">{{ grade }}</option>
                                 {% endfor %}
                             </select>
@@ -78,7 +78,7 @@
                             <label for="departement" class="form-label">Département *</label>
                             <select class="form-select" id="departement" name="departement" required>
                                 <option value="">Sélectionner</option>
-                                {% for dept in ['Mathématiques-Informatique', 'Physique', 'Chimie', 'Biologie', 'Médecine Interne', 'Chirurgie', 'Droit Privé', 'Droit Public'] %}
+                                {% for dept in system_config.departements %}
                                     <option value="{{ dept }}">{{ dept }}</option>
                                 {% endfor %}
                             </select>

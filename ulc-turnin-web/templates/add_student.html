@@ -66,7 +66,7 @@
                             <label for="promotion" class="form-label">Promotion *</label>
                             <select class="form-select" id="promotion" name="promotion" required>
                                 <option value="">Sélectionner</option>
-                                {% for promotion in ['L1', 'L2', 'L3', 'M1', 'M2'] %}
+                                {% for promotion in system_config.promotions %}
                                     <option value="{{ promotion }}">{{ promotion }}</option>
                                 {% endfor %}
                             </select>
@@ -74,16 +74,25 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label for="faculte" class="form-label">Faculté *</label>
                             <select class="form-select" id="faculte" name="faculte" required>
                                 <option value="">Sélectionner</option>
-                                {% for faculte in ['Sciences', 'Médecine', 'Droit', 'Sciences Économiques', 'Polytechnique', 'Lettres et Sciences Humaines'] %}
+                                {% for faculte in system_config.facultes %}
                                     <option value="{{ faculte }}">{{ faculte }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
+                            <label for="departement" class="form-label">Département *</label>
+                            <select class="form-select" id="departement" name="departement" required>
+                                <option value="">Sélectionner</option>
+                                {% for dept in system_config.departements %}
+                                    <option value="{{ dept }}">{{ dept }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
                             <label for="telephone" class="form-label">Téléphone</label>
                             <input type="tel" class="form-control" id="telephone" name="telephone">
                         </div>
