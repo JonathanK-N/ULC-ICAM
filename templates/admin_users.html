@@ -99,6 +99,11 @@
                                                     <br><small class="text-warning">
                                                         <i class="fas fa-exclamation-triangle me-1"></i>Mot de passe temporaire
                                                     </small>
+                                                    {% if user.get('temp_password') %}
+                                                        <br><small class="text-info">
+                                                            <i class="fas fa-key me-1"></i><strong>{{ user.temp_password }}</strong>
+                                                        </small>
+                                                    {% endif %}
                                                 {% endif %}
                                             </div>
                                         </div>
