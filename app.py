@@ -1211,8 +1211,32 @@ def assign_teacher_to_course(course_id):
         return redirect(url_for('admin_courses_view'))
     
     teachers = {k: v for k, v in users.items() if v['role'] == 'teacher'}
-    assigned_teachers = course_assignments.get(course_id, [])
-    return render_template('assign_teacher.html', course=course, teachers=teachers, assigned_teachers=assigned_teachers)
+
+    # Récupérer la liste d'enseignants assignés en tenant compte des clés str/int
+    key_used = course_id if course_id in course_assignments else str(course_id)
+    assigned_teachers_raw = course_assignments.get(key_used, [])
+
+    # Nettoyer les références obsolètes (comptes supprimés ou non-professeurs)
+    valid_assigned_teachers = []
+    removed_usernames = []
+    for teacher_username in assigned_teachers_raw:
+        teacher = users.get(teacher_username)
+        if teacher and teacher.get('role') == 'teacher':
+            valid_assigned_teachers.append(teacher_username)
+        else:
+            removed_usernames.append(teacher_username)
+
+    if removed_usernames:
+        course_assignments[key_used] = valid_assigned_teachers
+        save_test_data()
+        flash("Certaines assignations faisaient référence à des comptes supprimés et ont été nettoyées.", "warning")
+
+    return render_template(
+        'assign_teacher.html',
+        course=course,
+        teachers=teachers,
+        assigned_teachers=course_assignments.get(key_used, valid_assigned_teachers)
+    )
 
 @app.route('/admin/unassign_teacher/<int:course_id>/<teacher_username>')
 def unassign_teacher_from_course(course_id, teacher_username):
