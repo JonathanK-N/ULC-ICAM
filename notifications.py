@@ -58,7 +58,8 @@ def send_email(subject, recipients, html_body, text_body=None):
 def get_enrolled_students_emails(course_id, users, course_enrollments):
     """Récupère les emails des étudiants inscrits à un cours"""
     emails = []
-    enrolled_students = course_enrollments.get(course_id, [])
+    course_key = str(course_id)
+    enrolled_students = course_enrollments.get(course_key, course_enrollments.get(course_id, []))
     
     for student_username in enrolled_students:
         if student_username in users:
@@ -144,3 +145,4 @@ def notify_grades_published(assignment, course, users, course_enrollments, corre
     """
     
     send_email(subject, student_emails, html_body)
+
