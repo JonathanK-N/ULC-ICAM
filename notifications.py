@@ -101,7 +101,7 @@ def notify_new_assignment(assignment, course, users, course_enrollments):
         </div>
         
         <div style="background: #374151; color: white; padding: 15px; text-align: center; font-size: 12px;">
-            <p>© 2024 ULC-ICAM Turnin System - Développé par Jonathan Kakesa</p>
+            <p>© 2024 ULC-ICAM Turnin System</p>
             <p>Université Libre du Congo - Institut Catholique d'Arts et Métiers</p>
         </div>
     </div>
@@ -139,7 +139,7 @@ def notify_grades_published(assignment, course, users, course_enrollments, corre
         </div>
         
         <div style="background: #374151; color: white; padding: 15px; text-align: center; font-size: 12px;">
-            <p>© 2024 ULC-ICAM Turnin System - Développé par Jonathan Kakesa</p>
+            <p>© 2024 ULC-ICAM Turnin System</p>
         </div>
     </div>
     """

@@ -297,7 +297,7 @@ def markdown_to_html(md_file, html_file):
         <h2 style="margin: 10px 0; border: none; color: white; font-size: 1.2em;">Système de Gestion de Devoirs et Soumissions de Code</h2>
         <p style="font-size: 1.1em; margin: 20px 0;">Université Loyola du Congo - Institut Catholique d'Arts et Métiers</p>
         <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin-top: 20px;">
-            <h3 style="margin: 0; color: white; border: none;">Développé par Jonathan Kakesa Nayaba</h3>
+            <h3 style="margin: 0; color: white; border: none;">ULC-ICAM Turnin System</h3>
             <p style="margin: 5px 0;">Ingénieur Logiciel & Développeur Full-Stack</p>
             <p style="margin: 5px 0;">Décembre 2024 - Version 1.0 Production Ready</p>
         </div>
