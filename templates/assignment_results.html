@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-bar"></i> Résultats : {{ assignment.title }}</h2>
+    <div>
+        {% if assignment.auto_correct %}
+            <span class="badge bg-success me-1">Correction Auto</span>
+        {% endif %}
+        {% if assignment.plagiarism_check %}
+            <span class="badge bg-warning me-1">Détection Plagiat</span>
+        {% endif %}
+        {% if assignment.results_published %}
+            <span class="badge bg-info me-2">Résultats Publiés</span>
+            <a href="{{ url_for('unpublish_results', assignment_id=assignment.id) }}"
+               class="btn btn-warning btn-sm"
+               onclick="return confirm('Masquer les résultats aux étudiants ?')">
+                <i class="fas fa-eye-slash"></i> Masquer
+            </a>
+        {% else %}
+            <span class="badge bg-secondary me-2">Résultats Privés</span>
+            <a href="{{ url_for('publish_results', assignment_id=assignment.id) }}"
+               class="btn btn-success btn-sm"
+               onclick="return confirm('Publier les résultats aux étudiants ?')">
+                <i class="fas fa-eye"></i> Publier
+            </a>
+        {% endif %}
+        <a href="{{ url_for('publish_submissions', assignment_id=assignment.id) }}"
+           class="btn btn-outline-success btn-sm ms-2"
+           onclick="return confirm('Publier les résultats pour toutes les soumissions ?')">
+            <i class="fas fa-bullhorn"></i> Publier notes
+        </a>
+        <a href="{{ url_for('unpublish_submissions', assignment_id=assignment.id) }}"
+           class="btn btn-outline-warning btn-sm ms-1"
+           onclick="return confirm('Masquer les résultats pour toutes les soumissions ?')">
+            <i class="fas fa-eye-slash"></i> Masquer notes
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-primary">{{ submissions|length }}</h4>
+                        <p class="text-muted">Soumissions</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-success">
+                            {% set corrected = submissions|selectattr('correction.score', 'defined')|list|length %}
+                            {{ corrected }}
+                        </h4>
+                        <p class="text-muted">Corrigées</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-warning">
+                            {% set plagiarism_suspects = submissions|selectattr('plagiarism')|selectattr('plagiarism.status', 'equalto', 'suspect')|list|length %}
+                            {{ plagiarism_suspects }}
+                        </h4>
+                        <p class="text-muted">Plagiat Suspect</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-info">
+                            {% if submissions %}
+                                {% set scored_submissions = submissions|selectattr('correction.score', 'defined')|list %}
+                                {% if scored_submissions %}
+                                    {% set total_score = scored_submissions|map(attribute='correction.score')|sum %}
+                                    {{ (total_score / scored_submissions|length)|round(1) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </h4>
+                        <p class="text-muted">Moyenne</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Détail des soumissions</h5>
+    </div>
+    <div class="card-body">
+        {% if submissions %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Étudiant</th>
+                            <th>Fichier</th>
+                            <th>Date soumission</th>
+                            <th>Note</th>
+                            <th>Plagiat</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for submission in submissions %}
+                        <tr>
+                            <td>{{ submission.student }}</td>
+                            <td>{{ submission.filename }}</td>
+                            <td>{{ submission.submitted_at }}</td>
+                            <td>
+                                {% if submission.correction %}
+                                    <span class="badge bg-success">
+                                        {{ submission.correction.score }}/{{ submission.correction.max_score }}
+                                    </span>
+                                    {% if submission.correction.auto_generated %}
+                                        <small class="text-muted">(Auto)</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Non corrigé</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if submission.plagiarism %}
+                                    {% if submission.plagiarism.status == 'suspect' %}
+                                        <span class="badge bg-danger">{{ submission.plagiarism.similarity }}% Suspect</span>
+                                    {% else %}
+                                        <span class="badge bg-success">{{ submission.plagiarism.similarity }}% OK</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Non vérifié</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-primary btn-sm me-1" data-bs-toggle="modal"
+                                        data-bs-target="#gradeModal{{ submission.id }}">
+                                    <i class="fas fa-pen"></i> Noter
+                                </button>
+                                <button class="btn btn-info btn-sm me-1" data-bs-toggle="modal"
+                                        data-bs-target="#detailModal{{ submission.id }}">
+                                    <i class="fas fa-eye"></i> Détails
+                                </button>
+                                {% if submission.code_submission %}
+                                    <a href="{{ url_for('download_file', filename=submission.filename) }}"
+                                       class="btn btn-success btn-sm"><i class="fas fa-download"></i></a>
+                                {% else %}
+                                    <a href="{{ url_for('download_file', filename=submission.filename) }}"
+                                       class="btn btn-success btn-sm"><i class="fas fa-download"></i></a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center text-muted">
+                <i class="fas fa-inbox fa-3x mb-3"></i>
+                <h5>Aucune soumission pour ce devoir</h5>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modals pour les détails -->
+{% for submission in submissions %}
+<div class="modal fade" id="detailModal{{ submission.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails - {{ submission.student }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {% if submission.correction %}
+                <div class="mb-3">
+                    <h6><i class="fas fa-check-circle text-success"></i> Correction</h6>
+                    <p><strong>Note :</strong> {{ submission.correction.score }}/{{ submission.correction.max_score }}</p>
+                    <p><strong>Commentaires :</strong></p>
+                    <ul>
+                        {% for comment in submission.correction.feedback %}
+                            <li>{{ comment }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% if submission.correction.feedback_file %}
+                    <p><strong>Fichier corrigé :</strong>
+                        <a href="{{ url_for('download_correction_file', filename=submission.correction.feedback_file) }}">
+                            Télécharger
+                        </a>
+                    </p>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% if submission.plagiarism %}
+                <div class="mb-3">
+                    <h6><i class="fas fa-search text-warning"></i> Analyse de Plagiat</h6>
+                    <p><strong>Similarité :</strong> {{ submission.plagiarism.similarity }}%</p>
+                    <p><strong>Statut :</strong> 
+                        <span class="badge bg-{{ 'danger' if submission.plagiarism.status == 'suspect' else 'success' }}">
+                            {{ submission.plagiarism.status.title() }}
+                        </span>
+                    </p>
+                    {% if submission.plagiarism.sources %}
+                    <p><strong>Sources détectées :</strong></p>
+                    <ul>
+                        {% for source in submission.plagiarism.sources %}
+                            <li>{{ source }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modals de notation -->
+{% for submission in submissions %}
+<div class="modal fade" id="gradeModal{{ submission.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="post" action="{{ url_for('grade_submission', submission_id=submission.id) }}" enctype="multipart/form-data">
+            <div class="modal-header">
+                <h5 class="modal-title">Noter - {{ submission.student }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="score{{ submission.id }}" class="form-label">Score</label>
+                    <input type="number" step="any" class="form-control" id="score{{ submission.id }}" name="score" required value="{{ submission.correction.score if submission.correction }}">
+                </div>
+                <div class="mb-3">
+                    <label for="max_score{{ submission.id }}" class="form-label">Score max</label>
+                    <input type="number" step="any" class="form-control" id="max_score{{ submission.id }}" name="max_score" required value="{{ submission.correction.max_score if submission.correction else assignment.max_score }}">
+                </div>
+                <div class="mb-3">
+                    <label for="feedback{{ submission.id }}" class="form-label">Commentaires</label>
+                    <textarea class="form-control" id="feedback{{ submission.id }}" name="feedback" rows="3">{{ submission.correction.feedback | join('\n') if submission.correction }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="feedback_file{{ submission.id }}" class="form-label">Fichier corrigé</label>
+                    <input type="file" class="form-control" id="feedback_file{{ submission.id }}" name="feedback_file">
+                    {% if submission.correction.feedback_file %}
+                    <a href="{{ url_for('download_correction_file', filename=submission.correction.feedback_file) }}" class="d-block mt-2"><i class="fas fa-download"></i> Fichier actuel</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+
+<div class="mt-4">
+    <a href="{{ url_for('teacher_assignments') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour aux devoirs
+    </a>
+</div>
+{% endblock %}

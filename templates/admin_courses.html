@@ -1,0 +1,130 @@
+{% extends "base_clean.html" %}
+
+{% block title %}Gestion des Cours - ULC-ICAM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="display-6 fw-bold mb-2">
+                        <i class="fas fa-book-open me-3" style="color: #56ab2f;"></i>
+                        Gestion des Cours
+                    </h1>
+                    <p class="text-muted mb-0">Administrer les cours et assignations des professeurs</p>
+                </div>
+                <a href="{{ url_for('admin_add_course') }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-plus me-2"></i>Ajouter un cours
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cours -->
+    <div class="row g-4">
+        {% for course in courses %}
+        <div class="col-lg-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100" style="transition: transform 0.2s;" 
+                 onmouseover="this.style.transform='translateY(-5px)'" 
+                 onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">{{ course.name }}</h5>
+                        <div>
+                            <span class="badge bg-light text-dark">{{ course.code }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-university me-2 text-primary"></i>
+                            <span class="badge bg-light text-dark border">{{ course.faculte }}</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-building me-2 text-success"></i>
+                            <span class="badge bg-light text-dark border">{{ course.departement }}</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-star me-2 text-warning"></i>
+                            <span class="badge bg-light text-dark border">{{ course.credits }} crédits</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-2">
+                            <i class="fas fa-graduation-cap me-2"></i>Promotions cibles :
+                        </h6>
+                        {% for promo in course.promotions %}
+                            <span class="badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; margin-right: 4px; margin-bottom: 4px;">{{ promo }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-2">
+                            <i class="fas fa-chalkboard-teacher me-2"></i>Professeurs assignés :
+                        </h6>
+                        {% set assigned = course_assignments.get(course.id|string, []) %}
+                        {% if assigned %}
+                            {% for teacher_username in assigned %}
+                                {% if users.get(teacher_username) %}
+                                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                                    <div>
+                                        <span class="fw-bold">{{ users[teacher_username].name }}</span>
+                                        <br><small class="text-muted">{{ users[teacher_username].specialite }}</small>
+                                    </div>
+                                    <a href="{{ url_for('unassign_teacher_from_course', course_id=course.id, teacher_username=teacher_username) }}" 
+                                       class="btn btn-outline-danger btn-sm" title="Désassigner"
+                                       onclick="return confirm('Désassigner {{ users[teacher_username].name }} ?')">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-muted text-center py-2">
+                                <i class="fas fa-user-slash me-2"></i>Aucun professeur assigné
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <a href="{{ url_for('assign_teacher_to_course', course_id=course.id) }}" 
+                       class="btn btn-outline-primary w-100">
+                        <i class="fas fa-user-plus me-2"></i>Assigner Professeur
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if not courses %}
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-book-open" style="font-size: 5rem; color: #e9ecef;"></i>
+                </div>
+                <h3 class="text-muted mb-3">Aucun cours créé</h3>
+                <p class="text-muted mb-4">Commencez par ajouter les cours de l'université</p>
+                <a href="{{ url_for('admin_add_course') }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-plus me-2"></i>Créer le premier cours
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Actions -->
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
