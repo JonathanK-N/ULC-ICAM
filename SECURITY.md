@@ -339,7 +339,6 @@ INCIDENT_RESPONSE_PLAN = {
 ```
 🚨 URGENCE SÉCURITÉ 24/7
 📧 security@cognito-inc.ca
-📱 +1 (XXX) XXX-XXXX (Ligne directe sécurité)
 
 🏢 Cognito Inc. - Équipe Sécurité
 👨💻 Jonathan Kakesa Nayaba (CEO/CISO)
