@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-3">{{ course.name }} <small class="text-muted">({{ course.code }})</small></h2>
+
+{% if content.description %}
+<p>{{ content.description }}</p>
+{% endif %}
+
+<div class="list-group mb-4">
+    {% for chapter in chapters %}
+    <div class="list-group-item">
+        <h5 class="mb-1">{{ chapter.title }}</h5>
+        <p class="mb-1">{{ chapter.description }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('student_courses') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour aux cours
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2><i class="fas fa-pen"></i> Noter la soumission</h2>
+    <p><strong>Étudiant :</strong> {{ submission.student }}</p>
+    <p><strong>Fichier :</strong> {{ submission.filename }}</p>
+    <form method="post">
+        <div class="mb-3">
+            <label for="score" class="form-label">Note</label>
+            <input type="number" class="form-control" id="score" name="score" value="{{ correction.score if correction }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="max_score" class="form-label">Note maximale</label>
+            <input type="number" class="form-control" id="max_score" name="max_score" value="{{ correction.max_score if correction else assignment.max_score }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="feedback" class="form-label">Commentaires (un par ligne)</label>
+            <textarea class="form-control" id="feedback" name="feedback" rows="4">{{ '\n'.join(correction.feedback) if correction and correction.feedback }}</textarea>
+        </div>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="publish_now" name="publish_now">
+            <label class="form-check-label" for="publish_now">Publier immédiatement</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <a href="{{ url_for('assignment_results', assignment_id=assignment.id) }}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}

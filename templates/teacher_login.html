@@ -1,0 +1,91 @@
+{% extends "base_clean.html" %}
+
+{% block title %}Connexion Enseignant - ULC-ICAM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-5 col-md-7">
+        <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <div class="mb-3">
+                        <img src="{{ url_for('static', filename='images/ulc-icam-logo.png') }}" alt="ULC-ICAM" height="60">
+                    </div>
+                    <div class="mb-3">
+                        <i class="fas fa-chalkboard-teacher" style="font-size: 3rem; opacity: 0.9;"></i>
+                    </div>
+                    <h2 class="fw-bold mb-2">Portail Enseignant</h2>
+                    <p class="mb-0 opacity-75">Espace dédié aux professeurs</p>
+                </div>
+                
+                <form method="POST">
+                    <div class="mb-4">
+                        <label for="identifier" class="form-label fw-bold">CIP ou Email universitaire</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-0">
+                                <i class="fas fa-id-badge text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-0" id="identifier" name="identifier" 
+                                   placeholder="Ex: P2024001 ou prof@ulc-icam.cd" required>
+                        </div>
+                        <small class="text-white opacity-75 mt-1 d-block">
+                            <i class="fas fa-info-circle me-1"></i>Utilisez votre CIP ou email universitaire
+                        </small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-bold">Mot de passe</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-0">
+                                <i class="fas fa-lock text-muted"></i>
+                            </span>
+                            <input type="password" class="form-control border-0" id="password" name="password" 
+                                   placeholder="Entrez votre mot de passe" required>
+                            <button class="btn btn-outline-light border-0" type="button" id="togglePassword">
+                                <i class="fas fa-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-light btn-lg fw-bold">
+                            <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center">
+                    <a href="{{ url_for('login') }}" class="text-white text-decoration-none opacity-75">
+                        <i class="fas fa-arrow-left me-2"></i>Changer de portail
+                    </a>
+                </div>
+                
+                <div class="mt-4 p-3 bg-white bg-opacity-10 rounded">
+                    <small class="d-block text-center">
+                        <i class="fas fa-chalkboard-teacher me-1"></i>
+                        Espace réservé au corps enseignant
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('togglePassword').addEventListener('click', function() {
+    const passwordField = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+    
+    if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        eyeIcon.className = 'fas fa-eye-slash';
+    } else {
+        passwordField.type = 'password';
+        eyeIcon.className = 'fas fa-eye';
+    }
+});
+</script>
+{% endblock %}

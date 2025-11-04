@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-line"></i> Mes Notes</h2>
+</div>
+
+<div class="row">
+    {% for grade in grades %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ grade.assignment.title }}</h5>
+                <div>
+                    <span class="badge bg-info">{{ grade.assignment.course }}</span>
+                    {% if grade.assignment.is_group_work %}
+                        <span class="badge bg-primary">Groupe</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Date de soumission :</strong> {{ grade.submission.submitted_at }}<br>
+                    <strong>Fichier soumis :</strong> <code>{{ grade.submission.filename }}</code>
+                </div>
+                
+                {% if grade.results_available %}
+                    <!-- Résultats disponibles -->
+                    {% if grade.correction %}
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-check-circle"></i> Note obtenue</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fs-4"><strong>{{ grade.correction.score }}/{{ grade.correction.max_score }}</strong></span>
+                            <span class="badge bg-success fs-6">
+                                {{ ((grade.correction.score / grade.correction.max_score) * 100)|round(1) }}%
+                            </span>
+                        </div>
+                        
+                        {% if grade.correction.feedback %}
+                        <div class="mt-3">
+                            <strong>Commentaires :</strong>
+                            <ul class="mt-2">
+                                {% for comment in grade.correction.feedback %}
+                                    <li>{{ comment }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        {% if grade.correction.feedback_file %}
+                        <div class="mt-3">
+                            <a href="{{ url_for('download_correction_file', filename=grade.correction.feedback_file) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download"></i> Télécharger le corrigé
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        {% if grade.correction.auto_generated %}
+                            <small class="text-muted">
+                                <i class="fas fa-robot"></i> Correction automatique
+                            </small>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-clock"></i> En cours de correction
+                    </div>
+                    {% endif %}
+                    
+                    {% if grade.plagiarism %}
+                    <div class="alert alert-{{ 'danger' if grade.plagiarism.status == 'suspect' else 'info' }}">
+                        <h6><i class="fas fa-search"></i> Analyse de plagiat</h6>
+                        <p><strong>Similarité détectée :</strong> {{ grade.plagiarism.similarity }}%</p>
+                        <p><strong>Statut :</strong> 
+                            <span class="badge bg-{{ 'danger' if grade.plagiarism.status == 'suspect' else 'success' }}">
+                                {{ 'Suspect' if grade.plagiarism.status == 'suspect' else 'Acceptable' }}
+                            </span>
+                        </p>
+                        
+                        {% if grade.plagiarism.sources %}
+                        <div class="mt-2">
+                            <strong>Sources similaires détectées :</strong>
+                            <ul>
+                                {% for source in grade.plagiarism.sources %}
+                                    <li>{{ source }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                {% else %}
+                    <!-- Résultats non encore disponibles -->
+                    <div class="alert alert-secondary">
+                        <i class="fas fa-lock"></i> 
+                        <strong>Résultats non encore disponibles</strong>
+                        <p class="mb-0">Les notes seront publiées par votre professeur.</p>
+                        {% if grade.assignment.results_release_date %}
+                            <small class="text-muted">
+                                Publication prévue : {{ grade.assignment.results_release_date }}
+                            </small>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <strong>Professeur :</strong> {{ grade.assignment.teacher_name }}<br>
+                        <strong>Date limite :</strong> {{ grade.assignment.due_date }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not grades %}
+<div class="text-center">
+    <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+    <h4 class="text-muted">Aucune soumission</h4>
+    <p class="text-muted">Vous n'avez encore soumis aucun devoir</p>
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+    </a>
+</div>
+{% endblock %}

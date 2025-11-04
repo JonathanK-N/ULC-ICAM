@@ -1,0 +1,292 @@
+{% extends "base_clean.html" %}
+
+{% block title %}Dashboard Enseignant - ULC-ICAM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Header -->
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="display-6 fw-bold mb-2">
+                        <img src="{{ url_for('static', filename='images/ulc-icam-logo.png') }}" alt="ULC-ICAM" height="50" class="me-3">
+                        Tableau de bord enseignant
+                    </h1>
+                    <p class="text-muted mb-0">Bienvenue {{ session.name }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('create_assignment') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Créer un devoir
+                    </a>
+                    <a href="{{ url_for('teacher_assigned_courses') }}" class="btn btn-outline-success">
+                        <i class="fas fa-book me-2"></i>Mes Cours
+                    </a>
+                    <a href="{{ url_for('teacher_assignments') }}" class="btn btn-outline-info">
+                        <i class="fas fa-tasks me-2"></i>Mes Devoirs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ url_for('teacher_assignments') }}" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; transition: transform 0.2s;" 
+                     onmouseover="this.style.transform='translateY(-5px)'" 
+                     onmouseout="this.style.transform='translateY(0)'">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="fw-bold mb-1">{{ teacher_assignments_count }}</h3>
+                                <p class="mb-0 opacity-75">Devoirs Créés</p>
+                            </div>
+                            <i class="fas fa-tasks" style="font-size: 2.5rem; opacity: 0.7;"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ url_for('teacher_submissions') }}" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%); color: white; transition: transform 0.2s;" 
+                     onmouseover="this.style.transform='translateY(-5px)'" 
+                     onmouseout="this.style.transform='translateY(0)'">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="fw-bold mb-1">{{ total_submissions }}</h3>
+                                <p class="mb-0 opacity-75">Soumissions</p>
+                            </div>
+                            <i class="fas fa-file-upload" style="font-size: 2.5rem; opacity: 0.7;"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ url_for('teacher_students') }}" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; transition: transform 0.2s;" 
+                     onmouseover="this.style.transform='translateY(-5px)'" 
+                     onmouseout="this.style.transform='translateY(0)'">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="fw-bold mb-1">{{ total_students }}</h3>
+                                <p class="mb-0 opacity-75">Étudiants</p>
+                            </div>
+                            <i class="fas fa-user-graduate" style="font-size: 2.5rem; opacity: 0.7;"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ url_for('teacher_assigned_courses') }}" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; transition: transform 0.2s;" 
+                     onmouseover="this.style.transform='translateY(-5px)'" 
+                     onmouseout="this.style.transform='translateY(0)'">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="fw-bold mb-1">{{ teacher_courses_count }}</h3>
+                                <p class="mb-0 opacity-75">Cours Assignés</p>
+                            </div>
+                            <i class="fas fa-book-open" style="font-size: 2.5rem; opacity: 0.7;"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Mes Cours Assignés -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="mb-3">
+                <i class="fas fa-book-open me-2"></i>Mes Cours Assignés
+            </h4>
+        </div>
+        {% for course in teacher_courses %}
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100" style="transition: transform 0.2s;" 
+                 onmouseover="this.style.transform='translateY(-3px)'" 
+                 onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-header" style="background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold">{{ course.name }}</h6>
+                        <span class="badge bg-light text-dark">{{ course.code }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-building me-1"></i>{{ course.departement }}
+                        </small>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-graduation-cap me-1"></i>
+                            {% for promo in course.promotions %}
+                                <span class="badge bg-secondary me-1">{{ promo }}</span>
+                            {% endfor %}
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-users me-1"></i>
+                            {% set enrolled_count = course_enrollments.get(course.id|string, [])|length %}
+                            {{ enrolled_count }} étudiant{{ 's' if enrolled_count != 1 else '' }} inscrit{{ 's' if enrolled_count != 1 else '' }}
+                        </small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('course_content_view', course_id=course.id) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit me-1"></i>Gérer
+                        </a>
+                        <a href="{{ url_for('create_assignment') }}?course_id={{ course.id }}" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus me-1"></i>Devoir
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        {% if not teacher_courses %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle me-2"></i>
+                Aucun cours ne vous est actuellement assigné. Contactez l'administrateur pour obtenir vos assignations.
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Mes Devoirs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="mb-3">
+                <i class="fas fa-tasks me-2"></i>Mes Devoirs Récents
+            </h4>
+        </div>
+    </div>
+
+<div class="row">
+    {% for assignment in teacher_assignments %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ assignment.title }}</h5>
+                <div>
+                    <span class="badge bg-info">{{ assignment.course }}</span>
+                    {% if assignment.is_group_work %}
+                        <span class="badge bg-primary">Groupe</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ assignment.description[:100] }}...</p>
+                
+                <!-- Statistiques du devoir -->
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h6 class="text-primary">{{ assignment_stats[assignment.id].enrolled if assignment_stats[assignment.id] else 0 }}</h6>
+                            <small class="text-muted">Étudiants inscrits</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h6 class="text-success">{{ assignment_stats[assignment.id].submitted if assignment_stats[assignment.id] else 0 }}</h6>
+                            <small class="text-muted">Ont soumis</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-muted">
+                    <i class="fas fa-calendar"></i> 
+                    Date limite : {{ assignment.due_date }}
+                </p>
+                
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('assignment_submissions', assignment_id=assignment.id) }}" 
+                       class="btn btn-success btn-sm">
+                        <i class="fas fa-list"></i> Soumissions
+                    </a>
+                    <a href="{{ url_for('assignment_results', assignment_id=assignment.id) }}" 
+                       class="btn btn-primary btn-sm">
+                        <i class="fas fa-chart-bar"></i> Résultats
+                    </a>
+                    {% if assignment.is_group_work %}
+                        <a href="{{ url_for('manage_groups', assignment_id=assignment.id) }}" 
+                           class="btn btn-info btn-sm">
+                            <i class="fas fa-users"></i> Groupes
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+    {% if not teacher_assignments %}
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-clipboard-list" style="font-size: 5rem; color: #e9ecef;"></i>
+                </div>
+                <h3 class="text-muted mb-3">Aucun devoir créé</h3>
+                <p class="text-muted mb-4">Commencez par créer votre premier devoir pour vos étudiants</p>
+                <a href="{{ url_for('create_assignment') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Créer mon premier devoir
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal pour créer un devoir -->
+<div class="modal fade" id="createAssignmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Créer un nouveau devoir</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('create_assignment') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Titre du devoir</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="course_id" class="form-label">Cours</label>
+                        <select class="form-select" id="course_id" name="course_id" required>
+                            <option value="">Sélectionner un cours</option>
+                            <option value="1">Cours 1</option>
+                            <option value="2">Cours 2</option>
+                        </select>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-envelope"></i> Les étudiants inscrits recevront une notification par email.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-envelope"></i> Créer et notifier
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

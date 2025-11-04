@@ -1,0 +1,183 @@
+<!-- =============================================================================== -->
+<!-- Développeur: Jonathan Kakesa | Date: 19/12/2024 | Heure: 18:45 -->
+<!-- Description: Template pour rapport système ULC-ICAM -->
+<!-- Fonctionnalités: Statistiques système, graphiques, export données -->
+<!-- =============================================================================== -->
+
+{% extends "base_clean.html" %}
+
+{% block title %}Rapport Système - ULC-ICAM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">📊 Rapport Système - Université Loyola du Congo</h2>
+            
+            <!-- Statistiques générales -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5>👥 Utilisateurs</h5>
+                            <h3>{{ stats.total_users }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5>🎓 Étudiants</h5>
+                            <h3>{{ stats.students }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5>👨‍🏫 Professeurs</h5>
+                            <h3>{{ stats.teachers }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h5>📚 Cours</h5>
+                            <h3>{{ stats.courses }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Statistiques devoirs -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-secondary text-white">
+                        <div class="card-body">
+                            <h5>📝 Devoirs</h5>
+                            <h3>{{ stats.assignments }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-dark text-white">
+                        <div class="card-body">
+                            <h5>📤 Soumissions</h5>
+                            <h3>{{ stats.submissions }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5>✅ Corrigées</h5>
+                            <h3>{{ stats.corrected }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions rapides -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>🚀 Actions Rapides</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>📊 Rapports et Exports</h6>
+                            <div class="btn-group-vertical w-100" role="group">
+                                <button class="btn btn-outline-primary mb-2" onclick="exportAllData()">
+                                    📁 Exporter toutes les données
+                                </button>
+                                <button class="btn btn-outline-success mb-2" onclick="generateSystemReport()">
+                                    📋 Générer rapport complet
+                                </button>
+                                <button class="btn btn-outline-info mb-2" onclick="downloadBackup()">
+                                    💾 Télécharger sauvegarde
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>⚙️ Maintenance Système</h6>
+                            <div class="btn-group-vertical w-100" role="group">
+                                <button class="btn btn-outline-warning mb-2" onclick="cleanTempFiles()">
+                                    🧹 Nettoyer fichiers temporaires
+                                </button>
+                                <button class="btn btn-outline-secondary mb-2" onclick="optimizeDatabase()">
+                                    🔧 Optimiser base de données
+                                </button>
+                                <button class="btn btn-outline-danger mb-2" onclick="resetSystem()">
+                                    🔄 Réinitialiser système
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ===============================================================================
+// Développeur: Jonathan Kakesa | Date: 19/12/2024 | Heure: 18:50
+// Description: Scripts pour rapport système
+// Fonctionnalités: Export données, maintenance, actions rapides
+// ===============================================================================
+
+function exportAllData() {
+    if (confirm('Exporter toutes les données du système ?')) {
+        window.location.href = '/admin/export_all_data';
+    }
+}
+
+function generateSystemReport() {
+    if (confirm('Générer un rapport système complet ?')) {
+        window.location.href = '/admin/generate_full_report';
+    }
+}
+
+function downloadBackup() {
+    if (confirm('Télécharger une sauvegarde complète ?')) {
+        window.location.href = '/admin/download_backup';
+    }
+}
+
+function cleanTempFiles() {
+    if (confirm('Nettoyer les fichiers temporaires ?')) {
+        fetch('/admin/clean_temp_files', {method: 'POST'})
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || 'Nettoyage effectué');
+                location.reload();
+            });
+    }
+}
+
+function optimizeDatabase() {
+    if (confirm('Optimiser la base de données ?')) {
+        fetch('/admin/optimize_database', {method: 'POST'})
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || 'Optimisation effectuée');
+                location.reload();
+            });
+    }
+}
+
+function resetSystem() {
+    if (confirm('ATTENTION: Réinitialiser complètement le système ? Cette action est irréversible !')) {
+        if (confirm('Êtes-vous absolument sûr ? Toutes les données seront perdues !')) {
+            fetch('/admin/reset_system', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message || 'Système réinitialisé');
+                    window.location.href = '/';
+                });
+        }
+    }
+}
+</script>
+{% endblock %}

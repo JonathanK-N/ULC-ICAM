@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # Service Judge0 pour l'exécution de code
+  judge0-server:
+    image: judge0/judge0:1.13.0
+    container_name: ulc-judge0
+    volumes:
+      - ./tmp/judge0:/tmp:rw
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    ports:
+      - "2358:2358"
+    privileged: true
+    environment:
+      - REDIS_HOST=judge0-redis
+      - POSTGRES_HOST=judge0-db
+      - POSTGRES_DB=judge0
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=YourJudge0Password
+    depends_on:
+      - judge0-db
+      - judge0-redis
+    restart: unless-stopped
+
+  # Base de données pour Judge0
+  judge0-db:
+    image: postgres:13
+    container_name: ulc-judge0-db
+    environment:
+      - POSTGRES_DB=judge0
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=YourJudge0Password
+    volumes:
+      - judge0_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Redis pour Judge0
+  judge0-redis:
+    image: redis:6
+    container_name: ulc-judge0-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - judge0_redis_data:/data
+    restart: unless-stopped
+
+  # Worker Judge0
+  judge0-worker:
+    image: judge0/judge0:1.13.0
+    container_name: ulc-judge0-worker
+    command: ["./scripts/workers"]
+    volumes:
+      - ./tmp/judge0:/tmp:rw
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    privileged: true
+    environment:
+      - REDIS_HOST=judge0-redis
+      - POSTGRES_HOST=judge0-db
+      - POSTGRES_DB=judge0
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=YourJudge0Password
+    depends_on:
+      - judge0-db
+      - judge0-redis
+    restart: unless-stopped
+
+volumes:
+  judge0_postgres_data:
+  judge0_redis_data:
+
+networks:
+  default:
+    name: ulc-network
+    external: true

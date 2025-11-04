@@ -1,0 +1,140 @@
+{% extends "base_clean.html" %}
+
+{% block title %}Ajouter Étudiant - ULC-ICAM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="fas fa-user-graduate me-3" style="color: #667eea;"></i>
+                    Ajouter un étudiant
+                </h1>
+                <p class="text-muted">Créer un nouveau compte étudiant avec mot de passe temporaire</p>
+            </div>
+            
+            <div class="card border-0 shadow-lg">
+                <div class="card-header text-center py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h4 class="mb-0 fw-bold">
+                        <i class="fas fa-user-plus me-2"></i>Nouveau compte étudiant
+                    </h4>
+                </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">Nom d'utilisateur *</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="cip" class="form-label">CIP *</label>
+                            <input type="text" class="form-control" id="cip" name="cip" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="nom" class="form-label">Nom *</label>
+                            <input type="text" class="form-control" id="nom" name="nom" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="postnom" class="form-label">Post-nom</label>
+                            <input type="text" class="form-control" id="postnom" name="postnom">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="prenom" class="form-label">Prénom *</label>
+                            <input type="text" class="form-control" id="prenom" name="prenom" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="sexe" class="form-label">Sexe *</label>
+                            <select class="form-select" id="sexe" name="sexe" required>
+                                <option value="">Sélectionner</option>
+                                <option value="M">Masculin</option>
+                                <option value="F">Féminin</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="date_naissance" class="form-label">Date de naissance *</label>
+                            <input type="date" class="form-control" id="date_naissance" name="date_naissance" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="promotion" class="form-label">Promotion *</label>
+                            <select class="form-select" id="promotion" name="promotion" required>
+                                <option value="">Sélectionner</option>
+                                {% for promotion in system_config.promotions %}
+                                    <option value="{{ promotion }}">{{ promotion }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="faculte" class="form-label">Faculté *</label>
+                            <select class="form-select" id="faculte" name="faculte" required>
+                                <option value="">Sélectionner</option>
+                                {% for faculte in system_config.facultes %}
+                                    <option value="{{ faculte }}">{{ faculte }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="departement" class="form-label">Département *</label>
+                            <select class="form-select" id="departement" name="departement" required>
+                                <option value="">Sélectionner</option>
+                                {% for dept in system_config.departements %}
+                                    <option value="{{ dept }}">{{ dept }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="telephone" class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="telephone" name="telephone">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label">Mot de passe temporaire *</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="adresse" class="form-label">Adresse</label>
+                        <textarea class="form-control" id="adresse" name="adresse" rows="2"></textarea>
+                    </div>
+
+                    <div class="alert border-0" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); color: #1565c0;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-3 fa-lg"></i>
+                            <div>
+                                <strong>Information importante :</strong><br>
+                                Un mot de passe temporaire sera généré automatiquement. L'étudiant devra le changer à sa première connexion.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between pt-3">
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Annuler
+                        </a>
+                        <button type="submit" class="btn btn-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
+                            <i class="fas fa-user-plus me-2"></i>Créer le compte
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-file-csv"></i> Importer des utilisateurs via CSV</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Format du fichier CSV :</h6>
+                    <p>Le fichier doit contenir les colonnes suivantes selon le type d'utilisateur :</p>
+                    
+                    <div class="mb-3">
+                        <strong>Pour les étudiants :</strong><br>
+                        <code>username,role,cip,nom,postnom,prenom,sexe,date_naissance,promotion,faculte,telephone,email,adresse</code>
+                        <br><br>
+                        <strong>Exemple étudiant :</strong><br>
+                        <code>etudiant1,student,CIP001,Dupont,Jean,Pierre,M,1995-05-15,L1,Faculté des Sciences et Technologies (ULC-ICAM),+243123456789,jean.dupont@ulc-icam.cd,Kinshasa</code>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Pour les enseignants :</strong><br>
+                        <code>username,role,cip,nom,postnom,prenom,sexe,date_naissance,cours_dispenses,departement,grade,telephone,email,bureau</code>
+                        <br><br>
+                        <strong>Exemple enseignant :</strong><br>
+                        <code>prof1,teacher,CIP002,Martin,Marie,Claire,F,1980-03-20,Mathématiques,Mathématiques & Informatique,Prof. Associé,+243987654321,marie.martin@ulc-icam.cd,Bureau 101</code>
+                    </div>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Sélectionner le fichier CSV</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
+                        <div class="form-text">
+                            Seuls les fichiers .csv sont acceptés. Le système détectera automatiquement le type d'utilisateur selon les colonnes.
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-upload"></i> Importer
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4">
+                    <h6>Télécharger des modèles CSV :</h6>
+                    <div class="btn-group" role="group">
+                        <a href="data:text/csv;charset=utf-8,username%2Crole%2Ccip%2Cnom%2Cpostnom%2Cprenom%2Csexe%2Cdate_naissance%2Cpromotion%2Cfaculte%2Ctelephone%2Cemail%2Cadresse%0Aetudiant1%2Cstudent%2CCIP001%2CDupont%2CJean%2CPierre%2CM%2C1995-05-15%2CL1%2CFaculté%20des%20Sciences%20et%20Technologies%20(ULC-ICAM)%2C%2B243123456789%2Cjean.dupont%40ulc-icam.cd%2CKinshasa" 
+                           download="modele_etudiants.csv" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-download"></i> Modèle Étudiants
+                        </a>
+                        <a href="data:text/csv;charset=utf-8,username%2Crole%2Ccip%2Cnom%2Cpostnom%2Cprenom%2Csexe%2Cdate_naissance%2Ccours_dispenses%2Cdepartement%2Cgrade%2Ctelephone%2Cemail%2Cbureau%0Aprof1%2Cteacher%2CCIP002%2CMartin%2CMarie%2CClaire%2CF%2C1980-03-20%2CMathématiques%2CMathématiques%20%26%20Informatique%2CProf.%20Associé%2C%2B243987654321%2Cmarie.martin%40ulc-icam.cd%2CBureau%20101" 
+                           download="modele_enseignants.csv" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-download"></i> Modèle Enseignants
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+                
+                <div class="alert alert-warning mt-3">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Notes importantes :</h6>
+                    <ul class="mb-0">
+                        <li>Les mots de passe temporaires seront générés automatiquement</li>
+                        <li>Les utilisateurs devront changer leur mot de passe à la première connexion</li>
+                        <li>Assurez-vous que les promotions et départements existent dans la configuration système</li>
+                        <li>Les CIP doivent être uniques pour chaque utilisateur</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

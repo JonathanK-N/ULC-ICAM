@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  # Service de backup principal
+  ulc-backup:
+    build:
+      context: .
+      dockerfile: Dockerfile.backup
+    container_name: ulc-icam-backup
+    environment:
+      - BACKUP_BASE_DIR=/backups
+      - DB_TYPE=postgresql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=ulc_icam_db
+      - DB_USER=ulc_admin
+      - DB_PASSWORD=${DB_PASSWORD}
+      - UPLOADS_DIR=/app/uploads
+      - REPORTS_DIR=/app/reports
+      - CLOUD_PROVIDER=s3
+      - CLOUD_BUCKET=ulc-icam-backups
+      - CLOUD_ACCESS_KEY=${AWS_ACCESS_KEY_ID}
+      - CLOUD_SECRET_KEY=${AWS_SECRET_ACCESS_KEY}
+      - CLOUD_REGION=${AWS_DEFAULT_REGION}
+      - BACKUP_NOTIFICATION_EMAIL=admin@ulc-icam.cd
+    volumes:
+      - backup_data:/backups
+      - app_uploads:/app/uploads:ro
+      - app_reports:/app/reports:ro
+      - ./backup:/opt/backup
+    depends_on:
+      - postgres
+    networks:
+      - ulc-network
+    restart: unless-stopped
+    # Cron jobs intégrés
+    command: >
+      sh -c "
+        # Installation de cron
+        apk add --no-cache dcron &&
+        # Configuration des tâches cron
+        echo '0 2 * * * /opt/backup/backup_scheduler.py daily' > /var/spool/cron/crontabs/root &&
+        echo '0 1 * * 0 /opt/backup/backup_scheduler.py weekly' >> /var/spool/cron/crontabs/root &&
+        echo '0 3 1 * * /opt/backup/backup_scheduler.py test' >> /var/spool/cron/crontabs/root &&
+        # Démarrage de cron
+        crond -f -d 8
+      "
+
+  # Service MinIO pour stockage local (alternative à S3)
+  minio:
+    image: minio/minio:latest
+    container_name: ulc-icam-minio
+    environment:
+      - MINIO_ROOT_USER=ulc-admin
+      - MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - ulc-network
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+
+  # Service de monitoring des backups
+  backup-monitor:
+    image: prom/prometheus:latest
+    container_name: ulc-backup-monitor
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - ulc-network
+    restart: unless-stopped
+
+volumes:
+  backup_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/ulc-icam/backups
+  app_uploads:
+    external: true
+  app_reports:
+    external: true
+  minio_data:
+  prometheus_data:
+
+networks:
+  ulc-network:
+    external: true
