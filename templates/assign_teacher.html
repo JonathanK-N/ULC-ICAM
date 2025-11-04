@@ -50,10 +50,12 @@
                             <div class="card-body">
                                 {% if assigned_teachers %}
                                     {% for teacher_username in assigned_teachers %}
+                                        {% set teacher = teachers.get(teacher_username) %}
+                                        {% if teacher %}
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <div>
-                                                <strong>{{ teachers[teacher_username].name }}</strong><br>
-                                                <small class="text-muted">{{ teachers[teacher_username].get('departement', 'N/A') }}</small>
+                                                <strong>{{ teacher.name }}</strong><br>
+                                                <small class="text-muted">{{ teacher.get('departement', 'N/A') }}</small>
                                             </div>
                                             <a href="{{ url_for('unassign_teacher_from_course', course_id=course.id, teacher_username=teacher_username) }}" 
                                                class="btn btn-danger btn-sm"
@@ -62,6 +64,7 @@
                                             </a>
                                         </div>
                                         <hr>
+                                        {% endif %}
                                     {% endfor %}
                                 {% else %}
                                     <p class="text-muted text-center">Aucun professeur assigné</p>

@@ -18,6 +18,12 @@ class Config:
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY') or 'ulc-icam-secret-key-2024'
     DEBUG = os.environ.get('FLASK_ENV') == 'development'
     
+    # Configuration des clés API
+    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+    GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
+    GOOGLE_SEARCH_ENGINE_ID = os.environ.get('GOOGLE_SEARCH_ENGINE_ID')
+    HUGGINGFACE_API_KEY = os.environ.get('HUGGINGFACE_API_KEY')
+    
     # Configuration des uploads
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB maximum
