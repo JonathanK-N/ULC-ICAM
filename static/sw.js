@@ -9,6 +9,8 @@ const STATIC_CACHE_URLS = [
   '/static/css/style.css',
   '/static/js/app.js',
   '/static/images/ulc-icam-logo.png',
+  '/static/images/ulc-icam-logo-192.png',
+  '/static/images/ulc-icam-logo-512.png',
   '/static/manifest.json',
   OFFLINE_URL
 ];

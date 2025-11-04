@@ -104,6 +104,28 @@ if MAIL_AVAILABLE:
 # Créer le dossier uploads s'il n'existe pas
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+
+@app.route('/manifest.json')
+def web_manifest():
+    """Serve the PWA manifest with the expected MIME type."""
+    return send_from_directory(
+        app.static_folder,
+        'manifest.json',
+        mimetype='application/manifest+json',
+        cache_timeout=0
+    )
+
+
+@app.route('/sw.js')
+def service_worker():
+    """Expose the service worker at the application root for full scope coverage."""
+    return send_from_directory(
+        app.static_folder,
+        'sw.js',
+        mimetype='application/javascript',
+        cache_timeout=0
+    )
+
 def load_test_data():
     """Charge les données depuis le fichier JSON"""
     try:
