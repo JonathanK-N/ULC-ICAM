@@ -177,7 +177,7 @@ def create_print_ready_html():
         <h2 style="color: white; border: none; font-size: 16pt;">Système de Gestion de Devoirs et Soumissions de Code</h2>
         <p style="font-size: 14pt;">Université Loyola du Congo - Institut Catholique d'Arts et Métiers</p>
         <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 8px; margin: 30px auto; max-width: 500px;">
-            <h3 style="margin: 0; color: white; border: none;">Développé par</h3>
+            <h3 style="margin: 0; color: white; border: none;">ULC-ICAM Turnin System</h3>
             <h2 style="color: white; border: none; margin: 10px 0;">Jonathan Kakesa Nayaba</h2>
             <p>Ingénieur Logiciel & Développeur Full-Stack</p>
             <p>📧 jkakesa9@gmail.com | 📱 +243 438 529 907</p>

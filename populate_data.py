@@ -183,7 +183,7 @@ def populate_test_data():
         }
         
         data['admin_courses'].append(course)
-        data['course_assignments'][next_course_id] = [prof_username]
+        data['course_assignments'][str(next_course_id)] = [prof_username]
         next_course_id += 1
     
     # Inscrire les étudiants aux cours de leur promotion
@@ -192,10 +192,11 @@ def populate_test_data():
             student_promo = user.get('promotion')
             for course in data['admin_courses']:
                 if student_promo in course.get('promotions', []):
-                    if course['id'] not in data['course_enrollments']:
-                        data['course_enrollments'][course['id']] = []
-                    if username not in data['course_enrollments'][course['id']]:
-                        data['course_enrollments'][course['id']].append(username)
+                    course_key = str(course['id'])
+                    if course_key not in data['course_enrollments']:
+                        data['course_enrollments'][course_key] = []
+                    if username not in data['course_enrollments'][course_key]:
+                        data['course_enrollments'][course_key].append(username)
     
     # Créer 3 devoirs pour chaque cours
     next_assignment_id = data.get('next_assignment_id', 1)
@@ -203,7 +204,8 @@ def populate_test_data():
     
     for course in data['admin_courses']:
         # Trouver le professeur assigné
-        teacher_username = data['course_assignments'][course['id']][0] if data['course_assignments'][course['id']] else 'prof01'
+        assigned_teachers = data['course_assignments'].get(str(course['id']), [])
+        teacher_username = assigned_teachers[0] if assigned_teachers else 'prof01'
         teacher_name = data['users'][teacher_username]['name']
         
         for i in range(3):
@@ -284,3 +286,4 @@ def populate_test_data():
 
 if __name__ == "__main__":
     populate_test_data()
+

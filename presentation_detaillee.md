@@ -5,9 +5,8 @@
 
 ---
 
-### 👨💻 Développé par : **Jonathan Kakesa Nayaba**
-**Ingénieur Logiciel & Développeur Full-Stack**  
-📧 jkakesa9@gmail.com | 📱 +243 438 529 907  
+### 🌐 ULC-ICAM Turnin System
+**Plateforme académique de gestion des devoirs et soumissions de code**  
 📅 Décembre 2024 - Version 1.0 Production Ready
 
 ---

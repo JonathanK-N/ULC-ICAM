@@ -120,8 +120,8 @@ def save_test_data():
         data = {
             'users': globals().get('users', {}),
             'admin_courses': globals().get('admin_courses', []),
-            'course_assignments': globals().get('course_assignments', {}),
-            'course_enrollments': globals().get('course_enrollments', {}),
+            'course_assignments': {str(k): v for k, v in globals().get('course_assignments', {}).items()},
+            'course_enrollments': {str(k): v for k, v in globals().get('course_enrollments', {}).items()},
             'assignments': globals().get('assignments', []),
             'submissions': globals().get('submissions', []),
             'next_course_admin_id': globals().get('next_course_admin_id', 1),
@@ -139,8 +139,8 @@ try:
         data = json.load(f)
         users = data.get('users', {'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur ULC-ICAM'}})
         admin_courses = data.get('admin_courses', [])
-        course_assignments = data.get('course_assignments', {})
-        course_enrollments = data.get('course_enrollments', {})
+        course_assignments = {str(k): v for k, v in data.get('course_assignments', {}).items()}
+        course_enrollments = {str(k): v for k, v in data.get('course_enrollments', {}).items()}
         assignments = data.get('assignments', [])
         submissions = data.get('submissions', [])
         next_course_admin_id = data.get('next_course_admin_id', 1)
@@ -184,6 +184,30 @@ next_group_id = 1
 # Gestion des cours
 courses = []
 next_course_id = 1
+
+def _course_key(course_id):
+    """Normalise l'identifiant de cours en chaîne."""
+    return str(course_id) if course_id is not None else None
+
+def get_assigned_teachers(course_id):
+    """Retourne la liste des enseignants assignés à un cours."""
+    return course_assignments.get(_course_key(course_id), [])
+
+def ensure_course_assignment(course_id):
+    """Crée si nécessaire la liste des enseignants pour un cours."""
+    return course_assignments.setdefault(_course_key(course_id), [])
+
+def get_enrolled_students(course_id):
+    """Retourne la liste des étudiants inscrits à un cours."""
+    return course_enrollments.get(_course_key(course_id), [])
+
+def ensure_course_enrollments(course_id):
+    """Crée si nécessaire la liste des inscriptions pour un cours."""
+    return course_enrollments.setdefault(_course_key(course_id), [])
+
+# Harmoniser les clés existantes éventuelles en chaînes
+course_assignments = { _course_key(k): v for k, v in course_assignments.items() }
+course_enrollments = { _course_key(k): v for k, v in course_enrollments.items() }
 
 # Inscriptions des étudiants aux cours chargées depuis le fichier JSON ci-dessus
 
@@ -252,7 +276,7 @@ def generate_temp_password():
 def get_student_emails_for_course(course_id):
     """Récupère les emails des étudiants inscrits à un cours"""
     emails = []
-    enrolled_students = course_enrollments.get(course_id, [])
+    enrolled_students = get_enrolled_students(course_id)
     
     for student_username in enrolled_students:
         if student_username in users:
@@ -335,7 +359,7 @@ def generate_course_report_csv(course_id):
     writer.writerow(['Étudiant', 'Email', 'Devoirs soumis', 'Note moyenne'])
     
     # Données des étudiants
-    enrolled_students = course_enrollments.get(course_id, [])
+    enrolled_students = get_enrolled_students(course_id)
     for student_username in enrolled_students:
         if student_username in users:
             student = users[student_username]
@@ -466,9 +490,8 @@ def dashboard():
         student_assignments = []
         for assignment in assignments:
             course_id = assignment.get('course_id')
-            if course_id and course_id in course_enrollments:
-                if session['user'] in course_enrollments[course_id]:
-                    student_assignments.append(assignment)
+            if course_id and session['user'] in get_enrolled_students(course_id):
+                student_assignments.append(assignment)
         
         return render_template('student_dashboard.html', assignments=student_assignments, student_groups=student_groups)
     elif session['role'] == 'teacher':
@@ -479,7 +502,7 @@ def dashboard():
         # Calculer les statistiques par devoir
         assignment_stats = {}
         for assignment in teacher_assignments:
-            enrolled_count = len(course_enrollments.get(assignment.get('course_id', 0), []))
+            enrolled_count = len(get_enrolled_students(assignment.get('course_id')))
             submitted_count = len([s for s in submissions if s['assignment_id'] == assignment['id']])
             assignment_stats[assignment['id']] = {
                 'enrolled': enrolled_count,
@@ -490,12 +513,12 @@ def dashboard():
         all_students = set()
         for course_id, teachers in course_assignments.items():
             if session['user'] in teachers:
-                all_students.update(course_enrollments.get(int(course_id), []))
+                all_students.update(get_enrolled_students(course_id))
         
         # Récupérer les cours assignés au professeur
         teacher_courses = []
         for course in admin_courses:
-            if str(course['id']) in course_assignments and session['user'] in course_assignments[str(course['id'])]:
+            if session['user'] in get_assigned_teachers(course['id']):
                 teacher_courses.append(course)
         
         return render_template('teacher_dashboard.html', 
@@ -541,10 +564,9 @@ def submit_assignment(assignment_id):
     
     # Vérifier que l'étudiant est inscrit au cours du devoir
     course_id = assignment.get('course_id')
-    if course_id:
-        if course_id not in course_enrollments or session['user'] not in course_enrollments[course_id]:
-            flash('Vous n\'êtes pas inscrit au cours de ce devoir')
-            return redirect(url_for('dashboard'))
+    if course_id and session['user'] not in get_enrolled_students(course_id):
+        flash('Vous n\'êtes pas inscrit au cours de ce devoir')
+        return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
         # Soumission de code via éditeur
@@ -935,7 +957,7 @@ def course_detail(course_id):
         return redirect(url_for('login'))
     
     # Vérifier que le professeur est assigné à ce cours
-    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+    if session['user'] not in get_assigned_teachers(course_id):
         flash('Accès non autorisé à ce cours')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -956,7 +978,7 @@ def course_detail(course_id):
                 eligible_students.append({'username': username, 'data': user})
     
     # Étudiants inscrits
-    enrolled_students = course_enrollments.get(course_id, [])
+    enrolled_students = get_enrolled_students(course_id)
     enrolled_data = [{'username': u, 'data': users[u]} for u in enrolled_students if u in users]
     
     return render_template('course_detail.html', course=course, 
@@ -968,16 +990,15 @@ def enroll_student(course_id, username):
         return redirect(url_for('login'))
     
     # Vérifier que le professeur est assigné à ce cours
-    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+    if session['user'] not in get_assigned_teachers(course_id):
         flash('Accès non autorisé à ce cours')
         return redirect(url_for('teacher_assigned_courses'))
     
     course = next((c for c in admin_courses if c['id'] == course_id), None)
     if course and username in users and users[username]['role'] == 'student':
-        if course_id not in course_enrollments:
-            course_enrollments[course_id] = []
-        if username not in course_enrollments[course_id]:
-            course_enrollments[course_id].append(username)
+        enrolled_list = ensure_course_enrollments(course_id)
+        if username not in enrolled_list:
+            enrolled_list.append(username)
             save_test_data()  # Sauvegarder les changements
             flash(f'Étudiant {users[username].get("name", username)} inscrit au cours')
         else:
@@ -993,13 +1014,14 @@ def unenroll_student(course_id, username):
         return redirect(url_for('login'))
     
     # Vérifier que le professeur est assigné à ce cours
-    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+    if session['user'] not in get_assigned_teachers(course_id):
         flash('Accès non autorisé à ce cours')
         return redirect(url_for('teacher_assigned_courses'))
     
     course = next((c for c in admin_courses if c['id'] == course_id), None)
-    if course and course_id in course_enrollments and username in course_enrollments[course_id]:
-        course_enrollments[course_id].remove(username)
+    enrolled_list = get_enrolled_students(course_id) if course else []
+    if course and username in enrolled_list:
+        enrolled_list.remove(username)
         save_test_data()  # Sauvegarder les changements
         flash(f'Étudiant {users[username].get("name", username)} désinscrit du cours')
     else:
@@ -1181,8 +1203,9 @@ def admin_add_course():
             'description': request.form.get('description', '')
         }
         admin_courses.append(course)
-        course_assignments[next_course_admin_id] = []
+        ensure_course_assignment(next_course_admin_id)
         next_course_admin_id += 1
+        save_test_data()
         flash('Cours ajouté avec succès')
         return redirect(url_for('admin_courses_view'))
     
@@ -1201,19 +1224,19 @@ def assign_teacher_to_course(course_id):
     if request.method == 'POST':
         teacher_username = request.form['teacher']
         if teacher_username in users and users[teacher_username]['role'] == 'teacher':
-            if course_id not in course_assignments:
-                course_assignments[course_id] = []
-            if teacher_username not in course_assignments[course_id]:
-                course_assignments[course_id].append(teacher_username)
+            assigned_list = ensure_course_assignment(course_id)
+            if teacher_username not in assigned_list:
+                assigned_list.append(teacher_username)
+                save_test_data()
                 flash(f'Professeur {teacher_username} assigné au cours')
             else:
                 flash('Professeur déjà assigné à ce cours')
         return redirect(url_for('admin_courses_view'))
-    
+
     teachers = {k: v for k, v in users.items() if v['role'] == 'teacher'}
 
-    # Récupérer la liste d'enseignants assignés en tenant compte des clés str/int
-    key_used = course_id if course_id in course_assignments else str(course_id)
+    # Récupérer la liste d'enseignants assignés en tenant compte du format des clés
+    key_used = _course_key(course_id)
     assigned_teachers_raw = course_assignments.get(key_used, [])
 
     # Nettoyer les références obsolètes (comptes supprimés ou non-professeurs)
@@ -1231,11 +1254,13 @@ def assign_teacher_to_course(course_id):
         save_test_data()
         flash("Certaines assignations faisaient référence à des comptes supprimés et ont été nettoyées.", "warning")
 
+    assigned_teachers = course_assignments.get(key_used, valid_assigned_teachers)
+
     return render_template(
         'assign_teacher.html',
         course=course,
         teachers=teachers,
-        assigned_teachers=course_assignments.get(key_used, valid_assigned_teachers)
+        assigned_teachers=assigned_teachers
     )
 
 @app.route('/admin/unassign_teacher/<int:course_id>/<teacher_username>')
@@ -1243,8 +1268,10 @@ def unassign_teacher_from_course(course_id, teacher_username):
     if 'user' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
     
-    if course_id in course_assignments and teacher_username in course_assignments[course_id]:
-        course_assignments[course_id].remove(teacher_username)
+    assigned_list = get_assigned_teachers(course_id)
+    if teacher_username in assigned_list:
+        assigned_list.remove(teacher_username)
+        save_test_data()
         flash(f'Professeur {teacher_username} désassigné du cours')
     
     return redirect(url_for('admin_courses_view'))
@@ -1257,7 +1284,7 @@ def teacher_assigned_courses():
     # Trouver les cours assignés à ce professeur
     teacher_courses = []
     for course in admin_courses:
-        if str(course['id']) in course_assignments and session['user'] in course_assignments[str(course['id'])]:
+        if session['user'] in get_assigned_teachers(course['id']):
             teacher_courses.append(course)
     
     return render_template('teacher_assigned_courses.html', courses=teacher_courses)
@@ -1272,7 +1299,7 @@ def course_content_view(course_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+    if session['user'] not in get_assigned_teachers(course_id):
         flash('Accès non autorisé à ce cours')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -1293,7 +1320,7 @@ def upload_syllabus(course_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+    if session['user'] not in get_assigned_teachers(course_id):
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -1331,7 +1358,7 @@ def update_course_description(course_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+    if session['user'] not in get_assigned_teachers(course_id):
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -1347,7 +1374,7 @@ def add_chapter(course_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+    if session['user'] not in get_assigned_teachers(course_id):
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -1397,7 +1424,7 @@ def chapter_detail(course_id, chapter_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+    if session['user'] not in get_assigned_teachers(course_id):
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -1418,7 +1445,7 @@ def update_chapter(course_id, chapter_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+    if session['user'] not in get_assigned_teachers(course_id):
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -1437,7 +1464,7 @@ def add_exercise(course_id, chapter_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+    if session['user'] not in get_assigned_teachers(course_id):
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -1459,7 +1486,7 @@ def upload_chapter_document(course_id, chapter_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
     
-    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+    if session['user'] not in get_assigned_teachers(course_id):
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     
@@ -1574,13 +1601,27 @@ def create_assignment():
                         'expected_output': output_val
                     })
         
+        course_id_raw = request.form.get('course_id')
+        course_id_value = None
+        if course_id_raw:
+            try:
+                course_id_value = int(course_id_raw)
+            except ValueError:
+                course_id_value = None
+
+        course_name = request.form.get('course', '').strip()
+        if course_id_value is not None and not course_name:
+            matched_course = next((c for c in admin_courses if c['id'] == course_id_value), None)
+            if matched_course:
+                course_name = matched_course.get('name', '')
+
         assignment = {
             'id': next_assignment_id,
             'title': request.form['title'],
             'description': request.form['description'],
             'due_date': request.form['due_date'],
-            'course_id': int(request.form['course_id']) if request.form.get('course_id') else None,
-            'course': request.form['course'],
+            'course_id': course_id_value,
+            'course': course_name,
             'teacher': session['user'],
             'teacher_name': session['name'],
             'files': uploaded_files,
@@ -1598,10 +1639,11 @@ def create_assignment():
         }
         
         # Générer les groupes automatiquement si nécessaire
-        if assignment['is_group_work'] and assignment['group_formation'] == 'auto':
+        if assignment['is_group_work'] and assignment['group_formation'] == 'auto' and assignment['course_id'] is not None:
             generate_automatic_groups(next_assignment_id, assignment['course_id'], assignment['group_size'])
         
         assignments.append(assignment)
+        save_test_data()
         next_assignment_id += 1
         flash('Devoir créé avec succès')
         return redirect(url_for('teacher_assignments'))
@@ -1609,7 +1651,7 @@ def create_assignment():
     # Récupérer les cours assignés au professeur
     teacher_courses = []
     for course in admin_courses:
-        if str(course['id']) in course_assignments and session['user'] in course_assignments[str(course['id'])]:
+        if session['user'] in get_assigned_teachers(course['id']):
             teacher_courses.append(course)
     
     # Cours pré-sélectionné depuis l'URL
@@ -2139,10 +2181,12 @@ def process_submission_async(file_path, assignment, submission_id):
 
 def generate_automatic_groups(assignment_id, course_id, group_size):
     """Générer automatiquement des groupes pour un devoir"""
-    if not course_id or course_id not in course_enrollments:
+    if not course_id:
         return
     
-    enrolled_students = course_enrollments[course_id]
+    enrolled_students = ensure_course_enrollments(course_id)
+    if not enrolled_students:
+        return
     import random
     random.shuffle(enrolled_students)
     
@@ -2165,11 +2209,11 @@ def generate_automatic_groups(assignment_id, course_id, group_size):
 
 def get_course_students(course_id):
     """Récupérer les étudiants inscrits à un cours"""
-    if course_id not in course_enrollments:
+    if not course_id:
         return []
     
     students_data = []
-    for student_username in course_enrollments[course_id]:
+    for student_username in get_enrolled_students(course_id):
         if student_username in users and users[student_username]['role'] == 'student':
             students_data.append({
                 'username': student_username,
@@ -2190,10 +2234,9 @@ def join_group(assignment_id):
     
     # Vérifier que l'étudiant est inscrit au cours du devoir
     course_id = assignment.get('course_id')
-    if course_id:
-        if course_id not in course_enrollments or session['user'] not in course_enrollments[course_id]:
-            flash('Vous n\'êtes pas inscrit au cours de ce devoir')
-            return redirect(url_for('dashboard'))
+    if course_id and session['user'] not in get_enrolled_students(course_id):
+        flash('Vous n\'êtes pas inscrit au cours de ce devoir')
+        return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
         selected_students = request.form.getlist('group_members')
@@ -2264,7 +2307,7 @@ def teacher_students():
             if course:
                 teacher_courses.append(course)
                 # Utiliser course_id_str (chaîne) pour accéder aux inscriptions
-                teacher_students.update(course_enrollments.get(course_id_str, []))
+                teacher_students.update(get_enrolled_students(course_id_str))
     
     students_data = []
     for student_username in teacher_students:
@@ -2287,7 +2330,7 @@ def assignment_submissions(assignment_id):
         return redirect(url_for('teacher_assignments'))
     
     assignment_submissions = [s for s in submissions if s['assignment_id'] == assignment_id]
-    enrolled_students = course_enrollments.get(assignment.get('course_id', 0), [])
+    enrolled_students = get_enrolled_students(assignment.get('course_id'))
     
     return render_template('assignment_submissions.html', 
                          assignment=assignment, 
@@ -2309,7 +2352,7 @@ def student_grades():
         if assignment:
             # Vérifier que l'étudiant est inscrit au cours du devoir
             course_id = assignment.get('course_id')
-            if course_id and (course_id not in course_enrollments or session['user'] not in course_enrollments[course_id]):
+            if course_id and session['user'] not in get_enrolled_students(course_id):
                 continue  # Ignorer ce devoir si l'étudiant n'est pas inscrit
             
             # Vérifier si les résultats sont publiés globalement ou individuellement
@@ -2344,8 +2387,8 @@ def student_courses():
     if 'user' not in session or session['role'] != 'student':
         return redirect(url_for('login'))
 
-    enrolled_ids = [cid for cid, students in course_enrollments.items() if session['user'] in students]
-    enrolled_courses = [c for c in admin_courses if c['id'] in enrolled_ids]
+    enrolled_ids = {cid for cid, students in course_enrollments.items() if session['user'] in students}
+    enrolled_courses = [c for c in admin_courses if _course_key(c['id']) in enrolled_ids]
 
     return render_template('student_courses.html', courses=enrolled_courses)
 
@@ -2354,7 +2397,7 @@ def student_course_detail(course_id):
     if 'user' not in session or session['role'] != 'student':
         return redirect(url_for('login'))
 
-    if course_id not in course_enrollments or session['user'] not in course_enrollments[course_id]:
+    if session['user'] not in get_enrolled_students(course_id):
         flash("Accès non autorisé à ce cours")
         return redirect(url_for('student_courses'))
 
@@ -2486,7 +2529,7 @@ def export_course_data(course_id):
         return redirect(url_for('login'))
     
     # Vérifier l'accès au cours
-    if str(course_id) not in course_assignments or session['user'] not in course_assignments[str(course_id)]:
+    if session['user'] not in get_assigned_teachers(course_id):
         flash('Accès non autorisé')
         return redirect(url_for('teacher_assigned_courses'))
     

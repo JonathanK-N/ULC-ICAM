@@ -269,7 +269,7 @@ def main():
     """Fonction principale"""
     print("🏛️  UNIVERSITÉ LOYOLA DU CONGO - INSTITUT CATHOLIQUE D'ART ET MÉTIER")
     print("🎓 SYSTÈME ULC-ICAM TURNIN - SUITE DE TESTS COMPLÈTE")
-    print("👨‍💻 Développé par: Jonathan Kakesa")
+    print("👨‍💻 Plateforme ULC-ICAM Turnin System")
     print("📅 Date: 19 décembre 2024")
     print()
     

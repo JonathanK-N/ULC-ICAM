@@ -374,7 +374,7 @@ def create_professional_html():
         <p class="university">Université Loyola du Congo - Institut Catholique d'Arts et Métiers</p>
         
         <div class="developer-info">
-            <h3 style="margin-top: 0; color: white; border: none;">Développé par</h3>
+            <h3 style="margin-top: 0; color: white; border: none;">ULC-ICAM Turnin System</h3>
             <h2 class="developer-name">Jonathan Kakesa Nayaba</h2>
             <p class="developer-title">Ingénieur Logiciel & Développeur Full-Stack</p>
             <p class="contact-info">📧 jkakesa9@gmail.com | 📱 +1 (438)-529-9073</p>

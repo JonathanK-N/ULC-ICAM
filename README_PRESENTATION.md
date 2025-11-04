@@ -154,7 +154,7 @@
 - ✅ **ROI exceptionnel** (1000% en 1 an)
 - ✅ **100% local** (pas de dépendance externe)
 - ✅ **Première université congolaise** avec cette technologie
-- ✅ **Développé par un talent local** (Jonathan Kakesa)
+- ✅ **Soutenu par l'équipe numérique de l'ULC-ICAM**
 
 ## 📞 Support et Questions
 
