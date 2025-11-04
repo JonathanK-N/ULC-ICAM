@@ -242,7 +242,7 @@ class ULCICAMPwa {
             ">
                 <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
                 <h3 style="color: #1f2937; margin-bottom: 12px;">
-                    Bienvenue dans ULC Turnin !
+                    Bienvenue dans ULC-ICAM Turnin !
                 </h3>
                 <p style="color: #6b7280; margin-bottom: 20px;">
                     L'application a été installée avec succès. Vous pouvez maintenant l'utiliser hors ligne !
