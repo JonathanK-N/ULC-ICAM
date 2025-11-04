@@ -1671,6 +1671,10 @@ def download_assignment_file(filename):
     
     return send_from_directory(os.path.join('uploads', 'assignments'), filename)
 
+@app.route('/offline.html')
+def offline():
+    return render_template('offline.html')
+
 @app.route('/download_file/<filename>')
 def download_file(filename):
     if 'user' not in session:
