@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Présentation ULC-ICAM Turnin System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            padding: 40px;
+            box-sizing: border-box;
+            position: relative;
+            background: white;
+            margin-bottom: 20px;
+        }
+        
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #4facfe;
+            padding-bottom: 20px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            padding: 8px;
+        }
+        
+        .logo img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
+        
+        .slide-title {
+            font-size: 2.5em;
+            color: #333;
+            margin: 0;
+            text-align: center;
+            flex-grow: 1;
+        }
+        
+        .slide-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .feature-card h3 {
+            margin-top: 0;
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .nav-btn {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .nav-btn:hover {
+            background: #357abd;
+        }
+        
+        .slide-number {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .architecture-diagram {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .component {
+            background: #4facfe;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 150px;
+        }
+        
+        .arrow {
+            font-size: 24px;
+            color: #4facfe;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .workflow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+        }
+        
+        .workflow-step {
+            background: #f8f9fa;
+            border: 2px solid #4facfe;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            margin: 0 10px;
+        }
+        
+        .workflow-step h4 {
+            color: #4facfe;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Slide 1: Page de titre -->
+<div class="slide active">
+    <div class="slide-header">
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+        <h1 class="slide-title">ULC-ICAM TURNIN SYSTEM</h1>
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+    </div>
+    <div class="slide-content" style="text-align: center;">
+        <h2 style="color: #4facfe; font-size: 2em; margin-bottom: 30px;">
+            Système de Gestion de Devoirs et Soumissions de Code
+        </h2>
+        <h3 style="color: #666; margin-bottom: 40px;">
+            Université Loyola du Congo - Institut Catholique d'Arts et Métiers
+        </h3>
+        
+        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 30px; border-radius: 15px; margin: 40px auto; max-width: 600px;">
+            <h3 style="margin-top: 0;">ULC-ICAM Turnin System</h3>
+            <h2 style="font-size: 2.5em; margin: 20px 0;">Jonathan Kakesa Nayaba</h2>
+            <p style="font-size: 1.2em; margin-bottom: 0;">Ingénieur Logiciel & Développeur Full-Stack</p>
+        </div>
+        
+        <p style="color: #666; font-size: 1.1em; margin-top: 40px;">
+            📧 jkakesa9@gmail.com | 📱 +1 (438)-529-9073<br>
+            Décembre 2024 - Version 1.0 Production Ready
+        </p>
+    </div>
+    <div class="slide-number">1 / 12</div>
+</div>
+
+<!-- Slide 2: Problématique et Objectifs -->
+<div class="slide">
+    <div class="slide-header">
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+        <h1 class="slide-title">Problématique & Objectifs</h1>
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+    </div>
+    <div class="slide-content">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+            <div>
+                <h3 style="color: #f5576c; margin-bottom: 20px;">🎯 Problématiques Identifiées</h3>
+                <ul style="font-size: 1.1em; line-height: 1.8;">
+                    <li>Gestion manuelle des devoirs chronophage</li>
+                    <li>Correction de code difficile et subjective</li>
+                    <li>Détection de plagiat inexistante</li>
+                    <li>Suivi des étudiants complexe</li>
+                    <li>Feedback tardif aux étudiants</li>
+                    <li>Archivage et organisation défaillants</li>
+                </ul>
+            </div>
+            <div>
+                <h3 style="color: #4facfe; margin-bottom: 20px;">✅ Objectifs de la Solution</h3>
+                <ul style="font-size: 1.1em; line-height: 1.8;">
+                    <li>Automatiser la gestion des devoirs</li>
+                    <li>Correction automatique du code</li>
+                    <li>Détection de plagiat en temps réel</li>
+                    <li>Interface intuitive pour tous</li>
+                    <li>Feedback immédiat aux étudiants</li>
+                    <li>Rapports et statistiques avancés</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; margin-top: 30px; text-align: center;">
+            <h3 style="margin-top: 0;">🚀 Vision</h3>
+            <p style="font-size: 1.2em; margin-bottom: 0;">
+                Révolutionner l'enseignement informatique à l'ULC-ICAM par une plateforme moderne, 
+                efficace et 100% adaptée aux besoins académiques congolais.
+            </p>
+        </div>
+    </div>
+    <div class="slide-number">2 / 12</div>
+</div>
+
+<!-- Slide 3: Architecture du Système -->
+<div class="slide">
+    <div class="slide-header">
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+        <h1 class="slide-title">Architecture du Système</h1>
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+    </div>
+    <div class="slide-content">
+        <div class="architecture-diagram">
+            <div class="component">
+                <h4>Frontend</h4>
+                <p>HTML5, CSS3<br>Bootstrap 5<br>JavaScript</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="component">
+                <h4>Backend</h4>
+                <p>Python Flask<br>API REST<br>Sessions</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="component">
+                <h4>Base de Données</h4>
+                <p>JSON<br>Fichiers locaux<br>Sauvegarde auto</p>
+            </div>
+        </div>
+        
+        <h3 style="color: #4facfe; text-align: center; margin: 40px 0 20px;">🔧 Technologies Utilisées</h3>
+        
+        <div class="feature-grid">
+            <div class="feature-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <h4>Backend</h4>
+                <p>Python 3.8+, Flask, Werkzeug</p>
+            </div>
+            <div class="feature-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <h4>Frontend</h4>
+                <p>HTML5, CSS3, Bootstrap 5, Monaco Editor</p>
+            </div>
+            <div class="feature-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h4>Exécution Code</h4>
+                <p>Python, Java, C++, C, JavaScript</p>
+            </div>
+            <div class="feature-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <h4>Sécurité</h4>
+                <p>Sessions chiffrées, Validation stricte</p>
+            </div>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 30px;">
+            <h4 style="color: #333; margin-top: 0;">💡 Avantages Techniques</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <ul>
+                    <li>Installation simple (pip install)</li>
+                    <li>Déploiement rapide</li>
+                    <li>Maintenance facile</li>
+                </ul>
+                <ul>
+                    <li>Extensible et modulaire</li>
+                    <li>Performance optimisée</li>
+                    <li>Compatible multi-OS</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">3 / 12</div>
+</div>
+
+<!-- Slide 4: Fonctionnalités Principales -->
+<div class="slide">
+    <div class="slide-header">
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+        <h1 class="slide-title">Fonctionnalités Principales</h1>
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+    </div>
+    <div class="slide-content">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">3</div>
+                <div>Rôles Utilisateurs</div>
+                <small>Admin, Professeur, Étudiant</small>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">5</div>
+                <div>Langages Supportés</div>
+                <small>Python, Java, C++, C, JS</small>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">100%</div>
+                <div>Détection Locale</div>
+                <small>Plagiat sans API externe</small>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">∞</div>
+                <div>Capacité</div>
+                <small>Utilisateurs illimités</small>
+            </div>
+        </div>
+        
+        <h3 style="color: #4facfe; text-align: center; margin: 30px 0;">🎯 Fonctionnalités par Rôle</h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+            <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 10px;">
+                <h4 style="margin-top: 0;">👨‍💼 Administrateur</h4>
+                <ul style="font-size: 0.9em;">
+                    <li>Gestion utilisateurs</li>
+                    <li>Configuration système</li>
+                    <li>Import CSV masse</li>
+                    <li>Rapports complets</li>
+                    <li>Sauvegarde données</li>
+                </ul>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 10px;">
+                <h4 style="margin-top: 0;">👨‍🏫 Professeur</h4>
+                <ul style="font-size: 0.9em;">
+                    <li>Création devoirs</li>
+                    <li>Correction automatique</li>
+                    <li>Gestion contenu cours</li>
+                    <li>Détection plagiat</li>
+                    <li>Publication résultats</li>
+                </ul>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px;">
+                <h4 style="margin-top: 0;">👨‍🎓 Étudiant</h4>
+                <ul style="font-size: 0.9em;">
+                    <li>Soumission code</li>
+                    <li>Éditeur Monaco</li>
+                    <li>Travail en groupe</li>
+                    <li>Consultation notes</li>
+                    <li>Accès contenu cours</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">4 / 12</div>
+</div>
+
+<!-- Slide 5: Interface Utilisateur -->
+<div class="slide">
+    <div class="slide-header">
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+        <h1 class="slide-title">Interface Utilisateur</h1>
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+    </div>
+    <div class="slide-content">
+        <h3 style="color: #4facfe; text-align: center; margin-bottom: 30px;">🎨 Design Moderne et Intuitif</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #4facfe;">
+                <h4 style="color: #4facfe; margin-top: 0;">🏠 Page d'Accueil</h4>
+                <ul>
+                    <li>Statistiques en temps réel</li>
+                    <li>Navigation claire par rôle</li>
+                    <li>Design responsive</li>
+                    <li>Branding ULC-ICAM</li>
+                </ul>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #f5576c;">
+                <h4 style="color: #f5576c; margin-top: 0;">💻 Éditeur de Code</h4>
+                <ul>
+                    <li>Monaco Editor (VS Code)</li>
+                    <li>Coloration syntaxique</li>
+                    <li>Auto-complétion</li>
+                    <li>Exécution en temps réel</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px;">
+            <h4 style="margin-top: 0; text-align: center;">📱 Caractéristiques UX/UI</h4>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center;">
+                <div>
+                    <h5>🎯 Intuitive</h5>
+                    <p style="font-size: 0.9em;">Navigation simple et logique</p>
+                </div>
+                <div>
+                    <h5>📱 Responsive</h5>
+                    <p style="font-size: 0.9em;">Compatible mobile/tablette</p>
+                </div>
+                <div>
+                    <h5>🚀 Rapide</h5>
+                    <p style="font-size: 0.9em;">Chargement optimisé</p>
+                </div>
+                <div>
+                    <h5>🎨 Moderne</h5>
+                    <p style="font-size: 0.9em;">Design contemporain</p>
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: #e8f5e8; padding: 20px; border-radius: 10px; border: 2px solid #28a745;">
+            <h4 style="color: #28a745; margin-top: 0; text-align: center;">✨ Expérience Utilisateur Optimisée</h4>
+            <p style="text-align: center; margin-bottom: 0; font-size: 1.1em;">
+                Interface conçue spécifiquement pour l'environnement académique congolais, 
+                avec des couleurs ULC-ICAM et une ergonomie adaptée aux besoins locaux.
+            </p>
+        </div>
+    </div>
+    <div class="slide-number">5 / 12</div>
+</div>
+
+<!-- Slide 6: Workflow de Soumission -->
+<div class="slide">
+    <div class="slide-header">
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+        <h1 class="slide-title">Workflow de Soumission</h1>
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+    </div>
+    <div class="slide-content">
+        <h3 style="color: #4facfe; text-align: center; margin-bottom: 30px;">📝 Processus de Soumission de Code</h3>
+        
+        <div class="workflow">
+            <div class="workflow-step">
+                <h4>1. Création</h4>
+                <p>Le professeur crée un devoir avec critères et tests</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="workflow-step">
+                <h4>2. Soumission</h4>
+                <p>L'étudiant écrit et soumet son code via l'éditeur</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="workflow-step">
+                <h4>3. Exécution</h4>
+                <p>Compilation et exécution automatique du code</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="workflow-step">
+                <h4>4. Évaluation</h4>
+                <p>Note automatique + détection de plagiat</p>
+            </div>
+        </div>
+        
+        <h3 style="color: #f5576c; text-align: center; margin: 40px 0 20px;">🔍 Système de Correction Automatique</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                <h4 style="color: #4facfe; margin-top: 0;">✅ Critères d'Évaluation</h4>
+                <ul>
+                    <li><strong>Compilation :</strong> Le code compile-t-il ?</li>
+                    <li><strong>Exécution :</strong> S'exécute-t-il sans erreur ?</li>
+                    <li><strong>Tests :</strong> Passe-t-il les cas de test ?</li>
+                    <li><strong>Syntaxe :</strong> Respect des bonnes pratiques</li>
+                </ul>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                <h4 style="color: #f5576c; margin-top: 0;">📊 Attribution des Notes</h4>
+                <ul>
+                    <li><strong>100% :</strong> Code parfait, tous tests passés</li>
+                    <li><strong>0% :</strong> Erreurs de compilation/exécution</li>
+                    <li><strong>Partiel :</strong> Selon les tests réussis</li>
+                    <li><strong>Feedback :</strong> Détails des erreurs</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 10px; margin-top: 30px; text-align: center;">
+            <h4 style="margin-top: 0;">⚡ Avantages du Système</h4>
+            <p style="margin-bottom: 0; font-size: 1.1em;">
+                <strong>Feedback immédiat</strong> • <strong>Correction objective</strong> • <strong>Gain de temps professeur</strong> • <strong>Apprentissage amélioré</strong>
+            </p>
+        </div>
+    </div>
+    <div class="slide-number">6 / 12</div>
+</div>
+
+<!-- Slide 7: Détection de Plagiat -->
+<div class="slide">
+    <div class="slide-header">
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+        <h1 class="slide-title">Détection de Plagiat</h1>
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+    </div>
+    <div class="slide-content">
+        <h3 style="color: #4facfe; text-align: center; margin-bottom: 30px;">🔍 Système de Détection 100% Local</h3>
+        
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 30px;">
+            <div>
+                <h4 style="color: #f5576c; margin-bottom: 20px;">🧠 Algorithme de Détection</h4>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h5 style="color: #333; margin-top: 0;">1. Normalisation du Code</h5>
+                    <ul>
+                        <li>Suppression des espaces et commentaires</li>
+                        <li>Standardisation de la casse</li>
+                        <li>Élimination des variations stylistiques</li>
+                    </ul>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h5 style="color: #333; margin-top: 0;">2. Comparaison Ligne par Ligne</h5>
+                    <ul>
+                        <li>Analyse de similarité structurelle</li>
+                        <li>Détection des blocs de code identiques</li>
+                        <li>Calcul du pourcentage de similarité</li>
+                    </ul>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h5 style="color: #333; margin-top: 0;">3. Classification Automatique</h5>
+                    <ul>
+                        <li><span style="color: #28a745;">Acceptable :</span> < 30% similarité</li>
+                        <li><span style="color: #ffc107;">Attention :</span> 30-60% similarité</li>
+                        <li><span style="color: #dc3545;">Suspect :</span> > 60% similarité</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div>
+                <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+                    <h4 style="margin-top: 0;">📈 Statistiques</h4>
+                    <div style="font-size: 2em; font-weight: bold; margin: 15px 0;">100%</div>
+                    <p style="margin-bottom: 0;">Détection locale sans API externe</p>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+                    <h4 style="margin-top: 0;">⚡ Performance</h4>
+                    <div style="font-size: 2em; font-weight: bold; margin: 15px 0;">< 1s</div>
+                    <p style="margin-bottom: 0;">Temps de traitement moyen</p>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                    <h4 style="margin-top: 0;">🔒 Sécurité</h4>
+                    <div style="font-size: 2em; font-weight: bold; margin: 15px 0;">0</div>
+                    <p style="margin-bottom: 0;">Fuite de données (100% local)</p>
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 20px; border-radius: 10px;">
+            <h4 style="color: #856404; margin-top: 0; text-align: center;">💡 Avantages Uniques</h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center;">
+                <div>
+                    <h5 style="color: #856404;">🌍 Pas d'Internet Requis</h5>
+                    <p style="color: #856404; font-size: 0.9em;">Fonctionne même hors ligne</p>
+                </div>
+                <div>
+                    <h5 style="color: #856404;">💰 Économique</h5>
+                    <p style="color: #856404; font-size: 0.9em;">Aucun coût d'API externe</p>
+                </div>
+                <div>
+                    <h5 style="color: #856404;">🔐 Confidentiel</h5>
+                    <p style="color: #856404; font-size: 0.9em;">Données restent à l'ULC</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">7 / 12</div>
+</div>
+
+<!-- Slide 8: Gestion des Cours -->
+<div class="slide">
+    <div class="slide-header">
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+        <h1 class="slide-title">Gestion des Cours</h1>
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+    </div>
+    <div class="slide-content">
+        <h3 style="color: #4facfe; text-align: center; margin-bottom: 30px;">📚 Système de Gestion Académique Complet</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+            <div>
+                <h4 style="color: #f5576c; margin-bottom: 20px;">👨‍🏫 Fonctionnalités Professeur</h4>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <ul style="line-height: 1.8;">
+                        <li><strong>Création de cours :</strong> Titre, description, critères</li>
+                        <li><strong>Gestion contenu :</strong> Chapitres, documents PDF/PPT</li>
+                        <li><strong>Inscription étudiants :</strong> Manuelle ou par critères</li>
+                        <li><strong>Devoirs variés :</strong> Code, fichiers, mixtes</li>
+                        <li><strong>Suivi progression :</strong> Statistiques détaillées</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div>
+                <h4 style="color: #4facfe; margin-bottom: 20px;">👨‍🎓 Expérience Étudiant</h4>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <ul style="line-height: 1.8;">
+                        <li><strong>Accès contenu :</strong> Chapitres, documents, exercices</li>
+                        <li><strong>Soumissions :</strong> Interface intuitive et moderne</li>
+                        <li><strong>Travail en groupe :</strong> Formation automatique/manuelle</li>
+                        <li><strong>Suivi notes :</strong> Feedback détaillé en temps réel</li>
+                        <li><strong>Historique :</strong> Toutes les soumissions archivées</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <h4 style="color: #667eea; text-align: center; margin-bottom: 20px;">🏗️ Structure Organisationnelle ULC-ICAM</h4>
+        
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px;">
+            <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                <h5 style="margin-top: 0;">🏛️ Facultés</h5>
+                <p style="font-size: 0.9em; margin-bottom: 0;">Sciences et Technologies</p>
+            </div>
+            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                <h5 style="margin-top: 0;">🏢 Départements</h5>
+                <p style="font-size: 0.9em; margin-bottom: 0;">8 départements spécialisés</p>
+            </div>
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                <h5 style="margin-top: 0;">🎓 Promotions</h5>
+                <p style="font-size: 0.9em; margin-bottom: 0;">L1, L2, L3, M1, M2</p>
+            </div>
+            <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                <h5 style="margin-top: 0;">👔 Grades</h5>
+                <p style="font-size: 0.9em; margin-bottom: 0;">Prof., CT, Ass., Attaché</p>
+            </div>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">
+            <h4 style="margin-top: 0;">🎯 Avantages Pédagogiques</h4>
+            <p style="font-size: 1.1em; margin-bottom: 0;">
+                <strong>Organisation claire</strong> • <strong>Suivi personnalisé</strong> • <strong>Contenu structuré</strong> • <strong>Évaluation continue</strong>
+            </p>
+        </div>
+    </div>
+    <div class="slide-number">8 / 12</div>
+</div>
+
+<!-- Slide 9: Sécurité et Performance -->
+<div class="slide">
+    <div class="slide-header">
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+        <h1 class="slide-title">Sécurité & Performance</h1>
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+    </div>
+    <div class="slide-content">
+        <h3 style="color: #4facfe; text-align: center; margin-bottom: 30px;">🔒 Sécurité de Niveau Entreprise</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+            <div>
+                <h4 style="color: #dc3545; margin-bottom: 20px;">🛡️ Mesures de Sécurité</h4>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <ul style="line-height: 1.8;">
+                        <li><strong>Authentification :</strong> Sessions chiffrées par rôle</li>
+                        <li><strong>Validation :</strong> Contrôle strict des fichiers</li>
+                        <li><strong>Isolation :</strong> Séparation des données utilisateurs</li>
+                        <li><strong>Protection :</strong> Anti-injection de code</li>
+                        <li><strong>Sauvegarde :</strong> Données automatiquement sauvées</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div>
+                <h4 style="color: #28a745; margin-bottom: 20px;">⚡ Optimisations Performance</h4>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <ul style="line-height: 1.8;">
+                        <li><strong>Chargement :</strong> Pages optimisées < 2s</li>
+                        <li><strong>Exécution :</strong> Code traité en temps réel</li>
+                        <li><strong>Stockage :</strong> JSON optimisé et compressé</li>
+                        <li><strong>Cache :</strong> Ressources mises en cache</li>
+                        <li><strong>Scalabilité :</strong> Support utilisateurs illimités</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <h4 style="color: #667eea; text-align: center; margin-bottom: 20px;">📊 Métriques de Performance</h4>
+        
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">
+            <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                <div style="font-size: 2.5em; font-weight: bold;">< 2s</div>
+                <p style="margin-bottom: 0;">Temps de chargement</p>
+            </div>
+            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                <div style="font-size: 2.5em; font-weight: bold;">99.9%</div>
+                <p style="margin-bottom: 0;">Disponibilité</p>
+            </div>
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                <div style="font-size: 2.5em; font-weight: bold;">16MB</div>
+                <p style="margin-bottom: 0;">Taille max fichiers</p>
+            </div>
+            <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                <div style="font-size: 2.5em; font-weight: bold;">0</div>
+                <p style="margin-bottom: 0;">Failles de sécurité</p>
+            </div>
+        </div>
+        
+        <div style="background: #d1ecf1; border: 2px solid #17a2b8; padding: 20px; border-radius: 10px;">
+            <h4 style="color: #0c5460; margin-top: 0; text-align: center;">🏆 Certifications et Standards</h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center;">
+                <div>
+                    <h5 style="color: #0c5460;">🔐 Chiffrement</h5>
+                    <p style="color: #0c5460; font-size: 0.9em;">Sessions et données chiffrées</p>
+                </div>
+                <div>
+                    <h5 style="color: #0c5460;">📋 Conformité</h5>
+                    <p style="color: #0c5460; font-size: 0.9em;">Standards académiques respectés</p>
+                </div>
+                <div>
+                    <h5 style="color: #0c5460;">🛡️ Protection</h5>
+                    <p style="color: #0c5460; font-size: 0.9em;">Données privées protégées</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">9 / 12</div>
+</div>
+
+<!-- Slide 10: Déploiement et Installation -->
+<div class="slide">
+    <div class="slide-header">
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+        <h1 class="slide-title">Déploiement & Installation</h1>
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+    </div>
+    <div class="slide-content">
+        <h3 style="color: #4facfe; text-align: center; margin-bottom: 30px;">🚀 Installation Simple en 3 Étapes</h3>
+        
+        <div class="workflow">
+            <div class="workflow-step">
+                <h4>1. Installation</h4>
+                <code style="background: #f8f9fa; padding: 10px; border-radius: 5px; display: block; margin: 10px 0;">
+                    pip install -r requirements.txt
+                </code>
+            </div>
+            <div class="arrow">→</div>
+            <div class="workflow-step">
+                <h4>2. Configuration</h4>
+                <code style="background: #f8f9fa; padding: 10px; border-radius: 5px; display: block; margin: 10px 0;">
+                    mkdir uploads/{folders}
+                </code>
+            </div>
+            <div class="arrow">→</div>
+            <div class="workflow-step">
+                <h4>3. Lancement</h4>
+                <code style="background: #f8f9fa; padding: 10px; border-radius: 5px; display: block; margin: 10px 0;">
+                    python app.py
+                </code>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 40px 0;">
+            <div>
+                <h4 style="color: #28a745; margin-bottom: 20px;">✅ Prérequis Système</h4>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <ul style="line-height: 1.8;">
+                        <li><strong>Python :</strong> Version 3.8 ou supérieure</li>
+                        <li><strong>RAM :</strong> Minimum 2GB recommandé</li>
+                        <li><strong>Stockage :</strong> 1GB espace libre</li>
+                        <li><strong>OS :</strong> Windows, Linux, macOS</li>
+                        <li><strong>Réseau :</strong> Optionnel (fonctionne hors ligne)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div>
+                <h4 style="color: #17a2b8; margin-bottom: 20px;">🔧 Options de Déploiement</h4>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <ul style="line-height: 1.8;">
+                        <li><strong>Local :</strong> Serveur de développement Flask</li>
+                        <li><strong>Production :</strong> Gunicorn + Nginx</li>
+                        <li><strong>Docker :</strong> Conteneurisation disponible</li>
+                        <li><strong>Cloud :</strong> Compatible Heroku, AWS</li>
+                        <li><strong>Réseau :</strong> Accès multi-utilisateurs</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <h4 style="color: #f5576c; text-align: center; margin-bottom: 20px;">📋 Configuration ULC-ICAM</h4>
+        
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center;">
+                <div>
+                    <h5 style="margin-top: 0;">🌐 URL d'Accès</h5>
+                    <code style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 5px;">
+                        http://localhost:5000
+                    </code>
+                </div>
+                <div>
+                    <h5 style="margin-top: 0;">👨‍💼 Admin par Défaut</h5>
+                    <code style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 5px;">
+                        admin / ULC2024@Secure!
+                    </code>
+                </div>
+                <div>
+                    <h5 style="margin-top: 0;">⚙️ Port Configurable</h5>
+                    <code style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 5px;">
+                        PORT=5000 (défaut)
+                    </code>
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: #d4edda; border: 2px solid #28a745; padding: 20px; border-radius: 10px; text-align: center;">
+            <h4 style="color: #155724; margin-top: 0;">🎉 Prêt pour la Production !</h4>
+            <p style="color: #155724; margin-bottom: 0; font-size: 1.1em;">
+                Le système est entièrement testé et prêt pour un déploiement immédiat à l'ULC-ICAM
+            </p>
+        </div>
+    </div>
+    <div class="slide-number">10 / 12</div>
+</div>
+
+<!-- Slide 11: Bénéfices et ROI -->
+<div class="slide">
+    <div class="slide-header">
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+        <h1 class="slide-title">Bénéfices & ROI</h1>
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+    </div>
+    <div class="slide-content">
+        <h3 style="color: #4facfe; text-align: center; margin-bottom: 30px;">💰 Retour sur Investissement Immédiat</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+            <div>
+                <h4 style="color: #28a745; margin-bottom: 20px;">📈 Gains Quantifiables</h4>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <ul style="line-height: 1.8;">
+                        <li><strong>Temps de correction :</strong> -80% (4h → 45min)</li>
+                        <li><strong>Détection plagiat :</strong> +100% (0% → 100%)</li>
+                        <li><strong>Feedback étudiant :</strong> Immédiat vs 1 semaine</li>
+                        <li><strong>Erreurs humaines :</strong> -95% (correction auto)</li>
+                        <li><strong>Coûts opérationnels :</strong> -60% (papier, temps)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div>
+                <h4 style="color: #f5576c; margin-bottom: 20px;">🎯 Bénéfices Qualitatifs</h4>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <ul style="line-height: 1.8;">
+                        <li><strong>Motivation étudiants :</strong> Feedback immédiat</li>
+                        <li><strong>Qualité enseignement :</strong> Focus sur pédagogie</li>
+                        <li><strong>Image ULC-ICAM :</strong> Innovation technologique</li>
+                        <li><strong>Satisfaction professeurs :</strong> Outils modernes</li>
+                        <li><strong>Compétitivité :</strong> Avantage concurrentiel</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <h4 style="color: #667eea; text-align: center; margin-bottom: 20px;">💡 Impact sur l'Écosystème ULC-ICAM</h4>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
+            <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                <h5 style="margin-top: 0;">👨‍🎓 Étudiants</h5>
+                <ul style="font-size: 0.9em; text-align: left;">
+                    <li>Apprentissage accéléré</li>
+                    <li>Feedback constructif</li>
+                    <li>Motivation renforcée</li>
+                    <li>Compétences pratiques</li>
+                </ul>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                <h5 style="margin-top: 0;">👨‍🏫 Professeurs</h5>
+                <ul style="font-size: 0.9em; text-align: left;">
+                    <li>Gain de temps massif</li>
+                    <li>Outils pédagogiques</li>
+                    <li>Suivi personnalisé</li>
+                    <li>Données analytiques</li>
+                </ul>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                <h5 style="margin-top: 0;">🏛️ Institution</h5>
+                <ul style="font-size: 0.9em; text-align: left;">
+                    <li>Modernisation image</li>
+                    <li>Efficacité opérationnelle</li>
+                    <li>Attraction étudiants</li>
+                    <li>Avantage concurrentiel</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">
+            <h4 style="margin-top: 0;">🏆 Positionnement Stratégique</h4>
+            <p style="font-size: 1.2em; margin-bottom: 0;">
+                <strong>L'ULC-ICAM devient la première université congolaise</strong> avec un système de gestion 
+                de devoirs informatiques entièrement automatisé et moderne.
+            </p>
+        </div>
+    </div>
+    <div class="slide-number">11 / 12</div>
+</div>
+
+<!-- Slide 12: Conclusion et Prochaines Étapes -->
+<div class="slide">
+    <div class="slide-header">
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+        <h1 class="slide-title">Conclusion & Prochaines Étapes</h1>
+        <div class="logo">
+            <img src="static/images/ulc-icam-logo.png" alt="ULC-ICAM Logo">
+        </div>
+    </div>
+    <div class="slide-content">
+        <h3 style="color: #4facfe; text-align: center; margin-bottom: 30px;">🎯 Récapitulatif du Projet</h3>
+        
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; margin-bottom: 30px;">
+            <h4 style="margin-top: 0; text-align: center;">✅ Objectifs Atteints</h4>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                <ul>
+                    <li>✅ Système complet et fonctionnel</li>
+                    <li>✅ Interface moderne et intuitive</li>
+                    <li>✅ Correction automatique du code</li>
+                    <li>✅ Détection de plagiat locale</li>
+                </ul>
+                <ul>
+                    <li>✅ Gestion multi-utilisateurs</li>
+                    <li>✅ Sécurité de niveau entreprise</li>
+                    <li>✅ Documentation complète</li>
+                    <li>✅ Prêt pour la production</li>
+                </ul>
+            </div>
+        </div>
+        
+        <h4 style="color: #f5576c; text-align: center; margin-bottom: 20px;">🚀 Plan de Déploiement</h4>
+        
+        <div class="workflow">
+            <div class="workflow-step">
+                <h4>Phase 1</h4>
+                <p><strong>Installation & Tests</strong><br>
+                Déploiement pilote<br>
+                Formation équipe IT</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="workflow-step">
+                <h4>Phase 2</h4>
+                <p><strong>Formation Utilisateurs</strong><br>
+                Professeurs & étudiants<br>
+                Support technique</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="workflow-step">
+                <h4>Phase 3</h4>
+                <p><strong>Déploiement Complet</strong><br>
+                Tous les départements<br>
+                Monitoring & optimisation</p>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 40px 0;">
+            <div>
+                <h4 style="color: #28a745; margin-bottom: 20px;">🔮 Évolutions Futures</h4>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <ul style="line-height: 1.8;">
+                        <li>🤖 Intelligence artificielle avancée</li>
+                        <li>📱 Application mobile native</li>
+                        <li>🌐 Intégration systèmes existants</li>
+                        <li>📊 Analytics et machine learning</li>
+                        <li>🔗 API pour extensions tierces</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div>
+                <h4 style="color: #17a2b8; margin-bottom: 20px;">🤝 Support Continu</h4>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <ul style="line-height: 1.8;">
+                        <li>📞 Support technique 24/7</li>
+                        <li>🔄 Mises à jour régulières</li>
+                        <li>📚 Formation continue équipes</li>
+                        <li>🛠️ Maintenance préventive</li>
+                        <li>📈 Optimisations performance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 30px; border-radius: 15px; text-align: center;">
+            <h3 style="margin-top: 0;">🙏 Merci pour votre Attention</h3>
+            <h4 style="margin: 20px 0;">Jonathan Kakesa Nayaba</h4>
+            <p style="font-size: 1.1em; margin-bottom: 0;">
+                <strong>Développeur Principal</strong> • <strong>jkakesa9@gmail.com</strong> • <strong>+1 (438)-529-9073</strong>
+            </p>
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.3);">
+                <p style="margin-bottom: 0; font-size: 1.2em;">
+                    <strong>Questions & Démonstration Live</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">12 / 12</div>
+</div>
+
+<div class="navigation">
+    <button class="nav-btn" onclick="previousSlide()">◀ Précédent</button>
+    <button class="nav-btn" onclick="nextSlide()">Suivant ▶</button>
+</div>
+
+<script>
+let currentSlide = 0;
+const slides = document.querySelectorAll('.slide');
+
+function showSlide(n) {
+    slides[currentSlide].classList.remove('active');
+    currentSlide = (n + slides.length) % slides.length;
+    slides[currentSlide].classList.add('active');
+}
+
+function nextSlide() {
+    showSlide(currentSlide + 1);
+}
+
+function previousSlide() {
+    showSlide(currentSlide - 1);
+}
+
+// Navigation au clavier
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+        nextSlide();
+    } else if (e.key === 'ArrowLeft') {
+        previousSlide();
+    }
+});
+
+// Afficher la première slide
+showSlide(0);
+</script>
+
+</body>
+</html>

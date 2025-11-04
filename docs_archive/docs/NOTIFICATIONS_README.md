@@ -101,4 +101,4 @@ Les emails envoyés contiennent :
 Maintenant, à chaque fois qu'un professeur crée un devoir, tous les étudiants inscrits au cours reçoivent automatiquement un email de notification professionnel !
 
 ---
-**Développé par Jonathan Kakesa pour l'ULC-ICAM**
+**Conçu pour l'ULC-ICAM**
