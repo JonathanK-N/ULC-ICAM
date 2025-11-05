@@ -23,6 +23,7 @@ import requests
 import hashlib
 from difflib import SequenceMatcher
 import re
+from pathlib import Path
 from code_execution import CodeExecutor, save_code_submission
 # Imports optionnels pour traitement de fichiers
 try:
@@ -78,6 +79,64 @@ except ImportError:
     MAIL_AVAILABLE = False
     print("Flask-Mail non installé - notifications désactivées")
 
+PWA_MANIFEST = {
+    "name": "ULC-ICAM Turnin",
+    "short_name": "ULC-ICAM Turnin",
+    "description": "Plateforme ULC-ICAM Turnin pour la gestion des devoirs et du suivi académique.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2563eb",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "lang": "fr",
+    "categories": ["education", "productivity"],
+    "icons": [
+        {
+            "src": "/static/images/pwa-icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/images/pwa-icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/images/pwa-icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Tableau de Bord",
+            "short_name": "Dashboard",
+            "description": "Accéder au tableau de bord principal",
+            "url": "/dashboard",
+            "icons": [{"src": "/static/images/pwa-icon-192.png", "sizes": "192x192"}]
+        },
+        {
+            "name": "Soumettre Devoir",
+            "short_name": "Soumettre",
+            "description": "Soumettre un nouveau devoir",
+            "url": "/submit",
+            "icons": [{"src": "/static/images/pwa-icon-192.png", "sizes": "192x192"}]
+        },
+        {
+            "name": "Mes Notes",
+            "short_name": "Notes",
+            "description": "Consulter mes notes",
+            "url": "/student/my_grades",
+            "icons": [{"src": "/static/images/pwa-icon-192.png", "sizes": "192x192"}]
+        }
+    ]
+}
+
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
 # Configuration pour différents environnements
@@ -110,12 +169,20 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 @app.route('/manifest.json')
 def web_manifest():
     """Serve the PWA manifest with the expected MIME type."""
-    return send_from_directory(
-        app.static_folder,
-        'manifest.json',
-        mimetype='application/manifest+json',
-        cache_timeout=0
-    )
+    manifest_path = Path(app.static_folder) / 'manifest.json'
+
+    if manifest_path.exists():
+        return send_from_directory(
+            app.static_folder,
+            'manifest.json',
+            mimetype='application/manifest+json',
+            cache_timeout=0
+        )
+
+    response = make_response(json.dumps(PWA_MANIFEST, ensure_ascii=False))
+    response.headers['Content-Type'] = 'application/manifest+json'
+    response.headers['Cache-Control'] = 'no-store'
+    return response
 
 
 @app.route('/sw.js')
