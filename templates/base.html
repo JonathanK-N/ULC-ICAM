@@ -19,21 +19,21 @@
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:url" content="{{ request.url.replace('http://', 'https://') }}">
     <meta property="og:title" content="ULC-ICAM Turnin">
     <meta property="og:description" content="Plateforme ULC-ICAM Turnin pour la gestion des devoirs et du suivi académique.">
-    <meta property="og:image" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True) }}">
-    <meta property="og:image:secure_url" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True) }}">
+    <meta property="og:image" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True, _scheme='https') }}">
+    <meta property="og:image:secure_url" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True, _scheme='https') }}">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="{{ request.url }}">
+    <meta property="twitter:url" content="{{ request.url.replace('http://', 'https://') }}">
     <meta property="twitter:title" content="ULC-ICAM Turnin">
     <meta property="twitter:description" content="Plateforme ULC-ICAM Turnin pour la gestion des devoirs et du suivi académique.">
-    <meta property="twitter:image" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True) }}">
+    <meta property="twitter:image" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True, _scheme='https') }}">
     <meta name="twitter:image:alt" content="Logo ULC-ICAM Turnin">
     
     <!-- iOS PWA -->

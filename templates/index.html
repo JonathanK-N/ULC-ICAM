@@ -19,21 +19,21 @@
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:url" content="{{ request.url.replace('http://', 'https://') }}">
     <meta property="og:title" content="ULC-ICAM Turnin">
     <meta property="og:description" content="Plateforme ULC-ICAM Turnin pour la gestion des devoirs et du suivi académique.">
-    <meta property="og:image" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True) }}">
-    <meta property="og:image:secure_url" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True) }}">
+    <meta property="og:image" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True, _scheme='https') }}">
+    <meta property="og:image:secure_url" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True, _scheme='https') }}">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="{{ request.url }}">
+    <meta property="twitter:url" content="{{ request.url.replace('http://', 'https://') }}">
     <meta property="twitter:title" content="ULC-ICAM Turnin">
     <meta property="twitter:description" content="Plateforme ULC-ICAM Turnin pour la gestion des devoirs et du suivi académique.">
-    <meta property="twitter:image" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True) }}">
+    <meta property="twitter:image" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True, _scheme='https') }}">
     <meta name="twitter:image:alt" content="Logo ULC-ICAM Turnin">
 
     <!-- iOS PWA -->
@@ -199,13 +199,13 @@
                             Plateforme de gestion académique moderne et intuitive
                         </p>
                         <p class="fs-5 mb-4">
-                            ULC-ICAM Turnin simplifie la gestion des devoirs, des cours et des Ã©valuations 
-                            avec une interface Ã©lÃ©gante et des outils performants. Une solution complÃ¨te 
-                            pour l'UniversitÃ© Loyola du Congo - Institut Catholique d'Art et MÃ©tier.
+                            ULC-ICAM Turnin simplifie la gestion des devoirs, des cours et des évaluations 
+                            avec une interface élégante et des outils performants. Une solution complète 
+                            pour l'Université Loyola du Congo - Institut Catholique d'Art et Métier.
                         </p>
                         <div class="d-flex gap-3 justify-content-center">
-                            <span class="badge bg-primary fs-6 px-3 py-2"><i class="fas fa-tasks me-2"></i>Gestion ComplÃ¨te</span>
-                            <span class="badge bg-success fs-6 px-3 py-2"><i class="fas fa-shield-alt me-2"></i>SÃ©curisÃ©</span>
+                            <span class="badge bg-primary fs-6 px-3 py-2"><i class="fas fa-tasks me-2"></i>Gestion Complète</span>
+                            <span class="badge bg-success fs-6 px-3 py-2"><i class="fas fa-shield-alt me-2"></i>Sécurisé</span>
                             <span class="badge bg-info fs-6 px-3 py-2"><i class="fas fa-mobile-alt me-2"></i>Responsive</span>
                         </div>
                         <div class="mt-5">
@@ -219,8 +219,8 @@
     
     <div class="container my-5">
         <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold mb-3">Vous Ãªtes :</h2>
-            <p class="lead text-muted">Choisissez votre profil pour accÃ©der Ã  votre espace personnalisÃ©</p>
+            <h2 class="display-5 fw-bold mb-3">Vous êtes :</h2>
+            <p class="lead text-muted">Choisissez votre profil pour accéder à votre espace personnalisé</p>
         </div>
         
         <div class="row g-4">
@@ -229,13 +229,13 @@
                     <div class="mb-4">
                         <i class="fas fa-user-graduate" style="font-size: 4rem; background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
                     </div>
-                    <h3 class="fw-bold mb-3">Ã‰tudiant</h3>
-                    <p class="mb-4">AccÃ©dez Ã  vos cours, soumettez vos devoirs et consultez vos rÃ©sultats en temps rÃ©el.</p>
+                    <h3 class="fw-bold mb-3">Étudiant</h3>
+                    <p class="mb-4">Accédez à vos cours, soumettez vos devoirs et consultez vos résultats en temps réel.</p>
                     <ul class="list-unstyled text-start">
                         <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Soumission de devoirs</li>
                         <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Consultation des notes</li>
                         <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Travail en groupe</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Suivi des progrÃ¨s</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Suivi des progrès</li>
                     </ul>
                     <div class="mt-4">
                         <button class="btn btn-outline-light btn-lg w-100">
@@ -251,12 +251,12 @@
                         <i class="fas fa-chalkboard-teacher" style="font-size: 4rem; background: var(--secondary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
                     </div>
                     <h3 class="fw-bold mb-3">Professeur</h3>
-                    <p class="mb-4">CrÃ©ez et gÃ©rez vos cours, Ã©valuez les travaux et suivez la progression des Ã©tudiants.</p>
+                    <p class="mb-4">Créez et gérez vos cours, évaluez les travaux et suivez la progression des étudiants.</p>
                     <ul class="list-unstyled text-start">
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>CrÃ©ation de devoirs</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Correction et Ã©valuation</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Création de devoirs</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Correction et évaluation</li>
                         <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Gestion des groupes</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Suivi des rÃ©sultats</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Suivi des résultats</li>
                     </ul>
                     <div class="mt-4">
                         <button class="btn btn-outline-light btn-lg w-100">
@@ -272,12 +272,12 @@
                         <i class="fas fa-cogs" style="font-size: 4rem; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
                     </div>
                     <h3 class="fw-bold mb-3">Administrateur</h3>
-                    <p class="mb-4">Supervisez la plateforme, gÃ©rez les utilisateurs et configurez le systÃ¨me.</p>
+                    <p class="mb-4">Supervisez la plateforme, gérez les utilisateurs et configurez le système.</p>
                     <ul class="list-unstyled text-start">
                         <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Gestion des utilisateurs</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Configuration systÃ¨me</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Configuration système</li>
                         <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Statistiques globales</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>ContrÃ´le d'accÃ¨s</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Contrôle d'accès</li>
                     </ul>
                     <div class="mt-4">
                         <button class="btn btn-outline-light btn-lg w-100">
@@ -293,7 +293,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-12 text-center">
-                    <h4 class="mb-4"><i class="fas fa-rocket me-2"></i>Plateforme PrÃªte Ã  l'Emploi</h4>
+                    <h4 class="mb-4"><i class="fas fa-rocket me-2"></i>Plateforme Prête à l'Emploi</h4>
                     <div class="row g-3">
                         <div class="col-md-3">
                             <div class="glass-card p-3">
@@ -304,7 +304,7 @@
                         <div class="col-md-3">
                             <div class="glass-card p-3">
                                 <h2 class="text-info">{{ students }}</h2>
-                                <p class="mb-0">Ã‰tudiants</p>
+                                <p class="mb-0">Étudiants</p>
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -321,7 +321,7 @@
                         </div>
                     </div>
                     <div class="text-center mt-4">
-                        <p class="text-muted">Connectez-vous en tant qu'administrateur pour commencer Ã  configurer la plateforme</p>
+                        <p class="text-muted">Connectez-vous en tant qu'administrateur pour commencer à configurer la plateforme</p>
                         <div class="glass-card p-3 d-inline-block">
                             <strong>Admin:</strong> <code>admin</code> / <code>admin123</code>
                         </div>
