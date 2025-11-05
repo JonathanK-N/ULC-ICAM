@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -23,6 +23,10 @@
     <meta property="og:title" content="ULC-ICAM Turnin">
     <meta property="og:description" content="Plateforme ULC-ICAM Turnin pour la gestion des devoirs et du suivi académique.">
     <meta property="og:image" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True) }}">
+    <meta property="og:image:secure_url" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True) }}">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
@@ -30,6 +34,7 @@
     <meta property="twitter:title" content="ULC-ICAM Turnin">
     <meta property="twitter:description" content="Plateforme ULC-ICAM Turnin pour la gestion des devoirs et du suivi académique.">
     <meta property="twitter:image" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True) }}">
+    <meta name="twitter:image:alt" content="Logo ULC-ICAM Turnin">
 
     <!-- iOS PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -102,10 +107,10 @@
     <section class="hero-section">
         <div class="container text-center">
             <h1 class="display-4 fw-bold mb-4">{{ university_name }}</h1>
-            <h2 class="h3 mb-4">Système de Remise de Travaux Électronique</h2>
+            <h2 class="h3 mb-4">Système de Remise de Travaux Ã‰lectronique</h2>
             <p class="lead mb-5">
-                Plateforme sécurisée pour la soumission et l'évaluation des travaux académiques
-                <br>avec intelligence artificielle intégrée
+                Plateforme sÃ©curisÃ©e pour la soumission et l'Ã©valuation des travaux académiques
+                <br>avec intelligence artificielle intÃ©grÃ©e
             </p>
             <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-5 py-3">
                 <i class="fas fa-sign-in-alt me-2"></i>Se Connecter
@@ -122,7 +127,7 @@
                         <div class="card-body">
                             <i class="fas fa-users fa-3x mb-3"></i>
                             <h3 class="fw-bold">{{ total_students }}</h3>
-                            <p class="mb-0">Étudiants</p>
+                            <p class="mb-0">Ã‰tudiants</p>
                         </div>
                     </div>
                 </div>
@@ -157,12 +162,12 @@
         </div>
     </section>
 
-    <!-- Fonctionnalités -->
+    <!-- FonctionnalitÃ©s -->
     <section class="py-5">
         <div class="container">
             <div class="row text-center mb-5">
                 <div class="col-12">
-                    <h2 class="display-5 fw-bold">Fonctionnalités Avancées</h2>
+                    <h2 class="display-5 fw-bold">FonctionnalitÃ©s AvancÃ©es</h2>
                     <p class="lead text-muted">Système moderne avec intelligence artificielle</p>
                 </div>
             </div>
@@ -172,10 +177,10 @@
                     <div class="card feature-card h-100 text-center p-4">
                         <div class="card-body">
                             <i class="fas fa-upload fa-3x text-primary mb-3"></i>
-                            <h5 class="card-title">Soumission Sécurisée</h5>
+                            <h5 class="card-title">Soumission SÃ©curisÃ©e</h5>
                             <p class="card-text">
-                                Téléchargement de fichiers sécurisé avec validation automatique
-                                et confirmation de réception.
+                                TÃ©lÃ©chargement de fichiers sÃ©curisÃ© avec validation automatique
+                                et confirmation de rÃ©ception.
                             </p>
                         </div>
                     </div>
@@ -187,8 +192,8 @@
                             <i class="fas fa-robot fa-3x text-success mb-3"></i>
                             <h5 class="card-title">Correction IA</h5>
                             <p class="card-text">
-                                Correction automatique intelligente avec feedback détaillé
-                                et suggestions d'amélioration.
+                                Correction automatique intelligente avec feedback dÃ©taillÃ©
+                                et suggestions d'amÃ©lioration.
                             </p>
                         </div>
                     </div>
@@ -198,10 +203,10 @@
                     <div class="card feature-card h-100 text-center p-4">
                         <div class="card-body">
                             <i class="fas fa-search fa-3x text-warning mb-3"></i>
-                            <h5 class="card-title">Détection de Plagiat</h5>
+                            <h5 class="card-title">DÃ©tection de Plagiat</h5>
                             <p class="card-text">
-                                Analyse avancée de similarité avec base de données
-                                et sources web pour garantir l'originalité.
+                                Analyse avancÃ©e de similaritÃ© avec base de donnÃ©es
+                                et sources web pour garantir l'originalitÃ©.
                             </p>
                         </div>
                     </div>
@@ -213,8 +218,8 @@
                             <i class="fas fa-users fa-3x text-info mb-3"></i>
                             <h5 class="card-title">Travail de Groupe</h5>
                             <p class="card-text">
-                                Gestion des équipes avec soumission collaborative
-                                et évaluation de groupe.
+                                Gestion des Ã©quipes avec soumission collaborative
+                                et Ã©valuation de groupe.
                             </p>
                         </div>
                     </div>
@@ -224,9 +229,9 @@
                     <div class="card feature-card h-100 text-center p-4">
                         <div class="card-body">
                             <i class="fas fa-chart-line fa-3x text-danger mb-3"></i>
-                            <h5 class="card-title">Suivi des Progrès</h5>
+                            <h5 class="card-title">Suivi des ProgrÃ¨s</h5>
                             <p class="card-text">
-                                Tableaux de bord personnalisés avec statistiques
+                                Tableaux de bord personnalisÃ©s avec statistiques
                                 et analyse des performances.
                             </p>
                         </div>
@@ -237,10 +242,10 @@
                     <div class="card feature-card h-100 text-center p-4">
                         <div class="card-body">
                             <i class="fas fa-shield-alt fa-3x text-secondary mb-3"></i>
-                            <h5 class="card-title">Sécurité Renforcée</h5>
+                            <h5 class="card-title">SÃ©curitÃ© RenforcÃ©e</h5>
                             <p class="card-text">
-                                Authentification sécurisée, chiffrement des données
-                                et contrôle d'accès granulaire.
+                                Authentification sÃ©curisÃ©e, chiffrement des donnÃ©es
+                                et contrÃ´le d'accÃ¨s granulaire.
                             </p>
                         </div>
                     </div>
@@ -249,22 +254,22 @@
         </div>
     </section>
 
-    <!-- À propos -->
+    <!-- Ã€ propos -->
     <section class="py-5 bg-light">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <h2 class="display-6 fw-bold mb-4">À propos du système</h2>
+                    <h2 class="display-6 fw-bold mb-4">Ã€ propos du Système</h2>
                     <p class="lead">
-                        Le système {{ short_name }} Turnin est une plateforme moderne de gestion
-                        des travaux académiques, inspirée du système Turnin de l'Université de Sherbrooke
-                        et adaptée aux besoins spécifiques de l'ULC-ICAM.
+                        Le Système {{ short_name }} Turnin est une plateforme moderne de gestion
+                        des travaux académiques, inspirÃ©e du Système Turnin de l'UniversitÃ© de Sherbrooke
+                        et adaptÃ©e aux besoins spÃ©cifiques de l'ULC-ICAM.
                     </p>
                     <ul class="list-unstyled">
                         <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Interface intuitive et moderne</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Intelligence artificielle intégrée</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Conformité aux standards académiques</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Support multilingue (français)</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Intelligence artificielle intÃ©grÃ©e</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>ConformitÃ© aux standards académiques</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Support multilingue (franÃ§ais)</li>
                     </ul>
                 </div>
                 <div class="col-md-6">
@@ -282,13 +287,13 @@
             <div class="row">
                 <div class="col-md-6">
                     <h5>{{ short_name }} Turnin</h5>
-                    <p class="mb-0">Système de remise de travaux électronique</p>
-                    <small class="text-muted">Version 2.0 avec IA intégrée</small>
+                    <p class="mb-0">Système de remise de travaux Ã©lectronique</p>
+                    <small class="text-muted">Version 2.0 avec IA intÃ©grÃ©e</small>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <p class="mb-0">{{ university_name }}</p>
                     <small class="text-muted">
-                        Développé avec ❤️ pour l'excellence académique
+                        DÃ©veloppÃ© avec â¤ï¸ pour l'excellence académique
                     </small>
                 </div>
             </div>
