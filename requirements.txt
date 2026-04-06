@@ -1,15 +1,53 @@
+# ============================================================
+# ULC-ICAM Turnin System - Dépendances Python
+# Mis à jour: Phase 1+2+3 corrections sécurité & stabilité
+# ============================================================
+
+# --- Framework principal ---
 Flask==2.3.3
 Werkzeug==2.3.7
-requests==2.31.0
+gunicorn==21.2.0
+
+# --- Variables d'environnement ---
 python-dotenv==1.0.0
+
+# --- Sécurité ---
+Flask-WTF==1.2.1          # CSRF protection
+Flask-Limiter==3.5.0      # Rate limiting (anti-brute-force)
+Flask-JWT-Extended==4.6.0 # Authentification JWT
 cryptography>=41.0.0,<46.0.0
+
+# --- ORM & Base de données ---
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.23
+
+# --- Cache ---
+Flask-Caching==2.1.0
+
+# --- Email ---
+Flask-Mail==0.9.1
+
+# --- Traitement de fichiers ---
 docx2txt==0.8
 PyPDF2==3.0.1
-openai==0.28.1
-transformers==4.35.2
-torch==2.1.1
-flask-mail==0.9.1
 reportlab==4.0.7
-boto3==1.34.0
-azure-storage-blob==12.19.0
-google-cloud-storage==2.10.0
+
+# --- HTTP ---
+requests==2.31.0
+
+# --- Tâches asynchrones ---
+celery==5.3.4
+redis==5.0.1
+
+# --- IA et correction automatique ---
+openai>=1.0.0             # API OpenAI v1.x (breaking change depuis 0.x)
+
+# --- Génération de rapports ---
+boto3==1.34.0             # AWS S3 (optionnel)
+azure-storage-blob==12.19.0  # Azure Blob (optionnel)
+google-cloud-storage==2.10.0 # GCP Storage (optionnel)
+
+# --- Transformers IA locale (optionnel - très lourd ~2GB) ---
+# Décommenter uniquement si nécessaire et si l'environnement le permet:
+# transformers==4.35.2
+# torch==2.1.1

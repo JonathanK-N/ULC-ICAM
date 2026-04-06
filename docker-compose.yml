@@ -1,11 +1,19 @@
 version: '3.8'
 
+# ============================================================
+# ULC-ICAM Turnin System - Docker Compose
+# Démarrage: docker-compose up -d
+# ============================================================
+
 services:
-  # Application Flask
+
+  # --- Application Flask principale ---
   web:
     build: .
     ports:
       - "5000:5000"
+    env_file:
+      - .env                        # Charger toutes les variables depuis .env
     environment:
       - FLASK_ENV=production
       - REDIS_URL=redis://redis:6379/0
@@ -14,37 +22,52 @@ services:
     volumes:
       - ./uploads:/app/uploads
       - ./cache:/app/cache
+      - ./logs:/app/logs
+      - ./ulc_icam_data.json:/app/ulc_icam_data.json
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Worker Celery
+  # --- Worker Celery (tâches asynchrones IA / plagiat) ---
   celery:
     build: .
-    command: celery -A celery_tasks worker --loglevel=info
+    command: celery -A celery_worker.celery worker --loglevel=info --concurrency=2
+    env_file:
+      - .env
     environment:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     volumes:
       - ./uploads:/app/uploads
+      - ./ulc_icam_data.json:/app/ulc_icam_data.json
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
-  # Celery Beat (tâches périodiques)
+  # --- Celery Beat (tâches planifiées) ---
   celery-beat:
     build: .
-    command: celery -A celery_tasks beat --loglevel=info
+    command: celery -A celery_worker.celery beat --loglevel=info
+    env_file:
+      - .env
     environment:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
-  # Redis (Cache + Queue)
+  # --- Redis (Cache + Queue) ---
   redis:
     image: redis:7-alpine
     ports:
@@ -52,13 +75,20 @@ services:
     volumes:
       - redis_data:/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # Monitoring (optionnel)
+  # --- Flower (monitoring Celery, optionnel) ---
   flower:
     build: .
-    command: celery -A celery_tasks flower
+    command: celery -A celery_worker.celery flower --port=5555
     ports:
       - "5555:5555"
+    env_file:
+      - .env
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -68,3 +98,4 @@ services:
 
 volumes:
   redis_data:
+    driver: local

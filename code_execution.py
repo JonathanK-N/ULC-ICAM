@@ -313,19 +313,25 @@ class CodeExecutor:
             
             start_time = time.time()
             
-            # Compilation avec chemin complet MSYS2
+            # Compilation : chemin configurable via variables d'environnement
+            # Windows (MSYS2) : C_COMPILER=C:\msys64\mingw64\bin\gcc.exe
+            # Linux/Mac/Docker : gcc et g++ sont dans le PATH
             if language.lower() == 'c':
-                compiler = r'C:\msys64\mingw64\bin\gcc.exe'
+                compiler = os.environ.get('C_COMPILER', 'gcc')
             else:
-                compiler = r'C:\msys64\mingw64\bin\g++.exe'
-            
-            exe_file = temp_file.replace(ext, '.exe')
-            
+                compiler = os.environ.get('CPP_COMPILER', 'g++')
+
+            # Extension de l'exécutable selon l'OS
+            exe_ext = '.exe' if os.name == 'nt' else ''
+            exe_file = temp_file.replace(ext, exe_ext) if exe_ext else temp_file + '.out'
+
+            # Préparer l'environnement (ajout du dossier MSYS2 si Windows)
+            env = os.environ.copy()
+            msys2_bin = os.environ.get('MSYS2_BIN', r'C:\msys64\mingw64\bin')
+            if os.name == 'nt' and os.path.isdir(msys2_bin):
+                env['PATH'] = msys2_bin + ';' + env.get('PATH', '')
+
             try:
-                # Ajouter MSYS2 au PATH pour les DLL
-                env = os.environ.copy()
-                env['PATH'] = r'C:\msys64\mingw64\bin;' + env.get('PATH', '')
-                
                 compile_process = subprocess.run(
                     [compiler, temp_file, '-o', exe_file],
                     capture_output=True,
@@ -333,7 +339,7 @@ class CodeExecutor:
                     timeout=10,
                     env=env
                 )
-                
+
                 if compile_process.returncode != 0:
                     os.unlink(temp_file)
                     compile_error = compile_process.stderr or compile_process.stdout or 'Erreur de compilation'
@@ -346,6 +352,20 @@ class CodeExecutor:
                         'memory': '0',
                         'success': False
                     }
+            except FileNotFoundError:
+                os.unlink(temp_file)
+                return {
+                    'status': 'Compilateur non trouvé',
+                    'stdout': '',
+                    'stderr': (
+                        f'Compilateur "{compiler}" introuvable. '
+                        'Configurez C_COMPILER/CPP_COMPILER dans les variables d\'environnement.'
+                    ),
+                    'compile_output': '',
+                    'time': '0.0',
+                    'memory': '0',
+                    'success': False
+                }
             except Exception as compile_err:
                 os.unlink(temp_file)
                 return {
@@ -357,10 +377,6 @@ class CodeExecutor:
                     'memory': '0',
                     'success': False
                 }
-            
-            # Exécution avec PATH modifié
-            env = os.environ.copy()
-            env['PATH'] = r'C:\msys64\mingw64\bin;' + env.get('PATH', '')
             
             process = subprocess.run(
                 [exe_file],
@@ -405,12 +421,12 @@ class CodeExecutor:
                 'success': False
             }
         except FileNotFoundError:
-            if 'temp_file' in locals():
+            if 'temp_file' in locals() and os.path.exists(temp_file):
                 os.unlink(temp_file)
             return {
-                'status': 'Compilateur trouvé',
+                'status': 'Compilateur non trouvé',
                 'stdout': '',
-                'stderr': 'Test avec chemin complet MSYS2',
+                'stderr': 'Compilateur C/C++ introuvable. Configurez C_COMPILER/CPP_COMPILER.',
                 'compile_output': '',
                 'time': '0.0',
                 'memory': '0',

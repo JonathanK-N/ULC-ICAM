@@ -11,19 +11,23 @@
 # UTILISATION RESTREINTE - Voir LICENSE pour les conditions d'utilisation
 # ===============================================================================
 
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory, make_response
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory, make_response, g
 import os
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime, timedelta
 import json
 import secrets
 import string
 import random
 import requests
 import hashlib
-from difflib import SequenceMatcher
+import logging
+import threading
 import re
+from difflib import SequenceMatcher
 from pathlib import Path
+from functools import wraps
 from code_execution import CodeExecutor, save_code_submission
 # Imports optionnels pour traitement de fichiers
 try:
@@ -53,7 +57,6 @@ try:
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
     print("Transformers non installé - IA locale désactivée")
-import threading
 # Nouveaux imports pour fonctionnalités avancées
 import zipfile
 import io
@@ -138,18 +141,100 @@ PWA_MANIFEST = {
 
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
-# Configuration pour différents environnements
+
+# -----------------------------------------------------------------------
+# Clé secrète robuste : toujours depuis l'environnement en production
+# -----------------------------------------------------------------------
+_secret = os.environ.get("FLASK_SECRET_KEY")
+if not _secret:
+    _secret = secrets.token_hex(32)
+    logging.warning("FLASK_SECRET_KEY non définie — clé aléatoire générée. "
+                    "Les sessions seront invalidées au redémarrage.")
+app.secret_key = _secret
+
+# -----------------------------------------------------------------------
+# Configuration de base
+# -----------------------------------------------------------------------
 if os.environ.get('VERCEL'):
     app.config['UPLOAD_FOLDER'] = '/tmp'
 else:
     app.config['UPLOAD_FOLDER'] = 'uploads'
 
 app.config.setdefault('PREFERRED_URL_SCHEME', 'https')
-    
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max
 
-# Configuration email pour notifications
+# Sessions sécurisées
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('FLASK_ENV') == 'production'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
+
+# WTF CSRF
+app.config['WTF_CSRF_ENABLED'] = True
+app.config['WTF_CSRF_TIME_LIMIT'] = 3600  # 1 heure
+
+# -----------------------------------------------------------------------
+# CSRF Protection (Flask-WTF)
+# -----------------------------------------------------------------------
+try:
+    from flask_wtf.csrf import CSRFProtect, generate_csrf
+    csrf = CSRFProtect(app)
+    CSRF_AVAILABLE = True
+
+    @app.context_processor
+    def inject_csrf_token():
+        return dict(csrf_token=generate_csrf)
+
+    @app.after_request
+    def auto_inject_csrf(response):
+        """Injecte automatiquement le token CSRF dans tous les formulaires HTML."""
+        if 'text/html' in response.content_type:
+            token = generate_csrf()
+            html = response.get_data(as_text=True)
+            # Injecter dans chaque <form>
+            hidden = f'<input type="hidden" name="csrf_token" value="{token}">'
+            html = re.sub(
+                r'(<form\b[^>]*>)',
+                r'\1' + hidden,
+                html,
+                flags=re.IGNORECASE
+            )
+            # Injecter une meta pour les requêtes AJAX
+            meta = f'<meta name="csrf-token" content="{token}">'
+            html = html.replace('</head>', meta + '\n</head>', 1)
+            response.set_data(html)
+        return response
+
+    # Exempter les endpoints JSON (ils utilisent le header X-CSRFToken)
+    @csrf.exempt
+    def csrf_exempt_json():
+        pass
+
+except ImportError:
+    CSRF_AVAILABLE = False
+    logging.warning("Flask-WTF non installé — protection CSRF désactivée. "
+                    "Installez flask-wtf pour activer la protection.")
+
+# -----------------------------------------------------------------------
+# Rate Limiting (Flask-Limiter)
+# -----------------------------------------------------------------------
+try:
+    from flask_limiter import Limiter
+    from flask_limiter.util import get_remote_address
+    limiter = Limiter(
+        app=app,
+        key_func=get_remote_address,
+        default_limits=["200 per day", "50 per hour"],
+        storage_uri=os.environ.get('REDIS_URL', 'memory://'),
+    )
+    LIMITER_AVAILABLE = True
+except ImportError:
+    LIMITER_AVAILABLE = False
+    logging.warning("Flask-Limiter non installé — rate limiting désactivé.")
+
+# -----------------------------------------------------------------------
+# Configuration email
+# -----------------------------------------------------------------------
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', '587'))
 app.config['MAIL_USE_TLS'] = True
@@ -162,8 +247,54 @@ app.config['NOTIFICATIONS_ENABLED'] = os.environ.get('NOTIFICATIONS_ENABLED', 't
 if MAIL_AVAILABLE:
     mail = Mail(app)
 
-# Créer le dossier uploads s'il n'existe pas
+# -----------------------------------------------------------------------
+# Logging structuré
+# -----------------------------------------------------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger('ulc_icam')
+
+# -----------------------------------------------------------------------
+# Verrou thread-safe pour les données partagées
+# -----------------------------------------------------------------------
+_data_lock = threading.Lock()
+
+# -----------------------------------------------------------------------
+# Créer le dossier uploads
+# -----------------------------------------------------------------------
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs('logs', exist_ok=True)
+
+# -----------------------------------------------------------------------
+# En-têtes de sécurité sur toutes les réponses
+# -----------------------------------------------------------------------
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    if os.environ.get('FLASK_ENV') == 'production':
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
+
+# -----------------------------------------------------------------------
+# Vérification de session expirée
+# -----------------------------------------------------------------------
+@app.before_request
+def check_session_timeout():
+    if 'user' in session:
+        last_active = session.get('last_active')
+        if last_active:
+            elapsed = (datetime.now() - datetime.fromisoformat(last_active)).total_seconds()
+            if elapsed > 3600:  # 1 heure
+                session.clear()
+                flash('Votre session a expiré. Veuillez vous reconnecter.')
+                return redirect(url_for('login'))
+        session['last_active'] = datetime.now().isoformat()
 
 
 @app.route('/manifest.json')
@@ -206,22 +337,26 @@ def load_test_data():
         return None
 
 def save_test_data():
-    """Sauvegarde les données actuelles dans le fichier JSON"""
-    try:
-        data = {
-            'users': globals().get('users', {}),
-            'admin_courses': globals().get('admin_courses', []),
-            'course_assignments': {str(k): v for k, v in globals().get('course_assignments', {}).items()},
-            'course_enrollments': {str(k): v for k, v in globals().get('course_enrollments', {}).items()},
-            'assignments': globals().get('assignments', []),
-            'submissions': globals().get('submissions', []),
-            'next_course_admin_id': globals().get('next_course_admin_id', 1),
-            'next_assignment_id': globals().get('next_assignment_id', 1)
-        }
-        with open('ulc_icam_data.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        print(f"Erreur lors de l'enregistrement des données: {e}")
+    """Sauvegarde les données actuelles dans le fichier JSON (thread-safe)."""
+    with _data_lock:
+        try:
+            data = {
+                'users': globals().get('users', {}),
+                'admin_courses': globals().get('admin_courses', []),
+                'course_assignments': {str(k): v for k, v in globals().get('course_assignments', {}).items()},
+                'course_enrollments': {str(k): v for k, v in globals().get('course_enrollments', {}).items()},
+                'assignments': globals().get('assignments', []),
+                'submissions': globals().get('submissions', []),
+                'next_course_admin_id': globals().get('next_course_admin_id', 1),
+                'next_assignment_id': globals().get('next_assignment_id', 1)
+            }
+            # Écriture atomique via fichier temporaire
+            tmp_path = 'ulc_icam_data.json.tmp'
+            with open(tmp_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            os.replace(tmp_path, 'ulc_icam_data.json')
+        except Exception as e:
+            logger.error(f"Erreur lors de l'enregistrement des données: {e}")
 
 # Charger les données depuis le fichier JSON
 print("=== CHARGEMENT DES DONNÉES ===")
@@ -275,6 +410,44 @@ next_group_id = 1
 # Gestion des cours
 courses = []
 next_course_id = 1
+
+# -----------------------------------------------------------------------
+# Helpers sécurité mots de passe
+# -----------------------------------------------------------------------
+
+def _verify_password(plain: str, stored: str) -> bool:
+    """
+    Vérifie un mot de passe contre le hash stocké.
+    Supporte la migration transparente :
+      - hash werkzeug (pbkdf2:sha256:...)  → vérification normale
+      - hash legacy auth_jwt (salt:hex)    → vérification PBKDF2 custom
+      - texte en clair (anciens comptes)   → comparaison directe + migration auto
+    """
+    if not plain or not stored:
+        return False
+
+    # Format werkzeug (nouveau, recommandé)
+    if stored.startswith('pbkdf2:') or stored.startswith('scrypt:'):
+        return check_password_hash(stored, plain)
+
+    # Format legacy auth_jwt : "salt:hex_hash"
+    if ':' in stored:
+        try:
+            salt, pwd_hash = stored.split(':', 1)
+            import hashlib as _hl
+            computed = _hl.pbkdf2_hmac(
+                'sha256', plain.encode('utf-8'), salt.encode('utf-8'), 100000
+            ).hex()
+            return computed == pwd_hash
+        except Exception:
+            pass
+
+    # Fallback texte en clair (migration automatique)
+    if plain == stored:
+        return True
+
+    return False
+
 
 def _course_key(course_id):
     """Normalise l'identifiant de cours en chaîne."""
@@ -499,18 +672,20 @@ def student_login():
         username_found = None
         
         for username, user_data in users.items():
-            if (user_data['role'] == 'student' and 
-                (user_data.get('cip') == identifier or user_data.get('email') == identifier)):
-                if user_data['password'] == password:
+            if (user_data['role'] == 'student' and
+                    (user_data.get('cip') == identifier or user_data.get('email') == identifier)):
+                if _verify_password(password, user_data['password']):
                     user_found = user_data
                     username_found = username
                     break
-        
+
         if user_found:
+            session.permanent = True
             session['user'] = username_found
             session['role'] = user_found['role']
             session['name'] = user_found['name']
-            # Forcer le changement de mot de passe si nécessaire
+            session['last_active'] = datetime.now().isoformat()
+            logger.info(f"Connexion étudiant: {username_found}")
             if user_found.get('must_change_password', False):
                 return redirect(url_for('change_password'))
             return redirect(url_for('dashboard'))
@@ -530,18 +705,20 @@ def teacher_login():
         username_found = None
         
         for username, user_data in users.items():
-            if (user_data['role'] == 'teacher' and 
-                (user_data.get('cip') == identifier or user_data.get('email') == identifier)):
-                if user_data['password'] == password:
+            if (user_data['role'] == 'teacher' and
+                    (user_data.get('cip') == identifier or user_data.get('email') == identifier)):
+                if _verify_password(password, user_data['password']):
                     user_found = user_data
                     username_found = username
                     break
-        
+
         if user_found:
+            session.permanent = True
             session['user'] = username_found
             session['role'] = user_found['role']
             session['name'] = user_found['name']
-            # Forcer le changement de mot de passe si nécessaire
+            session['last_active'] = datetime.now().isoformat()
+            logger.info(f"Connexion professeur: {username_found}")
             if user_found.get('must_change_password', False):
                 return redirect(url_for('change_password'))
             return redirect(url_for('dashboard'))
@@ -556,10 +733,15 @@ def admin_login():
         username = request.form['username']
         password = request.form['password']
         
-        if username in users and users[username]['password'] == password and users[username]['role'] == 'admin':
+        if (username in users and
+                _verify_password(password, users[username]['password']) and
+                users[username]['role'] == 'admin'):
+            session.permanent = True
             session['user'] = username
             session['role'] = users[username]['role']
             session['name'] = users[username]['name']
+            session['last_active'] = datetime.now().isoformat()
+            logger.info(f"Connexion admin: {username}")
             return redirect(url_for('dashboard'))
         else:
             flash('Identifiants incorrects')
@@ -820,33 +1002,35 @@ def add_student():
     
     if request.method == 'POST':
         temp_password = generate_temp_password()
-        student_data = {
-            'username': request.form['username'],
-            'password': temp_password,
-            'temp_password': temp_password,
-            'role': 'student',
-            'must_change_password': True,
-            'cip': request.form['cip'],
-            'nom': request.form['nom'],
-            'postnom': request.form['postnom'],
-            'prenom': request.form['prenom'],
-            'sexe': request.form['sexe'],
-            'date_naissance': request.form['date_naissance'],
-            'promotion': request.form['promotion'],
-            'faculte': request.form['faculte'],
-            'departement': request.form['departement'],
-            'telephone': request.form['telephone'],
-            'email': request.form['email'],
-            'adresse': request.form['adresse']
-        }
-        
-        if student_data['username'] in users:
+        username = request.form['username'].strip()
+
+        if username in users:
             flash('Nom d\'utilisateur déjà existant')
         else:
+            student_data = {
+                'username': username,
+                'password': generate_password_hash(temp_password),  # Hashé
+                'temp_password': temp_password,  # Affiché une seule fois à l'admin
+                'role': 'student',
+                'must_change_password': True,
+                'cip': request.form['cip'].strip(),
+                'nom': request.form['nom'].strip(),
+                'postnom': request.form['postnom'].strip(),
+                'prenom': request.form['prenom'].strip(),
+                'sexe': request.form['sexe'],
+                'date_naissance': request.form['date_naissance'],
+                'promotion': request.form['promotion'],
+                'faculte': request.form['faculte'],
+                'departement': request.form['departement'],
+                'telephone': request.form['telephone'].strip(),
+                'email': request.form['email'].strip().lower(),
+                'adresse': request.form['adresse'].strip()
+            }
             student_data['name'] = f"{student_data['prenom']} {student_data['nom']}"
-            users[student_data['username']] = student_data
+            users[username] = student_data
             save_test_data()
-            flash(f'Étudiant {student_data["username"]} ajouté avec mot de passe temporaire: {temp_password}')
+            logger.info(f"Nouvel étudiant créé: {username}")
+            flash(f'Étudiant {username} ajouté avec mot de passe temporaire: {temp_password}')
             return redirect(url_for('admin_users'))
     
     return render_template('add_student.html', system_config=system_config)
@@ -858,33 +1042,35 @@ def add_teacher():
     
     if request.method == 'POST':
         temp_password = generate_temp_password()
-        teacher_data = {
-            'username': request.form['username'],
-            'password': temp_password,
-            'temp_password': temp_password,
-            'role': 'teacher',
-            'must_change_password': True,
-            'cip': request.form['cip'],
-            'nom': request.form['nom'],
-            'postnom': request.form['postnom'],
-            'prenom': request.form['prenom'],
-            'sexe': request.form['sexe'],
-            'date_naissance': request.form['date_naissance'],
-            'cours_dispenses': request.form['cours_dispenses'],
-            'departement': request.form['departement'],
-            'grade': request.form['grade'],
-            'telephone': request.form['telephone'],
-            'email': request.form['email'],
-            'bureau': request.form['bureau']
-        }
-        
-        if teacher_data['username'] in users:
+        username = request.form['username'].strip()
+
+        if username in users:
             flash('Nom d\'utilisateur déjà existant')
         else:
+            teacher_data = {
+                'username': username,
+                'password': generate_password_hash(temp_password),  # Hashé
+                'temp_password': temp_password,  # Affiché une seule fois à l'admin
+                'role': 'teacher',
+                'must_change_password': True,
+                'cip': request.form['cip'].strip(),
+                'nom': request.form['nom'].strip(),
+                'postnom': request.form['postnom'].strip(),
+                'prenom': request.form['prenom'].strip(),
+                'sexe': request.form['sexe'],
+                'date_naissance': request.form['date_naissance'],
+                'cours_dispenses': request.form['cours_dispenses'].strip(),
+                'departement': request.form['departement'],
+                'grade': request.form['grade'],
+                'telephone': request.form['telephone'].strip(),
+                'email': request.form['email'].strip().lower(),
+                'bureau': request.form['bureau'].strip()
+            }
             teacher_data['name'] = f"{teacher_data['grade']} {teacher_data['prenom']} {teacher_data['nom']}"
-            users[teacher_data['username']] = teacher_data
+            users[username] = teacher_data
             save_test_data()
-            flash(f'Enseignant {teacher_data["username"]} ajouté avec mot de passe temporaire: {temp_password}')
+            logger.info(f"Nouvel enseignant créé: {username}")
+            flash(f'Enseignant {username} ajouté avec mot de passe temporaire: {temp_password}')
             return redirect(url_for('admin_users'))
     
     return render_template('add_teacher.html', system_config=system_config)
@@ -933,10 +1119,9 @@ def import_csv():
                     temp_password = generate_temp_password()
                     
                     if role == 'student' and len(row) >= 13:
-                        # Format étudiant: username,role,cip,nom,postnom,prenom,sexe,date_naissance,promotion,faculte,telephone,email,adresse
                         user_data = {
                             'username': username,
-                            'password': temp_password,
+                            'password': generate_password_hash(temp_password),  # Hashé
                             'temp_password': temp_password,
                             'role': 'student',
                             'must_change_password': True,
@@ -949,16 +1134,15 @@ def import_csv():
                             'promotion': row[8].strip(),
                             'faculte': row[9].strip(),
                             'telephone': row[10].strip(),
-                            'email': row[11].strip(),
+                            'email': row[11].strip().lower(),
                             'adresse': row[12].strip()
                         }
                         user_data['name'] = f"{user_data['prenom']} {user_data['nom']}"
-                        
+
                     elif role == 'teacher' and len(row) >= 14:
-                        # Format enseignant: username,role,cip,nom,postnom,prenom,sexe,date_naissance,cours_dispenses,departement,grade,telephone,email,bureau
                         user_data = {
                             'username': username,
-                            'password': temp_password,
+                            'password': generate_password_hash(temp_password),  # Hashé
                             'temp_password': temp_password,
                             'role': 'teacher',
                             'must_change_password': True,
@@ -972,7 +1156,7 @@ def import_csv():
                             'departement': row[9].strip(),
                             'grade': row[10].strip(),
                             'telephone': row[11].strip(),
-                            'email': row[12].strip(),
+                            'email': row[12].strip().lower(),
                             'bureau': row[13].strip()
                         }
                         user_data['name'] = f"{user_data['grade']} {user_data['prenom']} {user_data['nom']}"
@@ -1024,17 +1208,20 @@ def change_password():
         new_password = request.form['new_password']
         confirm_password = request.form['confirm_password']
         
-        if users[session['user']]['password'] != current_password:
+        current_hash = users[session['user']]['password']
+        if not _verify_password(current_password, current_hash):
             flash('Mot de passe actuel incorrect')
         elif new_password != confirm_password:
             flash('Les nouveaux mots de passe ne correspondent pas')
+        elif len(new_password) < 8:
+            flash('Le nouveau mot de passe doit contenir au moins 8 caractères')
         else:
-            users[session['user']]['password'] = new_password
+            users[session['user']]['password'] = generate_password_hash(new_password)
             users[session['user']]['must_change_password'] = False
-            # Supprimer le mot de passe temporaire après changement
             if 'temp_password' in users[session['user']]:
                 del users[session['user']]['temp_password']
             save_test_data()
+            logger.info(f"Mot de passe changé pour: {session['user']}")
             flash('Mot de passe changé avec succès')
             return redirect(url_for('dashboard'))
     
@@ -1441,7 +1628,10 @@ def upload_syllabus(course_id):
 def download_syllabus(course_id, filename):
     if 'user' not in session:
         return redirect(url_for('login'))
-    
+    filename = secure_filename(filename)
+    if not filename:
+        flash('Nom de fichier invalide')
+        return redirect(url_for('dashboard'))
     return send_from_directory(os.path.join('uploads', 'syllabus'), filename)
 
 @app.route('/teacher/update_course_description/<int:course_id>', methods=['POST'])
@@ -1612,7 +1802,10 @@ def upload_chapter_document(course_id, chapter_id):
 def download_chapter_document(filename):
     if 'user' not in session:
         return redirect(url_for('login'))
-    
+    filename = secure_filename(filename)
+    if not filename:
+        flash('Nom de fichier invalide')
+        return redirect(url_for('dashboard'))
     return send_from_directory(os.path.join('uploads', 'chapters'), filename)
 
 @app.route('/admin/assignments')
@@ -1759,7 +1952,10 @@ def create_assignment():
 def download_assignment_file(filename):
     if 'user' not in session:
         return redirect(url_for('login'))
-    
+    filename = secure_filename(filename)
+    if not filename:
+        flash('Nom de fichier invalide')
+        return redirect(url_for('dashboard'))
     return send_from_directory(os.path.join('uploads', 'assignments'), filename)
 
 @app.route('/offline.html')
@@ -1770,7 +1966,13 @@ def offline():
 def download_file(filename):
     if 'user' not in session:
         return redirect(url_for('login'))
-    
+
+    # Sécurité : empêcher le path traversal
+    filename = secure_filename(filename)
+    if not filename:
+        flash('Nom de fichier invalide')
+        return redirect(url_for('dashboard'))
+
     # Chercher le fichier dans différents dossiers
     possible_paths = [
         os.path.join(app.config['UPLOAD_FOLDER'], filename),
@@ -1834,6 +2036,10 @@ def download_correction_file(filename):
             flash('Accès non autorisé à ce fichier')
             return redirect(url_for('dashboard'))
 
+    filename = secure_filename(filename)
+    if not filename:
+        flash('Nom de fichier invalide')
+        return redirect(url_for('dashboard'))
     corrections_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'corrections')
     return send_from_directory(corrections_folder, filename)
 
@@ -1965,115 +2171,348 @@ def extract_text_from_file(file_path):
         print(f"Erreur extraction texte: {e}")
         return ""
 
-def normalize_code_line(line):
-    """Normalise une ligne de code pour la comparaison"""
-    # Supprimer les espaces, tabulations et commentaires
+# ============================================================
+# MOTEUR DE DÉTECTION DE PLAGIAT — VERSION AMÉLIORÉE
+# Trois niveaux de comparaison :
+#   1. Exact   : SequenceMatcher sur lignes normalisées
+#   2. Structurel : SequenceMatcher après remplacement des
+#                   noms de variables par des tokens génériques
+#   3. Web     : Google Custom Search API (si clé configurée)
+# ============================================================
+
+# Mots-clés à ignorer lors de la tokenisation des variables
+_KEYWORDS = frozenset({
+    # Python
+    'def','class','return','if','else','elif','for','while','in','not','and',
+    'or','import','from','as','with','try','except','finally','raise','pass',
+    'break','continue','lambda','yield','None','True','False','self','print',
+    # C / C++ / Java
+    'int','float','double','char','void','bool','long','short','unsigned',
+    'signed','const','static','public','private','protected','new','delete',
+    'this','super','extends','implements','interface','class','struct','enum',
+    'switch','case','default','do','while','goto','sizeof','typedef','return',
+    'include','define','ifdef','endif','printf','scanf','cout','cin','endl',
+    'string','vector','map','set','list','array','null','true','false',
+    # JavaScript
+    'var','let','const','function','arrow','console','log','document',
+    'window','event','async','await','promise','then','catch',
+})
+
+# Regex : identifiants (noms de variables, fonctions, classes)
+_IDENT_RE = re.compile(r'\b([a-zA-Z_][a-zA-Z0-9_]{2,})\b')
+
+# Regex pour supprimer les commentaires multi-lignes /* ... */
+_BLOCK_COMMENT_RE = re.compile(r'/\*.*?\*/', re.DOTALL)
+# Regex pour supprimer les docstrings Python """ ... """ ou ''' ... '''
+_DOCSTRING_RE = re.compile(r'(""".*?"""|\'\'\'.*?\'\'\')', re.DOTALL)
+# Regex pour supprimer les littéraux de chaînes (après suppression des commentaires)
+_STRING_LITERAL_RE = re.compile(r'"[^"\\]*(?:\\.[^"\\]*)*"|\'[^\'\\]*(?:\\.[^\'\\]*)*\'')
+# Regex pour remplacer les nombres par un token générique
+_NUMBER_RE = re.compile(r'\b\d+(\.\d+)?\b')
+
+
+def _strip_comments(source: str) -> str:
+    """Supprime tous les styles de commentaires d'un code source."""
+    # Commentaires bloc /* ... */
+    source = _BLOCK_COMMENT_RE.sub(' ', source)
+    # Docstrings Python
+    source = _DOCSTRING_RE.sub(' ', source)
+    # Commentaires ligne // ...
+    lines = []
+    for line in source.split('\n'):
+        if '//' in line:
+            line = line[:line.index('//')].rstrip()
+        lines.append(line)
+    source = '\n'.join(lines)
+    # Commentaires Python # ... (pas les directives #include / #define)
+    lines = []
+    for line in source.split('\n'):
+        stripped = line.lstrip()
+        if '#' in line and not stripped.startswith('#include') and not stripped.startswith('#define'):
+            line = line[:line.index('#')].rstrip()
+        lines.append(line)
+    return '\n'.join(lines)
+
+
+def normalize_code_line(line: str) -> str:
+    """
+    Normalise une ligne de code pour la comparaison de base.
+    Supprime les commentaires inline, la casse et les espaces multiples.
+    """
     line = line.strip()
+    # Commentaire inline //
     if '//' in line:
-        line = line.split('//')[0].strip()
-    if '#' in line and not line.startswith('#include'):
-        line = line.split('#')[0].strip()
-    # Supprimer les espaces multiples
+        line = line[:line.index('//')].strip()
+    # Commentaire Python # (sauf #include / #define)
+    if '#' in line and not line.lstrip().startswith(('#include', '#define')):
+        line = line[:line.index('#')].strip()
+    # Espaces multiples
     line = ' '.join(line.split())
     return line.lower()
 
-def check_plagiarism_local(text, submission_id):
-    """Détection de plagiat ligne par ligne"""
-    if not text.strip():
-        return {'similarity': 0, 'sources': [], 'status': 'acceptable'}
-    
-    # Diviser le texte en lignes et normaliser
-    lines1 = [normalize_code_line(line) for line in text.split('\n') if normalize_code_line(line)]
-    
-    max_similarity = 0
-    sources = []
-    
-    # Comparer avec toutes les autres soumissions
+
+def _normalize_lines(text: str) -> list:
+    """
+    Retourne la liste des lignes normalisées non-vides d'un texte.
+    Supprime d'abord tous les commentaires bloc.
+    """
+    clean = _strip_comments(text)
+    result = []
+    for line in clean.split('\n'):
+        norm = normalize_code_line(line)
+        if norm:
+            result.append(norm)
+    return result
+
+
+def _tokenize_variables(text: str) -> str:
+    """
+    Remplace les noms de variables / fonctions par des tokens génériques.
+    Exemple : 'int compteur = 0;' → 'int VAR_1 = NUM;'
+
+    Résiste aux attaques de renommage de variables.
+    """
+    clean = _strip_comments(text)
+    # Remplacer les chaînes de caractères par STRING
+    clean = _STRING_LITERAL_RE.sub('STRING', clean)
+    # Remplacer les nombres par NUM
+    clean = _NUMBER_RE.sub('NUM', clean)
+
+    # Construire le mapping identifiant → token
+    mapping = {}
+    counter = [1]  # liste pour mutation dans la closure
+
+    def replace_ident(match):
+        name = match.group(1)
+        if name in _KEYWORDS or name.isupper():
+            return name  # garder les mots-clés et constantes ALL_CAPS
+        if name not in mapping:
+            mapping[name] = f'VAR_{counter[0]}'
+            counter[0] += 1
+        return mapping[name]
+
+    tokenized = _IDENT_RE.sub(replace_ident, clean)
+    return tokenized
+
+
+def _sequence_similarity(seq_a: list, seq_b: list) -> float:
+    """
+    Calcule la similarité entre deux séquences de chaînes via SequenceMatcher.
+    Retourne un float entre 0 et 100.
+    """
+    if not seq_a or not seq_b:
+        return 0.0
+    matcher = SequenceMatcher(None, seq_a, seq_b, autojunk=False)
+    return matcher.ratio() * 100
+
+
+def _text_to_token_lines(text: str) -> list:
+    """Tokenise les variables puis découpe en lignes normalisées."""
+    tokenized = _tokenize_variables(text)
+    return _normalize_lines(tokenized)
+
+
+def check_plagiarism_local(text: str, submission_id: int) -> dict:
+    """
+    Détection de plagiat améliorée — 3 niveaux :
+      1. Similarité exacte   (SequenceMatcher sur lignes normalisées)
+      2. Similarité structurelle (SequenceMatcher après tokenisation variables)
+      3. Plagiat web         (Google Custom Search, si clé configurée)
+
+    Retourne un dict :
+      { similarity, sources, status, details }
+    """
+    if not text or not text.strip():
+        return {'similarity': 0, 'sources': [], 'status': 'acceptable', 'details': {}}
+
+    # Préparer les représentations du texte à vérifier
+    lines_exact = _normalize_lines(text)
+    lines_token = _text_to_token_lines(text)
+
+    max_similarity = 0.0
+    sources = []  # liste de dict détaillés
+
+    # -------------------------------------------------------
+    # Niveau 1 & 2 : comparaison contre toutes les soumissions
+    # -------------------------------------------------------
     for sub in submissions:
-        if sub['id'] != submission_id:
-            try:
-                other_text = ""
-                if sub.get('code_submission'):
-                    code_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'code_submissions', sub['filename'])
-                    if os.path.exists(code_file_path):
-                        with open(code_file_path, 'r', encoding='utf-8', errors='ignore') as f:
-                            other_text = f.read()
-                else:
-                    other_file_path = os.path.join(app.config['UPLOAD_FOLDER'], sub['filename'])
-                    if os.path.exists(other_file_path):
-                        other_text = extract_text_from_file(other_file_path)
-                
-                if other_text.strip():
-                    # Diviser l'autre texte en lignes et normaliser
-                    lines2 = [normalize_code_line(line) for line in other_text.split('\n') if normalize_code_line(line)]
-                    
-                    if len(lines1) == 0 or len(lines2) == 0:
-                        continue
-                    
-                    # Compter les lignes identiques
-                    identical_lines = 0
-                    total_lines = max(len(lines1), len(lines2))
-                    
-                    # Comparaison ligne par ligne
-                    for line1 in lines1:
-                        if line1 in lines2:
-                            identical_lines += 1
-                    
-                    # Calculer le pourcentage de similarité
-                    similarity = (identical_lines / total_lines) * 100
-                    
-                    # Si plus de 80% des lignes sont identiques, c'est suspect
-                    if similarity > 20:  # Seuil plus bas pour détecter même de petites similitudes
-                        max_similarity = max(max_similarity, similarity)
-                        student_name = users.get(sub['student'], {}).get('name', sub['student'])
-                        sources.append(f"Soumission de {student_name} ({similarity:.1f}% lignes similaires)")
-                        
-                        # Debug: afficher les détails
-                        print(f"Comparaison {submission_id} vs {sub['id']}: {identical_lines}/{total_lines} lignes identiques = {similarity:.1f}%")
-                        
-            except Exception as e:
-                print(f"Erreur comparaison plagiat: {e}")
-    
+        if sub['id'] == submission_id:
+            continue
+        if not sub.get('filename'):
+            continue
+
+        try:
+            other_text = ''
+            if sub.get('code_submission'):
+                path = os.path.join(
+                    app.config['UPLOAD_FOLDER'], 'code_submissions', sub['filename']
+                )
+                if os.path.exists(path):
+                    with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+                        other_text = f.read()
+            else:
+                path = os.path.join(app.config['UPLOAD_FOLDER'], sub['filename'])
+                if os.path.exists(path):
+                    other_text = extract_text_from_file(path)
+
+            if not other_text.strip():
+                continue
+
+            other_lines_exact = _normalize_lines(other_text)
+            other_lines_token = _text_to_token_lines(other_text)
+
+            # Score 1 : comparaison exacte
+            sim_exact = _sequence_similarity(lines_exact, other_lines_exact)
+            # Score 2 : comparaison structurelle (résiste au renommage)
+            sim_struct = _sequence_similarity(lines_token, other_lines_token)
+
+            # On prend le maximum des deux scores pour chaque paire
+            sim_pair = max(sim_exact, sim_struct)
+
+            if sim_pair >= 20:
+                student_name = users.get(sub.get('student', ''), {}).get('name', sub.get('student', '?'))
+                method = 'structurelle' if sim_struct > sim_exact else 'exacte'
+                sources.append({
+                    'label': (
+                        f"Soumission de {student_name} — "
+                        f"{sim_pair:.1f}% (similarité {method})"
+                    ),
+                    'student': sub.get('student', ''),
+                    'submission_id': sub['id'],
+                    'similarity_exact': round(sim_exact, 1),
+                    'similarity_structural': round(sim_struct, 1),
+                    'similarity': round(sim_pair, 1),
+                })
+                max_similarity = max(max_similarity, sim_pair)
+                logger.info(
+                    f"Plagiat local — sub {submission_id} vs sub {sub['id']}: "
+                    f"exact={sim_exact:.1f}% struct={sim_struct:.1f}%"
+                )
+
+        except Exception as e:
+            logger.warning(f"Erreur comparaison plagiat (sub {sub['id']}): {e}")
+
+    # -------------------------------------------------------
+    # Niveau 3 : plagiat web (Google Custom Search)
+    # -------------------------------------------------------
+    web_score, web_source = check_web_plagiarism(text)
+    if web_score > 0:
+        max_similarity = max(max_similarity, web_score)
+        sources.append({
+            'label': f"Source web détectée — {web_score:.0f}% de similarité ({web_source})",
+            'student': None,
+            'submission_id': None,
+            'similarity': web_score,
+            'similarity_exact': web_score,
+            'similarity_structural': web_score,
+        })
+        logger.info(f"Plagiat web — sub {submission_id}: {web_score}% ({web_source})")
+
+    # Trier les sources par similarité décroissante, garder les 5 premières
+    sources.sort(key=lambda s: s['similarity'], reverse=True)
+
+    # Déterminer le statut
+    sim = round(max_similarity, 1)
+    if sim >= 70:
+        status = 'suspect'
+    elif sim >= 40:
+        status = 'attention'
+    else:
+        status = 'acceptable'
+
     result = {
-        'similarity': round(max_similarity, 1),
-        'sources': sources[:5],
-        'status': 'suspect' if max_similarity > 60 else 'attention' if max_similarity > 30 else 'acceptable'
+        'similarity': sim,
+        'sources': [s['label'] for s in sources[:5]],   # labels texte pour l'affichage
+        'sources_detail': sources[:5],                   # données complètes pour les APIs
+        'status': status,
+        'details': {
+            'checked_submissions': len([s for s in sources if s['student']]),
+            'web_checked': web_score > 0 or bool(os.environ.get('GOOGLE_API_KEY')),
+        }
     }
-    
+
     plagiarism_results[submission_id] = result
     return result
 
-def check_web_plagiarism(text_sample):
-    """Vérification basique de plagiat web via recherche"""
+
+def check_web_plagiarism(text_sample: str) -> tuple:
+    """
+    Vérifie le plagiat web via Google Custom Search API.
+
+    Retourne un tuple (score: float, source_label: str) :
+      - score = 0    → rien trouvé ou API non configurée
+      - score = 60   → 1-2 résultats trouvés
+      - score = 80   → 3-4 résultats trouvés
+      - score = 95   → 5+ résultats trouvés (copie quasi-certaine)
+    """
+    api_key = os.environ.get('GOOGLE_API_KEY', '').strip()
+    search_engine_id = os.environ.get('GOOGLE_SEARCH_ENGINE_ID', '').strip()
+
+    if not api_key or not search_engine_id:
+        return 0, ''
+
     try:
-        # Utiliser une phrase significative pour la recherche
-        sentences = re.split(r'[.!?]+', text_sample)
-        search_query = next((s.strip() for s in sentences if len(s.strip()) > 50), "")
-        
-        if not search_query:
-            return 0
-            
-        # API Google Custom Search (nécessite clé API)
-        api_key = os.environ.get('GOOGLE_API_KEY')
-        search_engine_id = os.environ.get('GOOGLE_SEARCH_ENGINE_ID')
-        
-        if api_key and search_engine_id:
-            url = f"https://www.googleapis.com/customsearch/v1"
-            params = {
-                'key': api_key,
-                'cx': search_engine_id,
-                'q': f'"{search_query}"',
-                'num': 3
-            }
-            response = requests.get(url, params=params, timeout=10)
-            if response.status_code == 200:
-                results = response.json()
-                if results.get('items'):
-                    return 75  # Contenu trouvé sur le web
-        return 0
+        # Choisir la phrase la plus significative (>50 chars, sans mots triviaux)
+        candidates = re.split(r'[.!?\n]+', text_sample)
+        query = ''
+        for candidate in candidates:
+            candidate = candidate.strip()
+            if 60 <= len(candidate) <= 200 and not candidate.startswith(('import ', '#include', '//')):
+                query = candidate
+                break
+
+        if not query:
+            # Fallback : premiers 100 caractères significatifs
+            clean = re.sub(r'\s+', ' ', text_sample.strip())
+            query = clean[:120]
+
+        if not query:
+            return 0, ''
+
+        params = {
+            'key': api_key,
+            'cx': search_engine_id,
+            'q': f'"{query}"',
+            'num': 10,
+        }
+        response = requests.get(
+            'https://www.googleapis.com/customsearch/v1',
+            params=params,
+            timeout=10
+        )
+
+        if response.status_code != 200:
+            logger.warning(f"Google Search API erreur: {response.status_code}")
+            return 0, ''
+
+        data = response.json()
+        items = data.get('items', [])
+        total = data.get('searchInformation', {}).get('totalResults', '0')
+        nb_results = len(items)
+
+        if nb_results == 0:
+            return 0, ''
+
+        # Premier résultat le plus pertinent
+        first_url = items[0].get('link', '') if items else ''
+        first_title = items[0].get('title', '') if items else ''
+
+        if nb_results >= 5:
+            score = 95
+        elif nb_results >= 3:
+            score = 80
+        else:
+            score = 60
+
+        label = f"{first_title} ({first_url})" if first_url else f"{nb_results} résultat(s) trouvé(s)"
+        return score, label
+
+    except requests.Timeout:
+        logger.warning("Google Search API: timeout")
+        return 0, ''
     except Exception as e:
-        print(f"Erreur vérification web: {e}")
-        return 0
+        logger.warning(f"Erreur vérification web: {e}")
+        return 0, ''
 
 def ai_auto_correction(text, assignment, submission_id):
     """Correction automatique avec IA"""
@@ -2092,36 +2531,35 @@ def ai_auto_correction(text, assignment, submission_id):
         return fallback_correction(assignment, submission_id)
 
 def openai_correction(text, assignment, submission_id):
-    """Correction avec OpenAI GPT"""
+    """Correction avec OpenAI GPT (SDK v1.x)"""
     if not OPENAI_AVAILABLE:
         return huggingface_correction(text, assignment, submission_id)
-        
+
     try:
-        openai.api_key = os.environ.get('OPENAI_API_KEY')
-        
-        prompt = f"""
-Évaluez ce devoir académique selon les critères suivants:
-- Titre du devoir: {assignment.get('title', 'Non spécifié')}
-- Description: {assignment.get('description', 'Non spécifiée')}
-- Note maximale: {assignment.get('max_score', 100)}
+        # SDK v1.x : instancier le client (breaking change depuis openai 0.x)
+        client = openai.OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
 
-Contenu à évaluer:
-{text[:2000]}...
+        prompt = (
+            f"Évaluez ce devoir académique selon les critères suivants:\n"
+            f"- Titre: {assignment.get('title', 'Non spécifié')}\n"
+            f"- Description: {assignment.get('description', 'Non spécifiée')}\n"
+            f"- Note maximale: {assignment.get('max_score', 100)}\n\n"
+            f"Contenu à évaluer:\n{text[:2000]}\n\n"
+            f"Donnez une note sur {assignment.get('max_score', 100)} et 3-5 commentaires "
+            f"constructifs en français.\n"
+            f"Format: NOTE: X/Y\nCOMMENTAIRES:\n- Point 1\n- Point 2\n..."
+        )
 
-Donnez une note sur {assignment.get('max_score', 100)} et 3-5 commentaires constructifs en français.
-Format: NOTE: X/Y\nCOMMENTAIRES:\n- Point 1\n- Point 2\n...
-"""
-        
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=500,
             temperature=0.3
         )
-        
+
         result_text = response.choices[0].message.content
         score, feedback = parse_ai_response(result_text, assignment.get('max_score', 100))
-        
+
         correction = {
             'score': score,
             'max_score': assignment.get('max_score', 100),
@@ -2129,12 +2567,12 @@ Format: NOTE: X/Y\nCOMMENTAIRES:\n- Point 1\n- Point 2\n...
             'auto_generated': True,
             'ai_model': 'OpenAI GPT-3.5'
         }
-        
+
         correction_results[submission_id] = correction
         return correction
-        
+
     except Exception as e:
-        print(f"Erreur OpenAI: {e}")
+        logger.error(f"Erreur OpenAI: {e}")
         return huggingface_correction(text, assignment, submission_id)
 
 def huggingface_correction(text, assignment, submission_id):
@@ -2737,12 +3175,20 @@ def download_backup():
     from datetime import datetime
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     
+    # Sécurité : ne jamais exporter les mots de passe en clair
+    safe_users = {}
+    for uname, udata in users.items():
+        safe_user = {k: v for k, v in udata.items()
+                     if k not in ('password', 'temp_password')}
+        safe_users[uname] = safe_user
+
     backup_data = {
         'timestamp': timestamp,
         'version': '1.0',
         'university': 'Université Loyola du Congo',
+        'note': 'Les mots de passe sont exclus de la sauvegarde pour des raisons de sécurité.',
         'data': {
-            'users': users,
+            'users': safe_users,
             'admin_courses': admin_courses,
             'course_assignments': course_assignments,
             'course_enrollments': course_enrollments,
@@ -2750,7 +3196,7 @@ def download_backup():
             'submissions': submissions
         }
     }
-    
+
     response = make_response(json.dumps(backup_data, ensure_ascii=False, indent=2))
     response.headers['Content-Type'] = 'application/json'
     response.headers['Content-Disposition'] = f'attachment; filename="sauvegarde_ulc_{timestamp}.json"'
