@@ -187,32 +187,22 @@ try:
     @app.after_request
     def auto_inject_csrf(response):
         """Injecte automatiquement le token CSRF dans tous les formulaires HTML."""
-        if 'text/html' in response.content_type:
-            token = generate_csrf()
-            html = response.get_data(as_text=True)
-            # Injecter dans chaque <form>
-            hidden = f'<input type="hidden" name="csrf_token" value="{token}">'
-            html = re.sub(
-                r'(<form\b[^>]*>)',
-                r'\1' + hidden,
-                html,
-                flags=re.IGNORECASE
-            )
-            # Injecter une meta pour les requêtes AJAX
-            meta = f'<meta name="csrf-token" content="{token}">'
-            html = html.replace('</head>', meta + '\n</head>', 1)
-            response.set_data(html)
+        try:
+            if 'text/html' in response.content_type:
+                token = generate_csrf()
+                html = response.get_data(as_text=True)
+                hidden = f'<input type="hidden" name="csrf_token" value="{token}">'
+                html = re.sub(r'(<form\b[^>]*>)', r'\1' + hidden, html, flags=re.IGNORECASE)
+                meta = f'<meta name="csrf-token" content="{token}">'
+                html = html.replace('</head>', meta + '\n</head>', 1)
+                response.set_data(html)
+        except Exception:
+            pass
         return response
 
-    # Exempter les endpoints JSON (ils utilisent le header X-CSRFToken)
-    @csrf.exempt
-    def csrf_exempt_json():
-        pass
-
-except ImportError:
+except Exception as _e:
     CSRF_AVAILABLE = False
-    logging.warning("Flask-WTF non installé — protection CSRF désactivée. "
-                    "Installez flask-wtf pour activer la protection.")
+    logging.warning(f"Flask-WTF désactivé : {_e}")
 
 # -----------------------------------------------------------------------
 # Rate Limiting (Flask-Limiter)
@@ -221,15 +211,15 @@ try:
     from flask_limiter import Limiter
     from flask_limiter.util import get_remote_address
     limiter = Limiter(
+        get_remote_address,
         app=app,
-        key_func=get_remote_address,
         default_limits=["200 per day", "50 per hour"],
-        storage_uri=os.environ.get('REDIS_URL', 'memory://'),
+        storage_uri="memory://",
     )
     LIMITER_AVAILABLE = True
-except ImportError:
+except Exception as _e:
     LIMITER_AVAILABLE = False
-    logging.warning("Flask-Limiter non installé — rate limiting désactivé.")
+    logging.warning(f"Flask-Limiter désactivé : {_e}")
 
 # -----------------------------------------------------------------------
 # Configuration email

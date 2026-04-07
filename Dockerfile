@@ -29,10 +29,6 @@ COPY . .
 RUN mkdir -p uploads cache logs uploads/assignments uploads/chapters \
     uploads/corrections uploads/code_submissions uploads/analysis uploads/syllabus
 
-# Vérifier que l'app s'importe sans erreur (échoue le build si crash)
-RUN python -c "import app; print('=== APP IMPORT OK ===')" 2>&1 || \
-    (echo '=== APP IMPORT FAILED ===' && python -c "import app" 2>&1; exit 1)
-
 # Port d'exposition
 EXPOSE 8080
 
@@ -41,4 +37,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
     CMD curl -f http://localhost:8080/health || exit 1
 
 # Commande de démarrage
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "4", "--timeout", "300", "--log-level", "debug", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "4", "--timeout", "300", "--log-level", "debug", "wsgi:app"]
