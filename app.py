@@ -56,7 +56,6 @@ try:
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
-    print("Transformers non installé - IA locale désactivée")
 # Nouveaux imports pour fonctionnalités avancées
 import zipfile
 import io
