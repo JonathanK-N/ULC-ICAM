@@ -3521,7 +3521,7 @@ def admin_seed():
 
         # Recharger les données en mémoire depuis le fichier JSON mis à jour
         with _data_lock:
-            with open(DATA_FILE, 'r', encoding='utf-8') as f:
+            with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
                 fresh = json.load(f)
             users.clear();               users.update(fresh.get('users', {}))
             admin_courses.clear();       admin_courses.extend(fresh.get('admin_courses', []))
