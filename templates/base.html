@@ -1,96 +1,103 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#2563eb">
-    <meta name="description" content="Plateforme ULC-ICAM Turnin pour la gestion des devoirs et du suivi académique.">
-    <title>{% block title %}ULC-ICAM Turnin{% endblock %}</title>
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="{{ url_for('web_manifest') }}">
-    
-    <!-- PWA Icons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='images/pwa-icon-192.png') }}">
-    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='images/pwa-icon-512.png') }}">
-    <link rel="apple-touch-icon" sizes="192x192" href="{{ url_for('static', filename='images/pwa-icon-192.png') }}">
-    <link rel="apple-touch-icon" sizes="512x512" href="{{ url_for('static', filename='images/pwa-icon-512.png') }}">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/pwa-icon-192.png') }}">
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ request.url.replace('http://', 'https://') }}">
-    <meta property="og:title" content="ULC-ICAM Turnin">
-    <meta property="og:description" content="Plateforme ULC-ICAM Turnin pour la gestion des devoirs et du suivi académique.">
-    <meta property="og:image" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True, _scheme='https') }}">
-    <meta property="og:image:secure_url" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True, _scheme='https') }}">
-    <meta property="og:image:type" content="image/png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="{{ request.url.replace('http://', 'https://') }}">
-    <meta property="twitter:title" content="ULC-ICAM Turnin">
-    <meta property="twitter:description" content="Plateforme ULC-ICAM Turnin pour la gestion des devoirs et du suivi académique.">
-    <meta property="twitter:image" content="{{ url_for('static', filename='images/ulc-icam-share.png', _external=True, _scheme='https') }}">
-    <meta name="twitter:image:alt" content="Logo ULC-ICAM Turnin">
-    
-    <!-- iOS PWA -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ULC-ICAM Turnin">
-    <meta name="mobile-web-app-capable" content="yes">
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1d4ed8">
+  <title>{% block title %}ULC-ICAM Turnin{% endblock %}</title>
+
+  <link rel="manifest" href="{{ url_for('web_manifest') }}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='images/pwa-icon-192.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/pwa-icon-192.png') }}">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/ulc-main.css') }}">
+
+  <style>
+    body { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1d4ed8 100%); min-height: 100vh; }
+    .auth-page { min-height: 100vh; display: flex; flex-direction: column; }
+    .auth-main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 32px 16px; }
+    .auth-card {
+      background: rgba(255,255,255,.97);
+      border-radius: 16px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.3);
+      width: 100%; max-width: 440px;
+      padding: 40px;
+      animation: fadeInUp .4s ease-out;
+    }
+    .auth-logo { text-align: center; margin-bottom: 28px; }
+    .auth-logo img { width: 64px; height: 64px; object-fit: contain; margin-bottom: 12px; }
+    .auth-logo h1 { font-size: 1.3rem; font-weight: 800; color: #0f172a; margin: 0; }
+    .auth-logo p { font-size: .8rem; color: #64748b; margin: 4px 0 0; }
+    .auth-card .form-control {
+      background: #f8fafc; border-color: #e2e8f0;
+      padding: 11px 14px; border-radius: 10px;
+    }
+    .auth-card .form-control:focus { background: white; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
+    .auth-card .btn-primary { width: 100%; padding: 12px; font-size: .95rem; border-radius: 10px; margin-top: 4px; }
+    .auth-footer { text-align: center; padding: 20px; }
+    .auth-footer .powered { font-size: .75rem; color: rgba(255,255,255,.5); display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .auth-footer .powered a { color: #fbbf24; text-decoration: none; font-weight: 600; }
+    .auth-footer .powered a:hover { color: #f59e0b; }
+    .role-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: .78rem; font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .role-badge.student { background: #dbeafe; color: #1d4ed8; }
+    .role-badge.teacher { background: #fef3c7; color: #d97706; }
+    .role-badge.admin   { background: #ede9fe; color: #7c3aed; }
+    .auth-nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; }
+    .auth-nav .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .auth-nav .brand img { height: 32px; }
+    .auth-nav .brand span { font-size: .9rem; font-weight: 700; color: white; }
+    .auth-nav a.back { font-size: .82rem; color: rgba(255,255,255,.7); text-decoration: none; display: flex; align-items: center; gap: 5px; }
+    .auth-nav a.back:hover { color: white; }
+  </style>
+  {% block head %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
-                <img src="{{ url_for('static', filename='images/ulc-icam-logo.png') }}" alt="ULC-ICAM" height="40" class="me-2">
-                ULC-ICAM Turnin
-            </a>
-            
-            {% if session.user %}
-            <div class="navbar-nav ms-auto">
-                <span class="navbar-text me-3">Bonjour, {{ session.name }}</span>
-                <a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">
-                    <i class="fas fa-sign-out-alt"></i> Déconnexion
-                </a>
+<div class="auth-page">
+
+  <nav class="auth-nav">
+    <a class="brand" href="{{ url_for('index') }}">
+      <img src="{{ url_for('static', filename='images/ulc-icam-logo.png') }}" alt="ULC-ICAM">
+      <span>ULC-ICAM Turnin</span>
+    </a>
+    <a class="back" href="{{ url_for('index') }}"><i class="fas fa-arrow-left"></i> Retour</a>
+  </nav>
+
+  <main class="auth-main">
+    <div class="auth-card">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for cat, msg in messages %}
+            <div class="alert alert-{{ 'danger' if cat in ['error','danger'] else cat if cat in ['success','warning','info'] else 'info' }} alert-dismissible fade show mb-3" style="border-radius:10px;font-size:.84rem;">
+              {{ msg }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-            {% endif %}
-        </div>
-    </nav>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
 
-    <main class="container mt-4">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-info alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+  <footer class="auth-footer">
+    <div class="powered">
+      <i class="fas fa-bolt" style="color:#fbbf24;font-size:.65rem;"></i>
+      Propulsé par <a href="https://cognito-inc.ca" target="_blank" rel="noopener">Cognito Inc.</a>
+    </div>
+  </footer>
 
-        {% block content %}{% endblock %}
-    </main>
+</div>
 
-    <footer class="text-center py-4 mt-5 bg-light">
-        <div class="container">
-            <p class="text-muted mb-0">
-                &copy; 2024 Université Loyola du Congo - ULC-ICAM. Tous droits réservés.
-            </p>
-            <p class="text-muted small">
-                Logiciel Propriétaire - Utilisation Restreinte
-            </p>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/pwa.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/pwa.js') }}"></script>
+{% block scripts %}{% endblock %}
 </body>
 </html>

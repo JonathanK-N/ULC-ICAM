@@ -1,147 +1,249 @@
-<!-- =============================================================================== -->
-<!-- Développeur: Jonathan Kakesa | Date: 19/12/2024 | Heure: 19:15 -->
-<!-- Description: Template de base pour toutes les pages ULC-ICAM -->
-<!-- Fonctionnalités: Navigation, styles, responsive, Bootstrap 5 -->
-<!-- Nouvelles: Support compression, rapports, téléchargement lot -->
-<!-- =============================================================================== -->
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}ULC-ICAM Turnin{% endblock %}</title>
-    
-    <!-- Bootstrap CSS pour le style -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Styles personnalisés -->
-    <style>
-        /* Couleurs ULC-ICAM */
-        :root {
-            --ulc-blue: #1e3a8a;
-            --ulc-gold: #f59e0b;
-            --ulc-light: #f8fafc;
-        }
-        
-        /* Navigation personnalisée */
-        .navbar-ulc {
-            background-color: var(--ulc-blue);
-        }
-        
-        /* Boutons personnalisés */
-        .btn-ulc {
-            background-color: var(--ulc-gold);
-            border-color: var(--ulc-gold);
-            color: white;
-        }
-        
-        .btn-ulc:hover {
-            background-color: #d97706;
-            border-color: #d97706;
-        }
-        
-        /* Footer */
-        .footer-ulc {
-            background-color: var(--ulc-blue);
-            color: white;
-            margin-top: auto;
-        }
-        
-        /* Corps de la page */
-        body {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .main-content {
-            flex: 1;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1d4ed8">
+  <title>{% block title %}ULC-ICAM Turnin{% endblock %}</title>
+
+  <link rel="manifest" href="{{ url_for('web_manifest') }}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='images/pwa-icon-192.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/pwa-icon-192.png') }}">
+
+  <!-- Bootstrap 5 + FontAwesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- ULC Main CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/ulc-main.css') }}">
+
+  {% block head %}{% endblock %}
 </head>
 <body>
+
+<!-- Sidebar Overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<div class="app-layout">
+
+  <!-- ═══════════════════════════════════════════════
+       SIDEBAR
+  ════════════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Brand -->
+    <a class="sidebar-brand" href="{{ url_for('index') }}">
+      <img src="{{ url_for('static', filename='images/ulc-icam-logo.png') }}" alt="ULC-ICAM">
+      <div class="sidebar-brand-text">
+        <span>ULC-ICAM Turnin</span>
+        <span>Plateforme académique</span>
+      </div>
+    </a>
+
+    {% if session.user %}
+    <!-- User info -->
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">{{ session.name[0]|upper if session.name else 'U' }}</div>
+      <div class="sidebar-user-info">
+        <div class="name">{{ session.name }}</div>
+        <div class="role">{{ session.role }}</div>
+      </div>
+    </div>
+
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-ulc">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
-                <img src="{{ url_for('static', filename='images/ulc-icam-logo.png') }}" alt="ULC-ICAM" height="40" class="me-2">
-                ULC-ICAM Turnin
-            </a>
-            
-            <!-- Bouton menu mobile -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <!-- Menu de navigation -->
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">Accueil</a>
-                    </li>
-                    {% if session.user %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('dashboard') }}">Tableau de bord</a>
-                        </li>
-                    {% endif %}
-                </ul>
-                
-                <!-- Menu utilisateur -->
-                <ul class="navbar-nav">
-                    {% if session.user %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                👤 {{ session.name }}
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><span class="dropdown-item-text">{{ session.role|title }}</span></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Déconnexion</a></li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('login') }}">Connexion</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
+    <nav class="sidebar-nav">
+
+      {% if session.role == 'student' %}
+      <div class="nav-section-label">Navigation</div>
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">
+        <i class="fas fa-th-large"></i> Tableau de bord
+      </a>
+      <a href="{{ url_for('student_courses') }}" class="{{ 'active' if request.endpoint == 'student_courses' }}">
+        <i class="fas fa-book-open"></i> Mes Cours
+      </a>
+      <a href="{{ url_for('student_grades') }}" class="{{ 'active' if request.endpoint == 'student_grades' }}">
+        <i class="fas fa-chart-bar"></i> Mes Notes
+      </a>
+      <a href="{{ url_for('change_password') }}" class="{{ 'active' if request.endpoint == 'change_password' }}">
+        <i class="fas fa-key"></i> Mot de passe
+      </a>
+
+      {% elif session.role == 'teacher' %}
+      <div class="nav-section-label">Navigation</div>
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">
+        <i class="fas fa-th-large"></i> Tableau de bord
+      </a>
+      <a href="{{ url_for('teacher_assigned_courses') }}" class="{{ 'active' if 'course' in request.endpoint }}">
+        <i class="fas fa-graduation-cap"></i> Mes Cours
+      </a>
+      <a href="{{ url_for('teacher_assignments') }}" class="{{ 'active' if 'assignment' in request.endpoint }}">
+        <i class="fas fa-tasks"></i> Devoirs
+      </a>
+      <a href="{{ url_for('teacher_submissions') }}" class="{{ 'active' if 'submission' in request.endpoint }}">
+        <i class="fas fa-inbox"></i> Soumissions
+      </a>
+      <a href="{{ url_for('teacher_students') }}" class="{{ 'active' if request.endpoint == 'teacher_students' }}">
+        <i class="fas fa-users"></i> Mes Étudiants
+      </a>
+      <a href="{{ url_for('change_password') }}" class="{{ 'active' if request.endpoint == 'change_password' }}">
+        <i class="fas fa-key"></i> Mot de passe
+      </a>
+
+      {% elif session.role == 'admin' %}
+      <div class="nav-section-label">Administration</div>
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">
+        <i class="fas fa-th-large"></i> Tableau de bord
+      </a>
+      <a href="{{ url_for('admin_users') }}" class="{{ 'active' if 'user' in request.endpoint }}">
+        <i class="fas fa-users-cog"></i> Utilisateurs
+      </a>
+      <a href="{{ url_for('admin_courses_view') }}" class="{{ 'active' if 'course' in request.endpoint }}">
+        <i class="fas fa-book"></i> Cours
+      </a>
+      <a href="{{ url_for('admin_assignments') }}" class="{{ 'active' if 'assignment' in request.endpoint }}">
+        <i class="fas fa-tasks"></i> Devoirs
+      </a>
+      <a href="{{ url_for('admin_submissions') }}" class="{{ 'active' if 'submission' in request.endpoint }}">
+        <i class="fas fa-inbox"></i> Soumissions
+      </a>
+      <div class="nav-section-label">Système</div>
+      <a href="{{ url_for('system_report') }}" class="{{ 'active' if request.endpoint == 'system_report' }}">
+        <i class="fas fa-chart-pie"></i> Rapports
+      </a>
+      <a href="{{ url_for('admin_system_config') }}" class="{{ 'active' if 'config' in request.endpoint }}">
+        <i class="fas fa-sliders-h"></i> Configuration
+      </a>
+      <a href="{{ url_for('admin_seed') }}" class="{{ 'active' if request.endpoint == 'admin_seed' }}">
+        <i class="fas fa-database"></i> Données démo
+      </a>
+      {% endif %}
+
     </nav>
-    
-    <!-- Contenu principal -->
-    <main class="main-content">
-        <div class="container mt-4">
-            <!-- Messages flash -->
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-info alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-            
-            <!-- Contenu de la page -->
-            {% block content %}{% endblock %}
-        </div>
+
+    <!-- Footer logout -->
+    <div class="sidebar-footer">
+      <a href="{{ url_for('logout') }}">
+        <i class="fas fa-sign-out-alt"></i> Déconnexion
+      </a>
+    </div>
+    {% endif %}
+
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════
+       MAIN
+  ════════════════════════════════════════════════ -->
+  <div class="main-wrapper">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Menu">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="topbar-title">
+        {% block topbar_title %}<span>ULC-ICAM Turnin</span>{% endblock %}
+      </div>
+      <div class="topbar-actions">
+        {% if session.user %}
+        <button class="topbar-btn" title="Tableau de bord" onclick="window.location.href='{{ url_for('dashboard') }}'">
+          <i class="fas fa-home"></i>
+        </button>
+        {% endif %}
+        <button class="topbar-btn" title="Accueil" onclick="window.location.href='{{ url_for('index') }}'">
+          <i class="fas fa-university"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Flash messages -->
+    <div class="flash-container" id="flashContainer"></div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            const types = { 'error': 'danger', 'danger': 'danger', 'success': 'success', 'warning': 'warning', 'info': 'info', 'message': 'info' };
+            const icons = { 'success': 'fa-check-circle', 'danger': 'fa-exclamation-circle', 'warning': 'fa-exclamation-triangle', 'info': 'fa-info-circle' };
+            const msgs = {{ messages | tojson }};
+            msgs.forEach(([cat, msg]) => {
+              const type = types[cat] || 'info';
+              const icon = icons[type] || 'fa-info-circle';
+              showFlash(msg, type, icon);
+            });
+          });
+        </script>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Page Content -->
+    <main class="page-content">
+      {% block content %}{% endblock %}
     </main>
-    
+
     <!-- Footer -->
-    <footer class="footer-ulc py-3 mt-5">
-        <div class="container text-center">
-            <p class="mb-0">© 2024 ULC-ICAM Turnin System</p>
-            <small class="text-light">Université Loyola du Congo - Institut Catholique d'Art et Métier</small>
-        </div>
+    <footer class="main-footer">
+      <span class="copy">&copy; {{ 2024 }} Université Loyola du Congo — ULC-ICAM. Tous droits réservés.</span>
+      <span class="powered">
+        <i class="fas fa-bolt" style="color:#f59e0b;font-size:.7rem;"></i>
+        Propulsé par <a href="https://cognito-inc.ca" target="_blank" rel="noopener">Cognito Inc.</a>
+      </span>
     </footer>
-    
-    <!-- Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Scripts personnalisés -->
-    {% block scripts %}{% endblock %}
+
+  </div><!-- /main-wrapper -->
+</div><!-- /app-layout -->
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/pwa.js') }}"></script>
+
+<script>
+/* ── Flash helper ────────────────────────────────────────────── */
+function showFlash(msg, type, icon) {
+  const container = document.getElementById('flashContainer');
+  const el = document.createElement('div');
+  el.className = `flash-msg ${type}`;
+  el.innerHTML = `<i class="fas ${icon}"></i><span>${msg}</span><span class="flash-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></span>`;
+  container.appendChild(el);
+  setTimeout(() => { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 4500);
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────── */
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+/* ── Animated counters ───────────────────────────────────────── */
+function animateCounters() {
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const target = +el.getAttribute('data-count');
+    const duration = 900;
+    const start = performance.now();
+    function update(now) {
+      const t = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 3);
+      el.textContent = Math.round(ease * target);
+      if (t < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  });
+}
+document.addEventListener('DOMContentLoaded', () => {
+  animateCounters();
+  /* Animate bars */
+  setTimeout(() => {
+    document.querySelectorAll('.progress-ulc .bar[data-width]').forEach(bar => {
+      bar.style.width = bar.getAttribute('data-width') + '%';
+    });
+  }, 300);
+});
+</script>
+
+{% block scripts %}{% endblock %}
 </body>
 </html>
