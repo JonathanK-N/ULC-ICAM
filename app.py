@@ -3460,6 +3460,90 @@ def test_submit():
             'error': str(e)
         })
 
+@app.route('/admin/seed', methods=['GET', 'POST'])
+def admin_seed():
+    """Injecte les données de démonstration (une seule fois, admin uniquement)."""
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+
+    global users, admin_courses, course_assignments, course_enrollments, assignments, submissions
+
+    # Vérifier si les données existent déjà
+    already_seeded = (
+        len(users) > 1 or
+        len(admin_courses) > 0 or
+        len(assignments) > 0
+    )
+
+    if request.method == 'GET':
+        return render_template_string('''
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<title>Seed données démo</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: 80px auto; padding: 20px; }
+  .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+  .danger  { background: #f8d7da; border: 1px solid #dc3545; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+  .btn { padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; }
+  .btn-primary { background: #0d6efd; color: white; }
+  .btn-secondary { background: #6c757d; color: white; text-decoration: none; padding: 10px 24px; border-radius: 4px; }
+</style></head><body>
+<h2>Injection données de démonstration</h2>
+{% if already_seeded %}
+<div class="danger">
+  <strong>Attention :</strong> Des données existent déjà ({{ nb_users }} utilisateurs, {{ nb_courses }} cours).
+  Cliquer sur "Confirmer" va <strong>écraser toutes les données actuelles</strong>.
+</div>
+{% else %}
+<div class="warning">
+  Cela va créer : 1 admin, 5 professeurs, 20 étudiants, 8 cours, 10 devoirs, 29 soumissions.
+</div>
+{% endif %}
+<form method="POST">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="btn btn-primary">Confirmer l\'injection</button>
+  <a href="{{ url_for(\'admin_users\') }}" class="btn-secondary" style="margin-left:10px;">Annuler</a>
+</form>
+</body></html>
+        ''', already_seeded=already_seeded, nb_users=len(users), nb_courses=len(admin_courses))
+
+    # POST — exécuter le seed
+    try:
+        import importlib.util, sys as _sys
+        seed_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'seed_data.py')
+
+        if not os.path.exists(seed_path):
+            flash('Fichier seed_data.py introuvable.', 'danger')
+            return redirect(url_for('admin_users'))
+
+        spec = importlib.util.spec_from_file_location('seed_data', seed_path)
+        seed_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(seed_module)
+
+        # Recharger les données en mémoire depuis le fichier JSON mis à jour
+        with _data_lock:
+            with open(DATA_FILE, 'r', encoding='utf-8') as f:
+                fresh = json.load(f)
+            users.clear();               users.update(fresh.get('users', {}))
+            admin_courses.clear();       admin_courses.extend(fresh.get('admin_courses', []))
+            course_assignments.clear();  course_assignments.update(fresh.get('course_assignments', {}))
+            course_enrollments.clear();  course_enrollments.update(fresh.get('course_enrollments', {}))
+            assignments.clear();         assignments.update(fresh.get('assignments', {}))
+            submissions.clear();         submissions.update(fresh.get('submissions', {}))
+
+        flash(
+            f'Données de démo injectées avec succès : {len(users)} utilisateurs, '
+            f'{len(admin_courses)} cours, {len(assignments)} devoirs, {len(submissions)} soumissions.',
+            'success'
+        )
+        app.logger.info('Seed exécuté par %s', session.get('user'))
+
+    except Exception as e:
+        app.logger.error('Erreur seed: %s', e, exc_info=True)
+        flash(f'Erreur lors de l\'injection : {e}', 'danger')
+
+    return redirect(url_for('admin_users'))
+
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 5000))
