@@ -734,6 +734,12 @@ def generate_course_report_csv(course_id):
     output.seek(0)
     return output.getvalue()
 
+@app.route('/health')
+def health_check():
+    """Endpoint de santé pour Railway healthcheck."""
+    return jsonify({'status': 'ok'}), 200
+
+
 @app.route('/')
 def index():
     teachers = sum(1 for u in users.values() if u.get('role') == 'teacher')
