@@ -307,7 +307,7 @@ def web_manifest():
             app.static_folder,
             'manifest.json',
             mimetype='application/manifest+json',
-            cache_timeout=0
+            max_age=0
         )
 
     response = make_response(json.dumps(PWA_MANIFEST, ensure_ascii=False))
@@ -319,11 +319,18 @@ def web_manifest():
 @app.route('/sw.js')
 def service_worker():
     """Expose the service worker at the application root for full scope coverage."""
+    sw_path = Path(app.static_folder) / 'sw.js'
+    if not sw_path.exists():
+        # Retourner un service worker vide si le fichier n'existe pas encore
+        response = make_response("// Service Worker ULC-ICAM\nself.addEventListener('fetch', function(){});")
+        response.headers['Content-Type'] = 'application/javascript'
+        response.headers['Cache-Control'] = 'no-store'
+        return response
     return send_from_directory(
         app.static_folder,
         'sw.js',
         mimetype='application/javascript',
-        cache_timeout=0
+        max_age=0
     )
 
 def load_test_data():
@@ -358,30 +365,97 @@ def save_test_data():
         except Exception as e:
             logger.error(f"Erreur lors de l'enregistrement des données: {e}")
 
-# Charger les données depuis le fichier JSON
+# -----------------------------------------------------------------------
+# Chargement des données depuis le fichier JSON
+# -----------------------------------------------------------------------
+_DEFAULT_ADMIN_PASSWORD = 'Admin@ULC2024'   # mot de passe initial (hashé)
+
+def _build_default_data():
+    """Crée le jeu de données initial avec un admin dont le mot de passe est hashé."""
+    return {
+        'users': {
+            'admin': {
+                'password': generate_password_hash(_DEFAULT_ADMIN_PASSWORD),
+                'role': 'admin',
+                'name': 'Administrateur ULC-ICAM',
+                'email': ''
+            }
+        },
+        'admin_courses': [],
+        'course_assignments': {},
+        'course_enrollments': {},
+        'assignments': [],
+        'submissions': [],
+        'next_course_admin_id': 1,
+        'next_assignment_id': 1
+    }
+
 print("=== CHARGEMENT DES DONNÉES ===")
 try:
     with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
-        users = data.get('users', {'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur ULC-ICAM'}})
-        admin_courses = data.get('admin_courses', [])
-        course_assignments = {str(k): v for k, v in data.get('course_assignments', {}).items()}
-        course_enrollments = {str(k): v for k, v in data.get('course_enrollments', {}).items()}
-        assignments = data.get('assignments', [])
-        submissions = data.get('submissions', [])
-        next_course_admin_id = data.get('next_course_admin_id', 1)
-        next_assignment_id = data.get('next_assignment_id', 1)
-        print("Données chargées depuis ulc_icam_data.json")
-except Exception as e:
-    print(f"Erreur chargement: {e}")
-    users = {'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur ULC-ICAM'}}
-    admin_courses = []
-    course_assignments = {}
-    course_enrollments = {}
-    assignments = []
-    submissions = []
+    users                = data.get('users', {})
+    admin_courses        = data.get('admin_courses', [])
+    course_assignments   = {str(k): v for k, v in data.get('course_assignments', {}).items()}
+    course_enrollments   = {str(k): v for k, v in data.get('course_enrollments', {}).items()}
+    assignments          = data.get('assignments', [])
+    submissions          = data.get('submissions', [])
+    next_course_admin_id = data.get('next_course_admin_id', 1)
+    next_assignment_id   = data.get('next_assignment_id', 1)
+
+    # Migrer les anciens mots de passe en clair vers werkzeug hash
+    _migrated = 0
+    for _uname, _udata in users.items():
+        _pwd = _udata.get('password', '')
+        if _pwd and not _pwd.startswith('pbkdf2:') and not _pwd.startswith('scrypt:') and ':' not in _pwd:
+            _udata['password'] = generate_password_hash(_pwd)
+            _migrated += 1
+    if _migrated:
+        logger.info(f"Migration mots de passe : {_migrated} compte(s) migré(s) vers hash sécurisé")
+        # Sauvegarder immédiatement la migration
+        with open('ulc_icam_data.json.tmp', 'w', encoding='utf-8') as _f:
+            json.dump(data, _f, ensure_ascii=False, indent=2)
+        os.replace('ulc_icam_data.json.tmp', 'ulc_icam_data.json')
+
+    if not users:
+        _default = _build_default_data()
+        users = _default['users']
+        logger.warning(f"Aucun utilisateur trouvé — compte admin créé. "
+                       f"Mot de passe initial : {_DEFAULT_ADMIN_PASSWORD}")
+
+    print("Données chargées depuis ulc_icam_data.json")
+
+except FileNotFoundError:
+    logger.warning("ulc_icam_data.json introuvable — création du fichier avec données par défaut")
+    _default = _build_default_data()
+    users                = _default['users']
+    admin_courses        = []
+    course_assignments   = {}
+    course_enrollments   = {}
+    assignments          = []
+    submissions          = []
     next_course_admin_id = 1
-    next_assignment_id = 1
+    next_assignment_id   = 1
+    # Créer le fichier tout de suite
+    try:
+        with open('ulc_icam_data.json', 'w', encoding='utf-8') as _f:
+            json.dump(_default, _f, ensure_ascii=False, indent=2)
+        logger.info(f"ulc_icam_data.json créé. Compte admin initial — "
+                    f"identifiant: admin / mot de passe: {_DEFAULT_ADMIN_PASSWORD}")
+    except Exception as _e:
+        logger.error(f"Impossible de créer ulc_icam_data.json : {_e}")
+
+except Exception as e:
+    logger.error(f"Erreur chargement données : {e}")
+    _default = _build_default_data()
+    users                = _default['users']
+    admin_courses        = []
+    course_assignments   = {}
+    course_enrollments   = {}
+    assignments          = []
+    submissions          = []
+    next_course_admin_id = 1
+    next_assignment_id   = 1
 
 # Résultats de correction et plagiat
 correction_results = {}  # {submission_id: {'score': 85, 'feedback': 'Bon travail'}}
