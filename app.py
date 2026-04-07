@@ -3527,8 +3527,11 @@ def admin_seed():
             admin_courses.clear();       admin_courses.extend(fresh.get('admin_courses', []))
             course_assignments.clear();  course_assignments.update(fresh.get('course_assignments', {}))
             course_enrollments.clear();  course_enrollments.update(fresh.get('course_enrollments', {}))
-            assignments.clear();         assignments.update(fresh.get('assignments', {}))
-            submissions.clear();         submissions.update(fresh.get('submissions', {}))
+            assignments.clear();         assignments.extend(fresh.get('assignments', []))
+            submissions.clear();         submissions.extend(fresh.get('submissions', []))
+            global next_course_admin_id, next_assignment_id
+            next_course_admin_id = fresh.get('next_course_admin_id', len(admin_courses) + 1)
+            next_assignment_id   = fresh.get('next_assignment_id', len(assignments) + 1)
 
         flash(
             f'Données de démo injectées avec succès : {len(users)} utilisateurs, '
