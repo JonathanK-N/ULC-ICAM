@@ -29,7 +29,11 @@ COPY . .
 RUN mkdir -p uploads cache logs uploads/assignments uploads/chapters \
     uploads/corrections uploads/code_submissions uploads/analysis uploads/syllabus
 
-# Port d'exposition (Railway injecte PORT=8080)
+# Vérifier que l'app s'importe sans erreur (échoue le build si crash)
+RUN python -c "import app; print('=== APP IMPORT OK ===')" 2>&1 || \
+    (echo '=== APP IMPORT FAILED ===' && python -c "import app" 2>&1; exit 1)
+
+# Port d'exposition
 EXPOSE 8080
 
 # Healthcheck
