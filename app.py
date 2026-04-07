@@ -263,6 +263,12 @@ logger = logging.getLogger('ulc_icam')
 _data_lock = threading.Lock()
 
 # -----------------------------------------------------------------------
+# Chemin du fichier de données (configurable via DATA_FILE env var)
+# -----------------------------------------------------------------------
+DATA_FILE = os.environ.get('DATA_FILE', 'ulc_icam_data.json')
+DATA_FILE_TMP = DATA_FILE + '.tmp'
+
+# -----------------------------------------------------------------------
 # Créer le dossier uploads
 # -----------------------------------------------------------------------
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -336,7 +342,7 @@ def service_worker():
 def load_test_data():
     """Charge les données depuis le fichier JSON"""
     try:
-        with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
+        with open(DATA_FILE, 'r', encoding='utf-8') as f:
             data = json.load(f)
             return data
     except Exception as e:
@@ -358,10 +364,10 @@ def save_test_data():
                 'next_assignment_id': globals().get('next_assignment_id', 1)
             }
             # Écriture atomique via fichier temporaire
-            tmp_path = 'ulc_icam_data.json.tmp'
+            tmp_path = DATA_FILE_TMP
             with open(tmp_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
-            os.replace(tmp_path, 'ulc_icam_data.json')
+            os.replace(tmp_path, DATA_FILE)
         except Exception as e:
             logger.error(f"Erreur lors de l'enregistrement des données: {e}")
 
@@ -392,7 +398,7 @@ def _build_default_data():
 
 print("=== CHARGEMENT DES DONNÉES ===")
 try:
-    with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
+    with open(DATA_FILE, 'r', encoding='utf-8') as f:
         data = json.load(f)
     users                = data.get('users', {})
     admin_courses        = data.get('admin_courses', [])
@@ -413,9 +419,9 @@ try:
     if _migrated:
         logger.info(f"Migration mots de passe : {_migrated} compte(s) migré(s) vers hash sécurisé")
         # Sauvegarder immédiatement la migration
-        with open('ulc_icam_data.json.tmp', 'w', encoding='utf-8') as _f:
+        with open(DATA_FILE_TMP, 'w', encoding='utf-8') as _f:
             json.dump(data, _f, ensure_ascii=False, indent=2)
-        os.replace('ulc_icam_data.json.tmp', 'ulc_icam_data.json')
+        os.replace(DATA_FILE_TMP, DATA_FILE)
 
     if not users:
         _default = _build_default_data()
@@ -438,7 +444,7 @@ except FileNotFoundError:
     next_assignment_id   = 1
     # Créer le fichier tout de suite
     try:
-        with open('ulc_icam_data.json', 'w', encoding='utf-8') as _f:
+        with open(DATA_FILE, 'w', encoding='utf-8') as _f:
             json.dump(_default, _f, ensure_ascii=False, indent=2)
         logger.info(f"ulc_icam_data.json créé. Compte admin initial — "
                     f"identifiant: admin / mot de passe: {_DEFAULT_ADMIN_PASSWORD}")
@@ -3521,7 +3527,7 @@ def admin_seed():
 
         # Recharger les données en mémoire depuis le fichier JSON mis à jour
         with _data_lock:
-            with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
+            with open(DATA_FILE, 'r', encoding='utf-8') as f:
                 fresh = json.load(f)
             users.clear();               users.update(fresh.get('users', {}))
             admin_courses.clear();       admin_courses.extend(fresh.get('admin_courses', []))
