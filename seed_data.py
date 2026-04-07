@@ -774,7 +774,7 @@ make_pdf_cours(
 )
 
 make_word_tp(
-    os.path.join(ASSIGN, 'devoir_python_contacts.pdf.docx'),
+    os.path.join(ASSIGN, 'devoir_python_contacts.pdf'),
     'Projet Python — Gestionnaire de contacts', 'Prof. Jean-Baptiste Mukendi',
     [
         'Créer une classe Contact avec les attributs : nom, prénom, téléphone, email. Implémenter __str__ et __repr__.',
