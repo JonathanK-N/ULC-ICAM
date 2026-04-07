@@ -273,7 +273,7 @@
   <div class="nav-links">
     <a href="#roles">Connexion</a>
     <a href="#fonctionnalites">Fonctionnalités</a>
-    <a href="{{ url_for('login_admin') }}" class="nav-cta"><i class="fas fa-shield-alt"></i> Admin</a>
+    <a href="{{ url_for('admin_login') }}" class="nav-cta"><i class="fas fa-shield-alt"></i> Admin</a>
   </div>
 </nav>
 
@@ -352,7 +352,7 @@
         <span class="role-btn"><i class="fas fa-sign-in-alt"></i> Se connecter</span>
       </a>
 
-      <a href="{{ url_for('login_admin') }}" class="role-card admin reveal">
+      <a href="{{ url_for('admin_login') }}" class="role-card admin reveal">
         <div class="role-icon-wrap"><i class="fas fa-shield-alt"></i></div>
         <h3>Administrateur</h3>
         <p>Supervisez la plateforme, gérez les utilisateurs et configurez l'ensemble du système.</p>

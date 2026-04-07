@@ -111,7 +111,7 @@
       <a href="{{ url_for('system_report') }}" class="{{ 'active' if request.endpoint == 'system_report' }}">
         <i class="fas fa-chart-pie"></i> Rapports
       </a>
-      <a href="{{ url_for('admin_system_config') }}" class="{{ 'active' if 'config' in request.endpoint }}">
+      <a href="{{ url_for('system_config_view') }}" class="{{ 'active' if 'config' in request.endpoint }}">
         <i class="fas fa-sliders-h"></i> Configuration
       </a>
       <a href="{{ url_for('admin_seed') }}" class="{{ 'active' if request.endpoint == 'admin_seed' }}">
