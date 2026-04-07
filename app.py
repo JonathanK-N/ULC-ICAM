@@ -157,7 +157,7 @@ app.secret_key = _secret
 if os.environ.get('VERCEL'):
     app.config['UPLOAD_FOLDER'] = '/tmp'
 else:
-    app.config['UPLOAD_FOLDER'] = 'uploads'
+    app.config['UPLOAD_FOLDER'] = os.environ.get('UPLOAD_FOLDER', 'uploads')
 
 app.config.setdefault('PREFERRED_URL_SCHEME', 'https')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max

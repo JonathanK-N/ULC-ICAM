@@ -32,15 +32,9 @@ RUN mkdir -p uploads cache logs uploads/assignments uploads/chapters \
 # Port d'exposition (Railway injecte PORT=8080)
 EXPOSE 8080
 
-# Healthcheck sur le port Railway
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 \
-    CMD curl -f http://localhost:${PORT:-8080}/ || exit 1
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
+    CMD curl -f http://localhost:8080/health || exit 1
 
-# Commande : gunicorn lit $PORT injecté par Railway
-CMD gunicorn \
-    --bind 0.0.0.0:${PORT:-8080} \
-    --workers 2 \
-    --threads 2 \
-    --timeout 120 \
-    --log-level info \
-    app:app
+# Commande de démarrage
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "4", "--timeout", "300", "--log-level", "debug", "app:app"]
