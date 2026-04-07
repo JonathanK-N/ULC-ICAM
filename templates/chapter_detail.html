@@ -50,17 +50,20 @@
             {% if chapter.documents %}
                 <div class="list-group">
                     {% for doc in chapter.documents %}
+                    {% set doc_name = doc.original_name if doc.original_name is defined else doc.name if doc.name is defined else doc.filename %}
                     <div class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
-                            {% if doc.original_name.lower().endswith('.pdf') %}
+                            {% if doc_name.lower().endswith('.pdf') %}
                                 <i class="fas fa-file-pdf text-danger me-2"></i>
-                            {% elif doc.original_name.lower().endswith(('.ppt', '.pptx')) %}
+                            {% elif doc_name.lower().endswith('.pptx') or doc_name.lower().endswith('.ppt') %}
                                 <i class="fas fa-file-powerpoint text-warning me-2"></i>
+                            {% elif doc_name.lower().endswith('.docx') or doc_name.lower().endswith('.doc') %}
+                                <i class="fas fa-file-word text-primary me-2"></i>
                             {% else %}
                                 <i class="fas fa-file text-secondary me-2"></i>
                             {% endif %}
-                            {{ doc.original_name }}
-                            <small class="text-muted d-block">Ajouté le {{ doc.uploaded_at }}</small>
+                            {{ doc_name }}
+                            {% if doc.uploaded_at is defined %}<small class="text-muted d-block">Ajouté le {{ doc.uploaded_at }}</small>{% endif %}
                         </div>
                         <a href="{{ url_for('download_chapter_document', filename=doc.filename) }}" class="btn btn-outline-primary btn-sm">
                             <i class="fas fa-download"></i> Télécharger
