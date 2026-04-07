@@ -29,19 +29,18 @@ COPY . .
 RUN mkdir -p uploads cache logs uploads/assignments uploads/chapters \
     uploads/corrections uploads/code_submissions uploads/analysis uploads/syllabus
 
-# Port d'exposition
-EXPOSE 5000
+# Port d'exposition (Railway injecte PORT=8080)
+EXPOSE 8080
 
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/ || exit 1
+# Healthcheck sur le port Railway
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 \
+    CMD curl -f http://localhost:${PORT:-8080}/ || exit 1
 
-# Commande par défaut : lancer l'app Flask réelle (app.py)
-CMD ["gunicorn", \
-     "--bind", "0.0.0.0:5000", \
-     "--workers", "4", \
-     "--threads", "2", \
-     "--timeout", "120", \
-     "--access-logfile", "logs/access.log", \
-     "--error-logfile", "logs/error.log", \
-     "app:app"]
+# Commande : gunicorn lit $PORT injecté par Railway
+CMD gunicorn \
+    --bind 0.0.0.0:${PORT:-8080} \
+    --workers 2 \
+    --threads 2 \
+    --timeout 120 \
+    --log-level info \
+    app:app
