@@ -11,7 +11,7 @@
 # UTILISATION RESTREINTE - Voir LICENSE pour les conditions d'utilisation
 # ===============================================================================
 
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory, make_response, g
+from flask import Flask, render_template, render_template_string, request, redirect, url_for, flash, session, jsonify, send_from_directory, make_response, g
 import os
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
