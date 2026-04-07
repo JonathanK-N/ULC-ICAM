@@ -1,19 +1,16 @@
 // ULC-ICAM PWA Service Worker
 // © 2024 Cognito Inc. - Tous droits réservés
 
-const CACHE_NAME = 'ulc-icam-v1.0.0';
+const CACHE_NAME = 'ulc-icam-v1.0.1';
 const OFFLINE_URL = '/offline.html';
 
 const STATIC_CACHE_URLS = [
   '/',
-  '/static/css/style.css',
-  '/static/js/app.js',
   '/static/images/ulc-icam-logo.png',
   '/static/images/pwa-icon-192.png',
   '/static/images/pwa-icon-512.png',
   '/static/images/ulc-icam-share.png',
   '/static/manifest.json',
-  OFFLINE_URL
 ];
 
 const DYNAMIC_CACHE_URLS = [

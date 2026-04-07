@@ -18,6 +18,7 @@ from datetime import datetime
 # Configuration Judge0
 JUDGE0_URL = os.environ.get('JUDGE0_URL', 'https://judge0-ce.p.rapidapi.com')
 JUDGE0_API_KEY = os.environ.get('JUDGE0_API_KEY', '')
+JUDGE0_HOST = os.environ.get('JUDGE0_URL', 'https://judge0-ce.p.rapidapi.com').replace('https://', '').replace('http://', '').split('/')[0]
 
 # Mapping des langages
 LANGUAGE_MAP = {
@@ -32,7 +33,7 @@ class CodeExecutor:
     def __init__(self):
         self.headers = {
             'X-RapidAPI-Key': JUDGE0_API_KEY,
-            'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com',
+            'X-RapidAPI-Host': JUDGE0_HOST,
             'Content-Type': 'application/json'
         }
     

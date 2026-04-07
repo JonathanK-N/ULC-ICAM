@@ -228,20 +228,20 @@
             <div class="modal-body">
                 <div class="mb-3">
                     <label for="score{{ submission.id }}" class="form-label">Score</label>
-                    <input type="number" step="any" class="form-control" id="score{{ submission.id }}" name="score" required value="{{ submission.correction.score if submission.correction }}">
+                    <input type="number" step="any" class="form-control" id="score{{ submission.id }}" name="score" required value="{{ submission.correction.score if submission.correction and submission.correction.score is defined else '' }}">
                 </div>
                 <div class="mb-3">
                     <label for="max_score{{ submission.id }}" class="form-label">Score max</label>
-                    <input type="number" step="any" class="form-control" id="max_score{{ submission.id }}" name="max_score" required value="{{ submission.correction.max_score if submission.correction else assignment.max_score }}">
+                    <input type="number" step="any" class="form-control" id="max_score{{ submission.id }}" name="max_score" required value="{{ submission.correction.max_score if submission.correction and submission.correction.max_score is defined else assignment.max_score }}">
                 </div>
                 <div class="mb-3">
                     <label for="feedback{{ submission.id }}" class="form-label">Commentaires</label>
-                    <textarea class="form-control" id="feedback{{ submission.id }}" name="feedback" rows="3">{{ submission.correction.feedback | join('\n') if submission.correction }}</textarea>
+                    <textarea class="form-control" id="feedback{{ submission.id }}" name="feedback" rows="3">{{ (submission.correction.feedback or []) | join('\n') if submission.correction else '' }}</textarea>
                 </div>
                 <div class="mb-3">
                     <label for="feedback_file{{ submission.id }}" class="form-label">Fichier corrigé</label>
                     <input type="file" class="form-control" id="feedback_file{{ submission.id }}" name="feedback_file">
-                    {% if submission.correction.feedback_file %}
+                    {% if submission.correction and submission.correction.feedback_file %}
                     <a href="{{ url_for('download_correction_file', filename=submission.correction.feedback_file) }}" class="d-block mt-2"><i class="fas fa-download"></i> Fichier actuel</a>
                     {% endif %}
                 </div>

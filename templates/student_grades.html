@@ -32,7 +32,11 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fs-4"><strong>{{ grade.correction.score }}/{{ grade.correction.max_score }}</strong></span>
                             <span class="badge bg-success fs-6">
-                                {{ ((grade.correction.score / grade.correction.max_score) * 100)|round(1) }}%
+                                {% if grade.correction.max_score and grade.correction.max_score > 0 %}
+                                    {{ ((grade.correction.score / grade.correction.max_score) * 100)|round(1) }}%
+                                {% else %}
+                                    N/A
+                                {% endif %}
                             </span>
                         </div>
                         

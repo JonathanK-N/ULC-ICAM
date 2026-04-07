@@ -11,7 +11,7 @@
 # UTILISATION RESTREINTE - Voir LICENSE pour les conditions d'utilisation
 # ===============================================================================
 
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory, make_response, g
+from flask import Flask, render_template, render_template_string, request, redirect, url_for, flash, session, jsonify, send_from_directory, make_response, g
 import os
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -56,7 +56,6 @@ try:
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
-    print("Transformers non installé - IA locale désactivée")
 # Nouveaux imports pour fonctionnalités avancées
 import zipfile
 import io
@@ -263,6 +262,12 @@ logger = logging.getLogger('ulc_icam')
 _data_lock = threading.Lock()
 
 # -----------------------------------------------------------------------
+# Chemin du fichier de données (configurable via DATA_FILE env var)
+# -----------------------------------------------------------------------
+DATA_FILE = os.environ.get('DATA_FILE', 'ulc_icam_data.json')
+DATA_FILE_TMP = DATA_FILE + '.tmp'
+
+# -----------------------------------------------------------------------
 # Créer le dossier uploads
 # -----------------------------------------------------------------------
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -336,7 +341,7 @@ def service_worker():
 def load_test_data():
     """Charge les données depuis le fichier JSON"""
     try:
-        with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
+        with open(DATA_FILE, 'r', encoding='utf-8') as f:
             data = json.load(f)
             return data
     except Exception as e:
@@ -355,13 +360,16 @@ def save_test_data():
                 'assignments': globals().get('assignments', []),
                 'submissions': globals().get('submissions', []),
                 'next_course_admin_id': globals().get('next_course_admin_id', 1),
-                'next_assignment_id': globals().get('next_assignment_id', 1)
+                'next_assignment_id': globals().get('next_assignment_id', 1),
+                'course_content': {str(k): v for k, v in globals().get('course_content', {}).items()},
+                'course_chapters': {str(k): v for k, v in globals().get('course_chapters', {}).items()},
+                'next_chapter_id': globals().get('next_chapter_id', 1),
             }
             # Écriture atomique via fichier temporaire
-            tmp_path = 'ulc_icam_data.json.tmp'
+            tmp_path = DATA_FILE_TMP
             with open(tmp_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
-            os.replace(tmp_path, 'ulc_icam_data.json')
+            os.replace(tmp_path, DATA_FILE)
         except Exception as e:
             logger.error(f"Erreur lors de l'enregistrement des données: {e}")
 
@@ -392,7 +400,7 @@ def _build_default_data():
 
 print("=== CHARGEMENT DES DONNÉES ===")
 try:
-    with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
+    with open(DATA_FILE, 'r', encoding='utf-8') as f:
         data = json.load(f)
     users                = data.get('users', {})
     admin_courses        = data.get('admin_courses', [])
@@ -402,6 +410,9 @@ try:
     submissions          = data.get('submissions', [])
     next_course_admin_id = data.get('next_course_admin_id', 1)
     next_assignment_id   = data.get('next_assignment_id', 1)
+    course_content       = {int(k): v for k, v in data.get('course_content', {}).items()}
+    course_chapters      = {int(k): v for k, v in data.get('course_chapters', {}).items()}
+    next_chapter_id      = data.get('next_chapter_id', 1)
 
     # Migrer les anciens mots de passe en clair vers werkzeug hash
     _migrated = 0
@@ -413,9 +424,9 @@ try:
     if _migrated:
         logger.info(f"Migration mots de passe : {_migrated} compte(s) migré(s) vers hash sécurisé")
         # Sauvegarder immédiatement la migration
-        with open('ulc_icam_data.json.tmp', 'w', encoding='utf-8') as _f:
+        with open(DATA_FILE_TMP, 'w', encoding='utf-8') as _f:
             json.dump(data, _f, ensure_ascii=False, indent=2)
-        os.replace('ulc_icam_data.json.tmp', 'ulc_icam_data.json')
+        os.replace(DATA_FILE_TMP, DATA_FILE)
 
     if not users:
         _default = _build_default_data()
@@ -436,9 +447,12 @@ except FileNotFoundError:
     submissions          = []
     next_course_admin_id = 1
     next_assignment_id   = 1
+    course_content       = {}
+    course_chapters      = {}
+    next_chapter_id      = 1
     # Créer le fichier tout de suite
     try:
-        with open('ulc_icam_data.json', 'w', encoding='utf-8') as _f:
+        with open(DATA_FILE, 'w', encoding='utf-8') as _f:
             json.dump(_default, _f, ensure_ascii=False, indent=2)
         logger.info(f"ulc_icam_data.json créé. Compte admin initial — "
                     f"identifiant: admin / mot de passe: {_DEFAULT_ADMIN_PASSWORD}")
@@ -456,6 +470,9 @@ except Exception as e:
     submissions          = []
     next_course_admin_id = 1
     next_assignment_id   = 1
+    course_content       = {}
+    course_chapters      = {}
+    next_chapter_id      = 1
 
 # Résultats de correction et plagiat
 correction_results = {}  # {submission_id: {'score': 85, 'feedback': 'Bon travail'}}
@@ -1687,7 +1704,7 @@ def upload_syllabus(course_id):
         return redirect(url_for('course_content_view', course_id=course_id))
     
     filename = secure_filename(f"syllabus_{course_id}_{file.filename}")
-    syllabus_path = os.path.join('uploads', 'syllabus')
+    syllabus_path = os.path.join(app.config['UPLOAD_FOLDER'], 'syllabus')
     os.makedirs(syllabus_path, exist_ok=True)
     file.save(os.path.join(syllabus_path, filename))
     
@@ -1706,7 +1723,7 @@ def download_syllabus(course_id, filename):
     if not filename:
         flash('Nom de fichier invalide')
         return redirect(url_for('dashboard'))
-    return send_from_directory(os.path.join('uploads', 'syllabus'), filename)
+    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], 'syllabus'), filename)
 
 @app.route('/teacher/update_course_description/<int:course_id>', methods=['POST'])
 def update_course_description(course_id):
@@ -1743,7 +1760,7 @@ def add_chapter(course_id):
             allowed_extensions = ['.pdf', '.ppt', '.pptx']
             if file and file.filename != '' and any(file.filename.lower().endswith(ext) for ext in allowed_extensions):
                 filename = secure_filename(f"chapter_{next_chapter_id}_{file.filename}")
-                doc_path = os.path.join('uploads', 'chapters')
+                doc_path = os.path.join(app.config['UPLOAD_FOLDER'], 'chapters')
                 os.makedirs(doc_path, exist_ok=True)
                 file.save(os.path.join(doc_path, filename))
                 
@@ -1856,7 +1873,7 @@ def upload_chapter_document(course_id, chapter_id):
         return redirect(url_for('chapter_detail', course_id=course_id, chapter_id=chapter_id))
     
     filename = secure_filename(f"chapter_{chapter_id}_{file.filename}")
-    doc_path = os.path.join('uploads', 'chapters')
+    doc_path = os.path.join(app.config['UPLOAD_FOLDER'], 'chapters')
     os.makedirs(doc_path, exist_ok=True)
     file.save(os.path.join(doc_path, filename))
     
@@ -1880,7 +1897,7 @@ def download_chapter_document(filename):
     if not filename:
         flash('Nom de fichier invalide')
         return redirect(url_for('dashboard'))
-    return send_from_directory(os.path.join('uploads', 'chapters'), filename)
+    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], 'chapters'), filename)
 
 @app.route('/admin/assignments')
 def admin_assignments():
@@ -1934,15 +1951,17 @@ def create_assignment():
     
     if request.method == 'POST':
         global next_assignment_id
-        
+        current_id = next_assignment_id
+        next_assignment_id += 1
+
         # Gestion des fichiers téléversés
         uploaded_files = []
         if 'files' in request.files:
             files = request.files.getlist('files')
             for file in files:
                 if file and file.filename != '':
-                    filename = secure_filename(f"assignment_{next_assignment_id}_{file.filename}")
-                    file_path = os.path.join('uploads', 'assignments')
+                    filename = secure_filename(f"assignment_{current_id}_{file.filename}")
+                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'assignments')
                     os.makedirs(file_path, exist_ok=True)
                     file.save(os.path.join(file_path, filename))
                     uploaded_files.append(filename)
@@ -1974,8 +1993,8 @@ def create_assignment():
                 course_name = matched_course.get('name', '')
 
         assignment = {
-            'id': next_assignment_id,
-            'title': request.form['title'],
+            'id': current_id,
+            'title': request.form.get('title', '').strip(),
             'description': request.form['description'],
             'due_date': request.form['due_date'],
             'course_id': course_id_value,
@@ -1997,12 +2016,11 @@ def create_assignment():
         }
         
         # Générer les groupes automatiquement si nécessaire
-        if assignment['is_group_work'] and assignment['group_formation'] == 'auto' and assignment['course_id'] is not None:
-            generate_automatic_groups(next_assignment_id, assignment['course_id'], assignment['group_size'])
-        
+        if assignment.get('is_group_work') and assignment.get('group_formation') == 'auto' and assignment.get('course_id') is not None:
+            generate_automatic_groups(current_id, assignment.get('course_id'), assignment.get('group_size', 2))
+
         assignments.append(assignment)
         save_test_data()
-        next_assignment_id += 1
         flash('Devoir créé avec succès')
         return redirect(url_for('teacher_assignments'))
     
@@ -2030,7 +2048,7 @@ def download_assignment_file(filename):
     if not filename:
         flash('Nom de fichier invalide')
         return redirect(url_for('dashboard'))
-    return send_from_directory(os.path.join('uploads', 'assignments'), filename)
+    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], 'assignments'), filename)
 
 @app.route('/offline.html')
 def offline():
@@ -2788,6 +2806,7 @@ def process_submission_async(file_path, assignment, submission_id):
 
 def generate_automatic_groups(assignment_id, course_id, group_size):
     """Générer automatiquement des groupes pour un devoir"""
+    global group_assignments, student_groups
     if not course_id:
         return
     
@@ -2846,9 +2865,10 @@ def join_group(assignment_id):
         return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
+        global group_assignments, student_groups
         selected_students = request.form.getlist('group_members')
         selected_students.append(session['user'])  # Ajouter l'étudiant actuel
-        
+
         # Créer le groupe
         if assignment_id not in group_assignments:
             group_assignments[assignment_id] = {'groups': [], 'type': 'manual'}
@@ -2865,7 +2885,7 @@ def join_group(assignment_id):
         return redirect(url_for('dashboard'))
     
     # Récupérer les étudiants du cours
-    course_students = get_course_students(assignment['course_id']) if assignment.get('course_id') else []
+    course_students = get_course_students(assignment.get('course_id')) if assignment.get('course_id') else []
     
     # Exclure les étudiants déjà dans un groupe
     available_students = []
@@ -2887,7 +2907,7 @@ def manage_groups(assignment_id):
         return redirect(url_for('teacher_assignments'))
     
     groups_info = group_assignments.get(assignment_id, {'groups': [], 'type': 'manual'})
-    course_students = get_course_students(assignment['course_id']) if assignment.get('course_id') else []
+    course_students = get_course_students(assignment.get('course_id')) if assignment.get('course_id') else []
     
     return render_template('manage_groups.html', assignment=assignment, groups_info=groups_info, course_students=course_students, student_groups=student_groups, users=users)
 
@@ -3087,22 +3107,34 @@ def download_all_submissions(assignment_id):
     files_data = []
     
     for sub in assignment_submissions:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], sub['filename'])
+        sub_filename = sub.get('filename', '')
+        if not sub_filename:
+            continue
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], sub_filename)
+        if not os.path.exists(file_path):
+            # Chercher aussi dans les sous-dossiers
+            for sub_dir in ('submissions', 'code_submissions'):
+                alt = os.path.join(app.config['UPLOAD_FOLDER'], sub_dir, sub_filename)
+                if os.path.exists(alt):
+                    file_path = alt
+                    break
         if os.path.exists(file_path):
-            student_name = users.get(sub['student'], {}).get('name', sub['student'])
-            archive_name = f"{student_name}_{sub['filename']}"
+            student_key = sub.get('student', 'unknown')
+            student_name = users.get(student_key, {}).get('name', student_key)
+            archive_name = f"{student_name}_{sub_filename}"
             files_data.append((file_path, archive_name))
-    
+
     if not files_data:
         flash('Aucune soumission à télécharger')
         return redirect(url_for('assignment_results', assignment_id=assignment_id))
-    
+
     # Créer l'archive ZIP
-    zip_buffer = create_zip_archive(files_data, f"soumissions_{assignment['title']}")
-    
+    assignment_title = assignment.get('title', f'devoir_{assignment_id}')
+    zip_buffer = create_zip_archive(files_data, f"soumissions_{assignment_title}")
+
     response = make_response(zip_buffer.getvalue())
     response.headers['Content-Type'] = 'application/zip'
-    response.headers['Content-Disposition'] = f'attachment; filename="soumissions_{assignment["title"]}.zip"'
+    response.headers['Content-Disposition'] = f'attachment; filename="soumissions_{assignment_title}.zip"'
     
     return response
 
@@ -3459,6 +3491,96 @@ def test_submit():
             'success': False,
             'error': str(e)
         })
+
+@app.route('/admin/seed', methods=['GET', 'POST'])
+def admin_seed():
+    """Injecte les données de démonstration (une seule fois, admin uniquement)."""
+    if 'user' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+
+    global users, admin_courses, course_assignments, course_enrollments, assignments, submissions, course_content, course_chapters, next_chapter_id
+
+    # Vérifier si les données existent déjà
+    already_seeded = (
+        len(users) > 1 or
+        len(admin_courses) > 0 or
+        len(assignments) > 0
+    )
+
+    if request.method == 'GET':
+        return render_template_string('''
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<title>Seed données démo</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: 80px auto; padding: 20px; }
+  .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+  .danger  { background: #f8d7da; border: 1px solid #dc3545; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+  .btn { padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; }
+  .btn-primary { background: #0d6efd; color: white; }
+  .btn-secondary { background: #6c757d; color: white; text-decoration: none; padding: 10px 24px; border-radius: 4px; }
+</style></head><body>
+<h2>Injection données de démonstration</h2>
+{% if already_seeded %}
+<div class="danger">
+  <strong>Attention :</strong> Des données existent déjà ({{ nb_users }} utilisateurs, {{ nb_courses }} cours).
+  Cliquer sur "Confirmer" va <strong>écraser toutes les données actuelles</strong>.
+</div>
+{% else %}
+<div class="warning">
+  Cela va créer : 1 admin, 5 professeurs, 20 étudiants, 8 cours, 10 devoirs, 29 soumissions.
+</div>
+{% endif %}
+<form method="POST">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="btn btn-primary">Confirmer l\'injection</button>
+  <a href="{{ url_for(\'admin_users\') }}" class="btn-secondary" style="margin-left:10px;">Annuler</a>
+</form>
+</body></html>
+        ''', already_seeded=already_seeded, nb_users=len(users), nb_courses=len(admin_courses))
+
+    # POST — exécuter le seed
+    try:
+        import importlib.util, sys as _sys
+        seed_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'seed_data.py')
+
+        if not os.path.exists(seed_path):
+            flash('Fichier seed_data.py introuvable.', 'danger')
+            return redirect(url_for('admin_users'))
+
+        spec = importlib.util.spec_from_file_location('seed_data', seed_path)
+        seed_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(seed_module)
+
+        # Recharger les données en mémoire depuis le fichier JSON mis à jour
+        with _data_lock:
+            with open(DATA_FILE, 'r', encoding='utf-8') as f:
+                fresh = json.load(f)
+            users.clear();               users.update(fresh.get('users', {}))
+            admin_courses.clear();       admin_courses.extend(fresh.get('admin_courses', []))
+            course_assignments.clear();  course_assignments.update(fresh.get('course_assignments', {}))
+            course_enrollments.clear();  course_enrollments.update(fresh.get('course_enrollments', {}))
+            assignments.clear();         assignments.extend(fresh.get('assignments', []))
+            submissions.clear();         submissions.extend(fresh.get('submissions', []))
+            global next_course_admin_id, next_assignment_id
+            next_course_admin_id = fresh.get('next_course_admin_id', len(admin_courses) + 1)
+            next_assignment_id   = fresh.get('next_assignment_id', len(assignments) + 1)
+            course_content.clear();  course_content.update({int(k): v for k, v in fresh.get('course_content', {}).items()})
+            course_chapters.clear(); course_chapters.update({int(k): v for k, v in fresh.get('course_chapters', {}).items()})
+            next_chapter_id = fresh.get('next_chapter_id', 1)
+
+        flash(
+            f'Données de démo injectées avec succès : {len(users)} utilisateurs, '
+            f'{len(admin_courses)} cours, {len(assignments)} devoirs, {len(submissions)} soumissions.',
+            'success'
+        )
+        app.logger.info('Seed exécuté par %s', session.get('user'))
+
+    except Exception as e:
+        app.logger.error('Erreur seed: %s', e, exc_info=True)
+        flash(f'Erreur lors de l\'injection : {e}', 'danger')
+
+    return redirect(url_for('admin_users'))
+
 
 if __name__ == '__main__':
     import os
