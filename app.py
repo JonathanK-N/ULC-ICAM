@@ -1704,7 +1704,7 @@ def upload_syllabus(course_id):
         return redirect(url_for('course_content_view', course_id=course_id))
     
     filename = secure_filename(f"syllabus_{course_id}_{file.filename}")
-    syllabus_path = os.path.join('uploads', 'syllabus')
+    syllabus_path = os.path.join(app.config['UPLOAD_FOLDER'], 'syllabus')
     os.makedirs(syllabus_path, exist_ok=True)
     file.save(os.path.join(syllabus_path, filename))
     
@@ -1723,7 +1723,7 @@ def download_syllabus(course_id, filename):
     if not filename:
         flash('Nom de fichier invalide')
         return redirect(url_for('dashboard'))
-    return send_from_directory(os.path.join('uploads', 'syllabus'), filename)
+    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], 'syllabus'), filename)
 
 @app.route('/teacher/update_course_description/<int:course_id>', methods=['POST'])
 def update_course_description(course_id):
@@ -1760,7 +1760,7 @@ def add_chapter(course_id):
             allowed_extensions = ['.pdf', '.ppt', '.pptx']
             if file and file.filename != '' and any(file.filename.lower().endswith(ext) for ext in allowed_extensions):
                 filename = secure_filename(f"chapter_{next_chapter_id}_{file.filename}")
-                doc_path = os.path.join('uploads', 'chapters')
+                doc_path = os.path.join(app.config['UPLOAD_FOLDER'], 'chapters')
                 os.makedirs(doc_path, exist_ok=True)
                 file.save(os.path.join(doc_path, filename))
                 
@@ -1873,7 +1873,7 @@ def upload_chapter_document(course_id, chapter_id):
         return redirect(url_for('chapter_detail', course_id=course_id, chapter_id=chapter_id))
     
     filename = secure_filename(f"chapter_{chapter_id}_{file.filename}")
-    doc_path = os.path.join('uploads', 'chapters')
+    doc_path = os.path.join(app.config['UPLOAD_FOLDER'], 'chapters')
     os.makedirs(doc_path, exist_ok=True)
     file.save(os.path.join(doc_path, filename))
     
@@ -1897,7 +1897,7 @@ def download_chapter_document(filename):
     if not filename:
         flash('Nom de fichier invalide')
         return redirect(url_for('dashboard'))
-    return send_from_directory(os.path.join('uploads', 'chapters'), filename)
+    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], 'chapters'), filename)
 
 @app.route('/admin/assignments')
 def admin_assignments():
@@ -1951,15 +1951,17 @@ def create_assignment():
     
     if request.method == 'POST':
         global next_assignment_id
-        
+        current_id = next_assignment_id
+        next_assignment_id += 1
+
         # Gestion des fichiers téléversés
         uploaded_files = []
         if 'files' in request.files:
             files = request.files.getlist('files')
             for file in files:
                 if file and file.filename != '':
-                    filename = secure_filename(f"assignment_{next_assignment_id}_{file.filename}")
-                    file_path = os.path.join('uploads', 'assignments')
+                    filename = secure_filename(f"assignment_{current_id}_{file.filename}")
+                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'assignments')
                     os.makedirs(file_path, exist_ok=True)
                     file.save(os.path.join(file_path, filename))
                     uploaded_files.append(filename)
@@ -1991,8 +1993,8 @@ def create_assignment():
                 course_name = matched_course.get('name', '')
 
         assignment = {
-            'id': next_assignment_id,
-            'title': request.form['title'],
+            'id': current_id,
+            'title': request.form.get('title', '').strip(),
             'description': request.form['description'],
             'due_date': request.form['due_date'],
             'course_id': course_id_value,
@@ -2014,12 +2016,11 @@ def create_assignment():
         }
         
         # Générer les groupes automatiquement si nécessaire
-        if assignment['is_group_work'] and assignment['group_formation'] == 'auto' and assignment['course_id'] is not None:
-            generate_automatic_groups(next_assignment_id, assignment['course_id'], assignment['group_size'])
-        
+        if assignment.get('is_group_work') and assignment.get('group_formation') == 'auto' and assignment.get('course_id') is not None:
+            generate_automatic_groups(current_id, assignment.get('course_id'), assignment.get('group_size', 2))
+
         assignments.append(assignment)
         save_test_data()
-        next_assignment_id += 1
         flash('Devoir créé avec succès')
         return redirect(url_for('teacher_assignments'))
     
@@ -2047,7 +2048,7 @@ def download_assignment_file(filename):
     if not filename:
         flash('Nom de fichier invalide')
         return redirect(url_for('dashboard'))
-    return send_from_directory(os.path.join('uploads', 'assignments'), filename)
+    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], 'assignments'), filename)
 
 @app.route('/offline.html')
 def offline():
@@ -2805,6 +2806,7 @@ def process_submission_async(file_path, assignment, submission_id):
 
 def generate_automatic_groups(assignment_id, course_id, group_size):
     """Générer automatiquement des groupes pour un devoir"""
+    global group_assignments, student_groups
     if not course_id:
         return
     
@@ -2863,9 +2865,10 @@ def join_group(assignment_id):
         return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
+        global group_assignments, student_groups
         selected_students = request.form.getlist('group_members')
         selected_students.append(session['user'])  # Ajouter l'étudiant actuel
-        
+
         # Créer le groupe
         if assignment_id not in group_assignments:
             group_assignments[assignment_id] = {'groups': [], 'type': 'manual'}
@@ -2882,7 +2885,7 @@ def join_group(assignment_id):
         return redirect(url_for('dashboard'))
     
     # Récupérer les étudiants du cours
-    course_students = get_course_students(assignment['course_id']) if assignment.get('course_id') else []
+    course_students = get_course_students(assignment.get('course_id')) if assignment.get('course_id') else []
     
     # Exclure les étudiants déjà dans un groupe
     available_students = []
@@ -2904,7 +2907,7 @@ def manage_groups(assignment_id):
         return redirect(url_for('teacher_assignments'))
     
     groups_info = group_assignments.get(assignment_id, {'groups': [], 'type': 'manual'})
-    course_students = get_course_students(assignment['course_id']) if assignment.get('course_id') else []
+    course_students = get_course_students(assignment.get('course_id')) if assignment.get('course_id') else []
     
     return render_template('manage_groups.html', assignment=assignment, groups_info=groups_info, course_students=course_students, student_groups=student_groups, users=users)
 
@@ -3104,22 +3107,34 @@ def download_all_submissions(assignment_id):
     files_data = []
     
     for sub in assignment_submissions:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], sub['filename'])
+        sub_filename = sub.get('filename', '')
+        if not sub_filename:
+            continue
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], sub_filename)
+        if not os.path.exists(file_path):
+            # Chercher aussi dans les sous-dossiers
+            for sub_dir in ('submissions', 'code_submissions'):
+                alt = os.path.join(app.config['UPLOAD_FOLDER'], sub_dir, sub_filename)
+                if os.path.exists(alt):
+                    file_path = alt
+                    break
         if os.path.exists(file_path):
-            student_name = users.get(sub['student'], {}).get('name', sub['student'])
-            archive_name = f"{student_name}_{sub['filename']}"
+            student_key = sub.get('student', 'unknown')
+            student_name = users.get(student_key, {}).get('name', student_key)
+            archive_name = f"{student_name}_{sub_filename}"
             files_data.append((file_path, archive_name))
-    
+
     if not files_data:
         flash('Aucune soumission à télécharger')
         return redirect(url_for('assignment_results', assignment_id=assignment_id))
-    
+
     # Créer l'archive ZIP
-    zip_buffer = create_zip_archive(files_data, f"soumissions_{assignment['title']}")
-    
+    assignment_title = assignment.get('title', f'devoir_{assignment_id}')
+    zip_buffer = create_zip_archive(files_data, f"soumissions_{assignment_title}")
+
     response = make_response(zip_buffer.getvalue())
     response.headers['Content-Type'] = 'application/zip'
-    response.headers['Content-Disposition'] = f'attachment; filename="soumissions_{assignment["title"]}.zip"'
+    response.headers['Content-Disposition'] = f'attachment; filename="soumissions_{assignment_title}.zip"'
     
     return response
 
