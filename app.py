@@ -360,7 +360,10 @@ def save_test_data():
                 'assignments': globals().get('assignments', []),
                 'submissions': globals().get('submissions', []),
                 'next_course_admin_id': globals().get('next_course_admin_id', 1),
-                'next_assignment_id': globals().get('next_assignment_id', 1)
+                'next_assignment_id': globals().get('next_assignment_id', 1),
+                'course_content': {str(k): v for k, v in globals().get('course_content', {}).items()},
+                'course_chapters': {str(k): v for k, v in globals().get('course_chapters', {}).items()},
+                'next_chapter_id': globals().get('next_chapter_id', 1),
             }
             # Écriture atomique via fichier temporaire
             tmp_path = DATA_FILE_TMP
@@ -407,6 +410,9 @@ try:
     submissions          = data.get('submissions', [])
     next_course_admin_id = data.get('next_course_admin_id', 1)
     next_assignment_id   = data.get('next_assignment_id', 1)
+    course_content       = {int(k): v for k, v in data.get('course_content', {}).items()}
+    course_chapters      = {int(k): v for k, v in data.get('course_chapters', {}).items()}
+    next_chapter_id      = data.get('next_chapter_id', 1)
 
     # Migrer les anciens mots de passe en clair vers werkzeug hash
     _migrated = 0
@@ -441,6 +447,9 @@ except FileNotFoundError:
     submissions          = []
     next_course_admin_id = 1
     next_assignment_id   = 1
+    course_content       = {}
+    course_chapters      = {}
+    next_chapter_id      = 1
     # Créer le fichier tout de suite
     try:
         with open(DATA_FILE, 'w', encoding='utf-8') as _f:
@@ -461,6 +470,9 @@ except Exception as e:
     submissions          = []
     next_course_admin_id = 1
     next_assignment_id   = 1
+    course_content       = {}
+    course_chapters      = {}
+    next_chapter_id      = 1
 
 # Résultats de correction et plagiat
 correction_results = {}  # {submission_id: {'score': 85, 'feedback': 'Bon travail'}}
@@ -3471,7 +3483,7 @@ def admin_seed():
     if 'user' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
 
-    global users, admin_courses, course_assignments, course_enrollments, assignments, submissions
+    global users, admin_courses, course_assignments, course_enrollments, assignments, submissions, course_content, course_chapters, next_chapter_id
 
     # Vérifier si les données existent déjà
     already_seeded = (
@@ -3537,6 +3549,9 @@ def admin_seed():
             global next_course_admin_id, next_assignment_id
             next_course_admin_id = fresh.get('next_course_admin_id', len(admin_courses) + 1)
             next_assignment_id   = fresh.get('next_assignment_id', len(assignments) + 1)
+            course_content.clear();  course_content.update({int(k): v for k, v in fresh.get('course_content', {}).items()})
+            course_chapters.clear(); course_chapters.update({int(k): v for k, v in fresh.get('course_chapters', {}).items()})
+            next_chapter_id = fresh.get('next_chapter_id', 1)
 
         flash(
             f'Données de démo injectées avec succès : {len(users)} utilisateurs, '

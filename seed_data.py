@@ -1230,6 +1230,279 @@ for sub in submissions_list:
     if sid in plagiarism_results_dict:
         sub['plagiarism']  = plagiarism_results_dict[sid]
 
+# ── Contenu des cours (description + documents) ──────────────────────────────
+COURSE_CONTENT = {
+    1: {'description': 'Étude des algorithmes fondamentaux et des structures de données classiques. Ce cours couvre la complexité algorithmique, les structures linéaires (listes, piles, files), les arbres binaires et les graphes.',
+        'documents': [
+            {'name': 'Notes de cours — Complexité', 'filename': 'asd_chapitre1_complexite.pdf', 'type': 'pdf'},
+            {'name': 'Syllabus complet ASD', 'filename': 'syllabus_info_l2_asd.docx', 'type': 'docx'},
+        ]},
+    2: {'description': 'Introduction à la programmation impérative et orientée objet avec Python 3. Variables, fonctions, classes, fichiers et bibliothèques standard.',
+        'documents': [
+            {'name': 'Notes de cours — Bases Python', 'filename': 'python_chapitre1_bases.pdf', 'type': 'pdf'},
+        ]},
+    3: {'description': 'Modélisation relationnelle, SQL avancé, transactions et normalisation. Création de schémas, requêtes complexes, vues, procédures stockées.',
+        'documents': []},
+    4: {'description': 'Architecture des réseaux, protocoles TCP/IP, routage et sécurité réseau. Modèle OSI, adressage IP, routage statique et dynamique (OSPF, BGP).',
+        'documents': []},
+    5: {'description': 'Analyse des circuits AC/DC, amplificateurs opérationnels et filtres. Lois de Kirchhoff, théorème de Thévenin, AO idéal et réel.',
+        'documents': [
+            {'name': 'Enoncé TP — Amplificateur AO', 'filename': 'devoir_circuits_ao.pdf', 'type': 'pdf'},
+        ]},
+    6: {'description': 'Algèbre linéaire, calcul différentiel et intégral appliqués à l\'ingénierie. Matrices, valeurs propres, dérivées partielles, intégrales multiples.',
+        'documents': []},
+    7: {'description': 'Statique et dynamique des fluides, équations de Bernoulli, turbulence. Écoulements en conduite, pertes de charge, pompes et turbines.',
+        'documents': []},
+    8: {'description': 'Propriétés électroniques des semiconducteurs, jonctions PN, transistors bipolaires. Bande interdite, dopage, caractéristique I-V, transistors NPN/PNP.',
+        'documents': []},
+}
+
+# ── Chapitres des cours ────────────────────────────────────────────────────────
+_chap_id = 1
+COURSE_CHAPTERS = {}
+
+def _ch(title, description, content, documents=None, exercises=None):
+    global _chap_id
+    ch = {
+        'id': _chap_id,
+        'title': title,
+        'description': description,
+        'content': content,
+        'documents': documents or [],
+        'exercises': exercises or [],
+    }
+    _chap_id += 1
+    return ch
+
+COURSE_CHAPTERS[1] = [  # ASD
+    _ch('Complexité algorithmique',
+        'Notation O, Omega, Theta. Analyse des algorithmes récursifs.',
+        'La complexité algorithmique mesure les ressources (temps, mémoire) nécessaires à un algorithme en fonction de la taille des données d\'entrée.\n\n'
+        '**Notation asymptotique :**\n'
+        '- O(n) — borne supérieure (pire cas)\n'
+        '- Ω(n) — borne inférieure (meilleur cas)\n'
+        '- Θ(n) — borne exacte (cas moyen)\n\n'
+        '**Complexités courantes :**\n'
+        '- O(1) : accès tableau, opérations simples\n'
+        '- O(log n) : recherche binaire\n'
+        '- O(n) : parcours linéaire\n'
+        '- O(n log n) : tri rapide, tri fusion\n'
+        '- O(n²) : tri bulle, tri insertion\n'
+        '- O(2ⁿ) : algorithmes récursifs exponentiels',
+        documents=[{'name': 'Notes complexité', 'filename': 'asd_chapitre1_complexite.pdf', 'type': 'pdf'}],
+        exercises=[
+            {'question': 'Quelle est la complexité de la recherche binaire ?', 'answer': 'O(log n)'},
+            {'question': 'Donnez un algorithme de complexité O(n²).', 'answer': 'Tri par sélection, tri bulle, tri insertion.'},
+        ]),
+    _ch('Arbres binaires et BST',
+        'Arbres binaires de recherche, insertion, suppression, parcours.',
+        'Un arbre binaire de recherche (BST) est une structure de données où chaque nœud a au plus deux enfants.\n\n'
+        '**Propriété BST :** Pour tout nœud N :\n'
+        '- Tous les nœuds du sous-arbre gauche ont une valeur < N\n'
+        '- Tous les nœuds du sous-arbre droit ont une valeur > N\n\n'
+        '**Opérations :**\n'
+        '- Insertion : O(h) où h est la hauteur\n'
+        '- Recherche : O(h)\n'
+        '- Suppression : O(h)\n\n'
+        '**Parcours :**\n'
+        '- Infixe (in-order) : donne les valeurs triées\n'
+        '- Préfixe (pre-order) : racine → gauche → droite\n'
+        '- Suffixe (post-order) : gauche → droite → racine',
+        documents=[{'name': 'Présentation arbres', 'filename': 'asd_chapitre2_arbres.pptx', 'type': 'pptx'}],
+        exercises=[
+            {'question': 'Insérer les valeurs 5, 3, 7, 1, 4 dans un BST. Dessiner l\'arbre résultant.', 'answer': 'Racine=5, gauche=3(1,4), droite=7'},
+        ]),
+    _ch('Graphes et algorithmes',
+        'Représentation des graphes, BFS, DFS, plus courts chemins.',
+        'Un graphe G = (V, E) est composé d\'un ensemble de sommets V et d\'arêtes E.\n\n'
+        '**Types de graphes :**\n'
+        '- Orienté / non orienté\n'
+        '- Pondéré / non pondéré\n'
+        '- Connexe / non connexe\n\n'
+        '**Représentations :**\n'
+        '- Matrice d\'adjacence : O(V²) espace\n'
+        '- Liste d\'adjacence : O(V+E) espace\n\n'
+        '**Algorithmes de parcours :**\n'
+        '- BFS (parcours en largeur) : file FIFO, O(V+E)\n'
+        '- DFS (parcours en profondeur) : pile LIFO/récursif, O(V+E)\n\n'
+        '**Plus courts chemins :**\n'
+        '- Dijkstra : graphes pondérés positifs, O((V+E) log V)\n'
+        '- Bellman-Ford : gère les poids négatifs, O(VE)',
+        documents=[{'name': 'Cours graphes', 'filename': 'asd_chapitre3_graphes.docx', 'type': 'docx'}],
+        exercises=[
+            {'question': 'Quelle est la différence entre BFS et DFS ?', 'answer': 'BFS utilise une file (exploration niveau par niveau), DFS utilise une pile (exploration en profondeur).'},
+        ]),
+]
+
+COURSE_CHAPTERS[2] = [  # Python
+    _ch('Bases de Python',
+        'Variables, types, opérateurs, structures de contrôle.',
+        'Python est un langage interprété, dynamiquement typé, à indentation significative.\n\n'
+        '**Types de base :**\n'
+        '- int : entiers (42, -5, 0)\n'
+        '- float : décimaux (3.14, -2.7)\n'
+        '- str : chaînes ("bonjour", \'monde\')\n'
+        '- bool : True / False\n'
+        '- list : listes mutables [1, 2, 3]\n'
+        '- dict : dictionnaires {"clé": valeur}\n\n'
+        '**Structures de contrôle :**\n'
+        '```python\n'
+        'if condition:\n'
+        '    ...\n'
+        'elif autre:\n'
+        '    ...\n'
+        'else:\n'
+        '    ...\n\n'
+        'for i in range(10):\n'
+        '    print(i)\n\n'
+        'while condition:\n'
+        '    ...\n'
+        '```',
+        documents=[{'name': 'Notes Python bases', 'filename': 'python_chapitre1_bases.pdf', 'type': 'pdf'}],
+        exercises=[
+            {'question': 'Écrire une fonction qui retourne le factoriel de n.', 'answer': 'def fact(n): return 1 if n<=1 else n*fact(n-1)'},
+        ]),
+    _ch('Programmation orientée objet',
+        'Classes, objets, héritage, encapsulation, polymorphisme.',
+        'La POO organise le code autour d\'objets combinant données (attributs) et comportements (méthodes).\n\n'
+        '**Concepts fondamentaux :**\n'
+        '- **Encapsulation** : regrouper données et méthodes dans une classe\n'
+        '- **Héritage** : une classe enfant hérite des attributs/méthodes du parent\n'
+        '- **Polymorphisme** : même interface, comportements différents\n\n'
+        '```python\n'
+        'class Animal:\n'
+        '    def __init__(self, nom):\n'
+        '        self.nom = nom\n'
+        '    def parler(self):\n'
+        '        raise NotImplementedError\n\n'
+        'class Chien(Animal):\n'
+        '    def parler(self):\n'
+        '        return f"{self.nom} dit: Wouf!"\n'
+        '```',
+        exercises=[
+            {'question': 'Créer une classe Rectangle avec largeur, hauteur, et méthodes aire() et perimetre().', 'answer': 'class Rectangle:\n  def __init__(self, l, h): self.l=l; self.h=h\n  def aire(self): return self.l*self.h\n  def perimetre(self): return 2*(self.l+self.h)'},
+        ]),
+]
+
+COURSE_CHAPTERS[3] = [  # BDD
+    _ch('Modèle relationnel',
+        'Tables, clés primaires, clés étrangères, contraintes d\'intégrité.',
+        'Le modèle relationnel représente les données sous forme de tables (relations).\n\n'
+        '**Concepts :**\n'
+        '- **Table (Relation)** : ensemble de lignes (tuples) et colonnes (attributs)\n'
+        '- **Clé primaire (PK)** : identifiant unique d\'une ligne\n'
+        '- **Clé étrangère (FK)** : référence vers la PK d\'une autre table\n'
+        '- **Contrainte NOT NULL** : l\'attribut ne peut pas être nul\n'
+        '- **Contrainte UNIQUE** : pas de doublons dans la colonne\n\n'
+        '**Normalisation :**\n'
+        '- 1NF : attributs atomiques, pas de répétitions\n'
+        '- 2NF : 1NF + dépendances fonctionnelles totales\n'
+        '- 3NF : 2NF + pas de dépendances transitives\n'
+        '- BCNF : forme normale de Boyce-Codd',
+        documents=[{'name': 'Intro BDD', 'filename': 'bdd_chapitre1_introduction.pptx', 'type': 'pptx'}]),
+    _ch('SQL — Requêtes avancées',
+        'SELECT, JOIN, sous-requêtes, GROUP BY, fonctions d\'agrégation.',
+        '**Requêtes de base :**\n'
+        '```sql\n'
+        'SELECT colonne1, colonne2\n'
+        'FROM table\n'
+        'WHERE condition\n'
+        'ORDER BY colonne DESC;\n'
+        '```\n\n'
+        '**Jointures :**\n'
+        '```sql\n'
+        '-- INNER JOIN : lignes correspondantes des deux tables\n'
+        'SELECT e.nom, c.titre\n'
+        'FROM etudiants e\n'
+        'INNER JOIN cours c ON e.cours_id = c.id;\n\n'
+        '-- LEFT JOIN : toutes les lignes de gauche\n'
+        'SELECT e.nom, c.titre\n'
+        'FROM etudiants e\n'
+        'LEFT JOIN cours c ON e.cours_id = c.id;\n'
+        '```\n\n'
+        '**Agrégation :**\n'
+        '```sql\n'
+        'SELECT departement, COUNT(*), AVG(note)\n'
+        'FROM etudiants\n'
+        'GROUP BY departement\n'
+        'HAVING AVG(note) > 12;\n'
+        '```'),
+]
+
+COURSE_CHAPTERS[5] = [  # Circuits
+    _ch('Amplificateurs opérationnels',
+        'AO idéal, montages inverseur et non-inverseur, comparateurs.',
+        'L\'amplificateur opérationnel (AO) est un circuit intégré à deux entrées différentielles.\n\n'
+        '**Caractéristiques de l\'AO idéal :**\n'
+        '- Gain en boucle ouverte : A → ∞\n'
+        '- Impédance d\'entrée : Zin → ∞\n'
+        '- Impédance de sortie : Zout → 0\n'
+        '- Bande passante : infinie\n\n'
+        '**Montage inverseur :**\n'
+        '- Gain : Av = -R2/R1\n'
+        '- Déphasage de 180°\n\n'
+        '**Montage non-inverseur :**\n'
+        '- Gain : Av = 1 + R2/R1\n'
+        '- Pas de déphasage',
+        documents=[{'name': 'Présentation AO', 'filename': 'circuits_chapitre1_ao.pptx', 'type': 'pptx'}],
+        exercises=[
+            {'question': 'Calculer le gain d\'un montage inverseur avec R1=10kΩ et R2=47kΩ.', 'answer': 'Av = -47/10 = -4.7'},
+        ]),
+]
+
+COURSE_CHAPTERS[6] = [  # Maths
+    _ch('Algèbre linéaire',
+        'Matrices, déterminants, valeurs propres, vecteurs propres.',
+        '**Opérations sur les matrices :**\n'
+        '- Addition : (A+B)ij = Aij + Bij\n'
+        '- Multiplication : (AB)ij = Σk Aik * Bkj\n'
+        '- Transposée : (Aᵀ)ij = Aji\n'
+        '- Inverse : A * A⁻¹ = I (si det(A) ≠ 0)\n\n'
+        '**Valeurs propres λ :**\n'
+        'det(A - λI) = 0\n\n'
+        '**Applications :**\n'
+        '- Résolution de systèmes linéaires (Ax = b)\n'
+        '- Analyse des vibrations en mécanique\n'
+        '- Compression d\'images (SVD)\n'
+        '- PageRank de Google'),
+]
+
+COURSE_CHAPTERS[7] = [  # Mécaflu
+    _ch('Équation de Bernoulli',
+        'Conservation de l\'énergie, pression, vitesse, altitude.',
+        'L\'équation de Bernoulli exprime la conservation de l\'énergie dans un fluide parfait en écoulement stationnaire.\n\n'
+        '**Formule :**\n'
+        'P + ½ρv² + ρgh = constante\n\n'
+        'Où :\n'
+        '- P : pression statique (Pa)\n'
+        '- ρ : masse volumique (kg/m³)\n'
+        '- v : vitesse du fluide (m/s)\n'
+        '- g : accélération gravitationnelle (9.81 m/s²)\n'
+        '- h : hauteur (m)\n\n'
+        '**Applications :**\n'
+        '- Effet Venturi : accélération dans un rétrécissement\n'
+        '- Portance des ailes d\'avion\n'
+        '- Mesure de débit (tube de Pitot)'),
+]
+
+COURSE_CHAPTERS[8] = [  # Physique semi-conducteurs
+    _ch('Jonction PN',
+        'Dopage, zone de déplétion, polarisation directe et inverse.',
+        'Une jonction PN est formée en mettant en contact un semiconducteur de type P et un de type N.\n\n'
+        '**Types de dopage :**\n'
+        '- **Type N** : ajout de donneurs (phosphore, arsenic) → excès d\'électrons\n'
+        '- **Type P** : ajout d\'accepteurs (bore, aluminium) → excès de trous\n\n'
+        '**Zone de déplétion :**\n'
+        'À la jonction, les électrons et les trous se recombinent, créant une zone sans porteurs libres avec un champ électrique interne.\n\n'
+        '**Polarisation :**\n'
+        '- **Directe** : tension positive côté P → courant circule\n'
+        '- **Inverse** : tension négative côté P → courant bloqué (sauf claquage)\n\n'
+        '**Équation de Shockley :**\n'
+        'I = I₀(e^(V/VT) - 1) où VT ≈ 26mV à 300K'),
+]
+
+next_chapter_id_val = _chap_id
+
 data_final = {
     'users':               users_dict,
     'admin_courses':       COURSES,
@@ -1239,17 +1512,24 @@ data_final = {
     'submissions':         submissions_list,
     'next_course_admin_id': len(COURSES) + 1,
     'next_assignment_id':   len(ASSIGNMENTS) + 1,
+    'course_content':      {str(k): v for k, v in COURSE_CONTENT.items()},
+    'course_chapters':     {str(k): v for k, v in COURSE_CHAPTERS.items()},
+    'next_chapter_id':     next_chapter_id_val,
 }
 
-with open('ulc_icam_data.json', 'w', encoding='utf-8') as f:
+_data_file = os.environ.get('DATA_FILE', 'ulc_icam_data.json')
+with open(_data_file, 'w', encoding='utf-8') as f:
     json.dump(data_final, f, ensure_ascii=False, indent=2)
 
-print(f'\n✅ ulc_icam_data.json généré')
+total_chapters = sum(len(v) for v in COURSE_CHAPTERS.values())
+print(f'\n=== Assemblage du fichier JSON ===')
+print(f'ulc_icam_data.json généré')
 print(f'   Utilisateurs   : {len(users_dict)} ({len(PROFS)} profs, {len(ETUDIANTS)} étudiants, 1 admin)')
 print(f'   Cours          : {len(COURSES)}')
+print(f'   Chapitres      : {total_chapters} (dans {len(COURSE_CHAPTERS)} cours)')
 print(f'   Devoirs        : {len(ASSIGNMENTS)}')
 print(f'   Soumissions    : {len(submissions_list)}')
-print(f'   Inscriptions   : {sum(len(v) for v in COURSE_ENROLLMENTS.values())} (total étudiant×cours)')
+print(f'   Inscriptions   : {sum(len(v) for v in COURSE_ENROLLMENTS.values())} (total etudiant x cours)')
 
 # Compter les fichiers générés
 total_files = sum(
