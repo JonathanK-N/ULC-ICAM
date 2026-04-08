@@ -576,10 +576,7 @@ system_config = {
 
 # Les cours sont maintenant chargés depuis le fichier JSON ci-dessus
 
-# Contenu des cours par professeur
-course_content = {}  # {course_id: {'description': '', 'documents': [], 'chapters': []}}
-course_chapters = {}  # {course_id: [{id, title, description, content, exercises, documents}]}
-next_chapter_id = 1
+# course_content, course_chapters et next_chapter_id sont chargés depuis le JSON ci-dessus
 
 # Fonctions de notification email
 def send_email_notification(subject, recipients, html_body):
