@@ -1,151 +1,225 @@
-{% extends "base.html" %}
+{% extends "base_clean.html" %}
+{% block title %}Profil — {{ username }} — ULC-ICAM{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header text-center">
-                <h5><i class="fas fa-user"></i> Photo de profil</h5>
-            </div>
-            <div class="card-body text-center">
-                {% if user_data.get('photo') %}
-                    <img src="{{ url_for('static', filename='photos/' + user_data.photo) }}" 
-                         class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
-                {% else %}
-                    <div class="bg-secondary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
-                         style="width: 150px; height: 150px;">
-                        <i class="fas fa-user fa-4x text-white"></i>
-                    </div>
-                {% endif %}
-                
-                <form method="POST" action="{{ url_for('upload_photo', username=username) }}" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <input type="file" class="form-control form-control-sm" name="photo" accept="image/*">
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="fas fa-upload"></i> Mettre à jour
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5>
-                    <i class="fas fa-{% if user_data.role == 'student' %}user-graduate{% elif user_data.role == 'teacher' %}chalkboard-teacher{% else %}user-shield{% endif %}"></i>
-                    Profil de {{ username }}
-                </h5>
-                <div>
-                    {% if user_data.role == 'admin' %}
-                        <span class="badge bg-danger">Administrateur</span>
-                    {% elif user_data.role == 'teacher' %}
-                        <span class="badge bg-success">Enseignant</span>
-                    {% else %}
-                        <span class="badge bg-primary">Étudiant</span>
-                    {% endif %}
-                    <a href="{{ url_for('edit_user', username=username) }}" class="btn btn-warning btn-sm ms-2">
-                        <i class="fas fa-edit"></i> Modifier
-                    </a>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <table class="table table-borderless">
-                            <tr>
-                                <td><strong>Nom d'utilisateur:</strong></td>
-                                <td>{{ username }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>CIP:</strong></td>
-                                <td>{{ user_data.get('cip', 'N/A') }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Nom:</strong></td>
-                                <td>{{ user_data.get('nom', 'N/A') }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Post-nom:</strong></td>
-                                <td>{{ user_data.get('postnom', 'N/A') }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Prénom:</strong></td>
-                                <td>{{ user_data.get('prenom', 'N/A') }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Sexe:</strong></td>
-                                <td>{{ 'Masculin' if user_data.get('sexe') == 'M' else 'Féminin' if user_data.get('sexe') == 'F' else 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Date de naissance:</strong></td>
-                                <td>{{ user_data.get('date_naissance', 'N/A') }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <table class="table table-borderless">
-                            {% if user_data.role == 'student' %}
-                            <tr>
-                                <td><strong>Promotion:</strong></td>
-                                <td><span class="badge bg-info">{{ user_data.get('promotion', 'N/A') }}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Faculté:</strong></td>
-                                <td><span class="badge bg-secondary">{{ user_data.get('faculte', 'N/A') }}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Adresse:</strong></td>
-                                <td>{{ user_data.get('adresse', 'N/A') }}</td>
-                            </tr>
-                            {% elif user_data.role == 'teacher' %}
-                            <tr>
-                                <td><strong>Grade:</strong></td>
-                                <td><span class="badge bg-success">{{ user_data.get('grade', 'N/A') }}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Département:</strong></td>
-                                <td><span class="badge bg-secondary">{{ user_data.get('departement', 'N/A') }}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Bureau:</strong></td>
-                                <td>{{ user_data.get('bureau', 'N/A') }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Cours dispensés:</strong></td>
-                                <td>{{ user_data.get('cours_dispenses', 'N/A') }}</td>
-                            </tr>
-                            {% endif %}
-                            <tr>
-                                <td><strong>Téléphone:</strong></td>
-                                <td>{{ user_data.get('telephone', 'N/A') }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Email:</strong></td>
-                                <td>{{ user_data.get('email', 'N/A') }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Changement mot de passe:</strong></td>
-                                <td>
-                                    {% if user_data.get('must_change_password') %}
-                                        <span class="badge bg-warning">Requis</span>
-                                    {% else %}
-                                        <span class="badge bg-success">Effectué</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="mt-4">
-    <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Retour à la liste
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>Profil utilisateur</h1>
+    <p>{{ username }}</p>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <a href="{{ url_for('edit_user', username=username) }}" class="btn btn-primary">
+      <i class="fas fa-edit"></i> Modifier
     </a>
+    <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left"></i> Retour
+    </a>
+  </div>
 </div>
+
+<div style="display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:start;">
+
+  <!-- ── Carte photo ── -->
+  <div class="card" style="text-align:center;">
+    <div style="padding:32px 24px 24px;">
+
+      <!-- Avatar -->
+      {% if user_data.get('photo') %}
+        <img src="{{ url_for('static', filename='photos/' + user_data.photo) }}"
+             style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid var(--gray-200);margin-bottom:16px;">
+      {% else %}
+        <div style="width:120px;height:120px;border-radius:50%;background:var(--gray-100);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:4px solid var(--gray-200);">
+          <i class="fas fa-user" style="font-size:2.8rem;color:var(--gray-400);"></i>
+        </div>
+      {% endif %}
+
+      <!-- Nom complet -->
+      <div style="font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:6px;">
+        {{ user_data.get('prenom', '') }} {{ user_data.get('nom', username) }}
+      </div>
+      <div style="font-size:.82rem;color:var(--gray-400);margin-bottom:16px;">{{ username }}</div>
+
+      <!-- Badge rôle -->
+      {% if user_data.role == 'admin' %}
+        <span class="badge" style="background:#fee2e2;color:#dc2626;padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:600;">
+          <i class="fas fa-shield-alt"></i> Administrateur
+        </span>
+      {% elif user_data.role == 'teacher' %}
+        <span class="badge" style="background:#d1fae5;color:#059669;padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:600;">
+          <i class="fas fa-chalkboard-teacher"></i> Enseignant
+        </span>
+      {% else %}
+        <span class="badge" style="background:#dbeafe;color:#1d4ed8;padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:600;">
+          <i class="fas fa-user-graduate"></i> Étudiant
+        </span>
+      {% endif %}
+
+      <!-- Upload photo -->
+      <form method="POST" action="{{ url_for('upload_photo', username=username) }}" enctype="multipart/form-data" style="margin-top:24px;">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--gray-400);margin-bottom:8px;">Changer la photo</label>
+        <input type="file" name="photo" accept="image/*"
+               style="width:100%;font-size:.8rem;padding:6px 10px;border:1.5px solid var(--gray-200);border-radius:8px;background:var(--gray-50);color:var(--navy);margin-bottom:10px;">
+        <button type="submit" class="btn btn-primary" style="width:100%;">
+          <i class="fas fa-upload"></i> Mettre à jour
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Infos détaillées ── -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+
+    <!-- Informations personnelles -->
+    <div class="card">
+      <div style="padding:20px 24px 12px;border-bottom:1px solid var(--gray-200);font-weight:700;font-size:.95rem;color:var(--navy);display:flex;align-items:center;gap:8px;">
+        <i class="fas fa-id-card" style="color:var(--blue);"></i> Informations personnelles
+      </div>
+      <div style="padding:20px 24px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 32px;">
+
+          <div class="profile-field">
+            <div class="pf-label">Nom d'utilisateur</div>
+            <div class="pf-value">{{ username }}</div>
+          </div>
+          <div class="profile-field">
+            <div class="pf-label">Nom</div>
+            <div class="pf-value">{{ user_data.get('nom') or '—' }}</div>
+          </div>
+          <div class="profile-field">
+            <div class="pf-label">Post-nom</div>
+            <div class="pf-value">{{ user_data.get('postnom') or '—' }}</div>
+          </div>
+          <div class="profile-field">
+            <div class="pf-label">Prénom</div>
+            <div class="pf-value">{{ user_data.get('prenom') or '—' }}</div>
+          </div>
+          <div class="profile-field">
+            <div class="pf-label">Sexe</div>
+            <div class="pf-value">
+              {% if user_data.get('sexe') == 'M' %}
+                <i class="fas fa-mars" style="color:#3b82f6;margin-right:5px;"></i>Masculin
+              {% elif user_data.get('sexe') == 'F' %}
+                <i class="fas fa-venus" style="color:#ec4899;margin-right:5px;"></i>Féminin
+              {% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="profile-field">
+            <div class="pf-label">Date de naissance</div>
+            <div class="pf-value">{{ user_data.get('date_naissance') or '—' }}</div>
+          </div>
+          <div class="profile-field">
+            <div class="pf-label">CIP</div>
+            <div class="pf-value">{{ user_data.get('cip') or '—' }}</div>
+          </div>
+          <div class="profile-field">
+            <div class="pf-label">Email</div>
+            <div class="pf-value">
+              {% if user_data.get('email') %}
+                <a href="mailto:{{ user_data.email }}" style="color:var(--blue);">{{ user_data.email }}</a>
+              {% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="profile-field">
+            <div class="pf-label">Téléphone</div>
+            <div class="pf-value">{{ user_data.get('telephone') or '—' }}</div>
+          </div>
+          <div class="profile-field">
+            <div class="pf-label">Mot de passe</div>
+            <div class="pf-value">
+              {% if user_data.get('must_change_password') %}
+                <span style="background:#fef3c7;color:#d97706;padding:3px 10px;border-radius:12px;font-size:.78rem;font-weight:600;">
+                  <i class="fas fa-exclamation-triangle"></i> Changement requis
+                </span>
+              {% else %}
+                <span style="background:#d1fae5;color:#059669;padding:3px 10px;border-radius:12px;font-size:.78rem;font-weight:600;">
+                  <i class="fas fa-check"></i> OK
+                </span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Infos spécifiques au rôle -->
+    {% if user_data.role == 'student' %}
+    <div class="card">
+      <div style="padding:20px 24px 12px;border-bottom:1px solid var(--gray-200);font-weight:700;font-size:.95rem;color:var(--navy);display:flex;align-items:center;gap:8px;">
+        <i class="fas fa-graduation-cap" style="color:#1d4ed8;"></i> Informations académiques
+      </div>
+      <div style="padding:20px 24px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 32px;">
+          <div class="profile-field">
+            <div class="pf-label">Promotion</div>
+            <div class="pf-value">
+              {% if user_data.get('promotion') %}
+                <span style="background:#dbeafe;color:#1d4ed8;padding:3px 10px;border-radius:12px;font-size:.82rem;font-weight:600;">{{ user_data.promotion }}</span>
+              {% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="profile-field">
+            <div class="pf-label">Faculté</div>
+            <div class="pf-value">
+              {% if user_data.get('faculte') %}
+                <span style="background:#ede9fe;color:#7c3aed;padding:3px 10px;border-radius:12px;font-size:.82rem;font-weight:600;">{{ user_data.faculte }}</span>
+              {% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="profile-field" style="grid-column:1/-1;">
+            <div class="pf-label">Adresse</div>
+            <div class="pf-value">{{ user_data.get('adresse') or '—' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% elif user_data.role == 'teacher' %}
+    <div class="card">
+      <div style="padding:20px 24px 12px;border-bottom:1px solid var(--gray-200);font-weight:700;font-size:.95rem;color:var(--navy);display:flex;align-items:center;gap:8px;">
+        <i class="fas fa-chalkboard-teacher" style="color:#059669;"></i> Informations professionnelles
+      </div>
+      <div style="padding:20px 24px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 32px;">
+          <div class="profile-field">
+            <div class="pf-label">Grade</div>
+            <div class="pf-value">
+              {% if user_data.get('grade') %}
+                <span style="background:#d1fae5;color:#059669;padding:3px 10px;border-radius:12px;font-size:.82rem;font-weight:600;">{{ user_data.grade }}</span>
+              {% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="profile-field">
+            <div class="pf-label">Département</div>
+            <div class="pf-value">
+              {% if user_data.get('departement') %}
+                <span style="background:#fce7f3;color:#db2777;padding:3px 10px;border-radius:12px;font-size:.82rem;font-weight:600;">{{ user_data.departement }}</span>
+              {% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="profile-field">
+            <div class="pf-label">Bureau</div>
+            <div class="pf-value">{{ user_data.get('bureau') or '—' }}</div>
+          </div>
+          <div class="profile-field">
+            <div class="pf-label">Cours dispensés</div>
+            <div class="pf-value">{{ user_data.get('cours_dispenses') or '—' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div><!-- end infos col -->
+</div><!-- end grid -->
+
+<style>
+.profile-field { display:flex; flex-direction:column; gap:4px; }
+.pf-label { font-size:.74rem; font-weight:600; text-transform:uppercase; letter-spacing:.6px; color:var(--gray-400); }
+.pf-value { font-size:.92rem; color:var(--navy); font-weight:500; }
+@media(max-width:768px){
+  div[style*="grid-template-columns:280px"]{grid-template-columns:1fr!important;}
+  div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important;}
+  .page-header{flex-direction:column;align-items:flex-start;gap:12px;}
+}
+</style>
 {% endblock %}
