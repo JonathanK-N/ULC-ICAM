@@ -73,6 +73,30 @@ def test_remote_database_rejected():
         isolated_engine('postgresql+psycopg://user:password@production.example/db')
 
 
+def test_transactional_results_preserve_submissions_and_teacher_approval(snapshot):
+    from submission_repository import SubmissionRepository
+    engine = isolated_engine('sqlite://')
+    import_snapshot(snapshot[0], engine)
+    repository = SubmissionRepository(engine)
+    proposal = {'score': 65, 'review_status': 'approved'}
+    assert repository.save_proposal(30, proposal)
+    assert proposal['review_status'] == 'approved'
+    assert repository.save_similarity(30, {'similarity': 15})
+    result = repository.get(30)
+    assert result['filename'] == 'answer.pdf'
+    assert result['correction']['review_status'] == 'pending'
+    assert result['plagiarism']['requires_human_review'] is True
+    with engine.begin() as connection:
+        connection.execute(schema.grades.update().where(schema.grades.c.submission_id == 30)
+                           .values(payload={'score': 80, 'review_status': 'approved'}))
+    assert not repository.save_proposal(30, {'score': 25})
+    assert repository.get(30)['correction']['score'] == 80
+    with pytest.raises(KeyError):
+        repository.save_proposal(999, {'score': 0})
+    assert repository.get(30)['correction']['score'] == 80
+    engine.dispose()
+
+
 def test_alembic_upgrade_and_rollback_in_isolation(tmp_path, monkeypatch):
     from alembic import command
     from alembic.config import Config
@@ -107,9 +131,14 @@ def test_postgresql_round_trip_when_available(snapshot):
         first = import_snapshot(snapshot[0], isolated)
         second = import_snapshot(snapshot[0], isolated)
         assert first['counts'] == second['counts'] and second['already_imported']
+        from submission_repository import SubmissionRepository
+        repository = SubmissionRepository(isolated)
+        assert repository.save_proposal(30, {'score': 85})
+        assert repository.save_similarity(30, {'similarity': 5})
+        assert repository.get(30)['correction']['review_status'] == 'pending'
         with isolated.connect() as connection:
             assert connection.execute(select(schema.submissions.c.id)).scalar_one() == 30
-            assert connection.execute(select(schema.grades.c.payload)).scalar_one()['score'] == 90
+            assert connection.execute(select(schema.grades.c.payload)).scalar_one()['score'] == 85
     finally:
         with engine.begin() as connection:
             connection.execute(text('DROP SCHEMA ' + schema_name + ' CASCADE'))

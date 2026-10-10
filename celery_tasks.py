@@ -1,6 +1,6 @@
 """
-Tâches asynchrones Celery pour traitement IA
-Correction: instance Celery initialisée correctement via make_celery()
+TÃ¢ches asynchrones Celery pour traitement IA
+Correction: instance Celery initialisÃ©e correctement via make_celery()
 """
 
 from celery import Celery
@@ -9,11 +9,11 @@ import json
 from datetime import datetime
 
 # ---------------------------------------------------------------
-# Factory : crée et configure l'instance Celery
-# Appelée depuis app.py APRÈS la création de l'app Flask
+# Factory : crÃ©e et configure l'instance Celery
+# AppelÃ©e depuis app.py APRÃˆS la crÃ©ation de l'app Flask
 # ---------------------------------------------------------------
 def make_celery(app):
-    """Crée une instance Celery liée à l'application Flask."""
+    """CrÃ©e une instance Celery liÃ©e Ã  l'application Flask."""
     celery_instance = Celery(
         app.import_name,
         backend=os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0'),
@@ -33,7 +33,7 @@ def make_celery(app):
     )
 
     class ContextTask(celery_instance.Task):
-        """Tâche qui s'exécute toujours dans le contexte Flask."""
+        """TÃ¢che qui s'exÃ©cute toujours dans le contexte Flask."""
         def __call__(self, *args, **kwargs):
             with app.app_context():
                 return self.run(*args, **kwargs)
@@ -43,15 +43,11 @@ def make_celery(app):
 
 
 # ---------------------------------------------------------------
-# Planning des tâches périodiques
+# Planning des tÃ¢ches pÃ©riodiques
 # ---------------------------------------------------------------
 from celery.schedules import crontab
 
 BEAT_SCHEDULE = {
-    'cleanup-files': {
-        'task': 'celery_tasks.cleanup_old_files',
-        'schedule': crontab(hour=2, minute=0),   # Tous les jours à 2h
-    },
     'generate-stats': {
         'task': 'celery_tasks.generate_statistics',
         'schedule': crontab(minute=0),             # Toutes les heures
@@ -60,26 +56,26 @@ BEAT_SCHEDULE = {
 
 
 # ---------------------------------------------------------------
-# Référence globale (remplie par app.py via make_celery)
+# RÃ©fÃ©rence globale (remplie par app.py via make_celery)
 # Usage : from celery_tasks import celery; @celery.task
 # ---------------------------------------------------------------
-celery = Celery(__name__)   # instance temporaire, remplacée dans app.py
+celery = Celery(__name__)   # instance temporaire, remplacÃ©e dans app.py
 
 
 # ---------------------------------------------------------------
-# Déclaration des tâches
-# NOTE: Les tâches utilisent 'celery' qui sera remplacé par
-#       l'instance réelle une fois make_celery() appelé.
+# DÃ©claration des tÃ¢ches
+# NOTE: Les tÃ¢ches utilisent 'celery' qui sera remplacÃ© par
+#       l'instance rÃ©elle une fois make_celery() appelÃ©.
 # ---------------------------------------------------------------
 
 def _get_task_app():
-    """Récupère l'instance Celery active (après initialisation)."""
+    """RÃ©cupÃ¨re l'instance Celery active (aprÃ¨s initialisation)."""
     return celery
 
 
 @celery.task(bind=True, name='celery_tasks.process_plagiarism_async')
 def process_plagiarism_async(self, submission_id, file_path):
-    """Traitement asynchrone de la détection de plagiat."""
+    """Traitement asynchrone de la dÃ©tection de plagiat."""
     try:
         from app import extract_text_from_file, check_plagiarism_local
 
@@ -119,29 +115,14 @@ def process_correction_async(self, submission_id, file_path, assignment_data):
 
 @celery.task(name='celery_tasks.cleanup_old_files')
 def cleanup_old_files():
-    """Nettoyage automatique des anciens fichiers (> 30 jours)."""
-    import time
-
-    cleaned = 0
-    uploads_dir = os.environ.get('UPLOAD_FOLDER', 'uploads')
-
-    if os.path.exists(uploads_dir):
-        for root, dirs, files in os.walk(uploads_dir):
-            for filename in files:
-                filepath = os.path.join(root, filename)
-                try:
-                    if time.time() - os.path.getmtime(filepath) > 30 * 24 * 3600:
-                        os.remove(filepath)
-                        cleaned += 1
-                except OSError:
-                    pass
-
-    return f"Nettoyage terminé: {cleaned} fichiers supprimés"
+    """Retain educational records until an approved retention policy exists."""
+    return {'status': 'disabled', 'deleted': 0,
+            'reason': 'Referenced uploads must not be deleted by age alone'}
 
 
 @celery.task(name='celery_tasks.generate_statistics')
 def generate_statistics():
-    """Génération des statistiques système (JSON)."""
+    """GÃ©nÃ©ration des statistiques systÃ¨me (JSON)."""
     try:
         with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -166,40 +147,12 @@ def generate_statistics():
 
 
 # ---------------------------------------------------------------
-# Helpers (sauvegarde des résultats)
+# Helpers (sauvegarde des rÃ©sultats)
 # ---------------------------------------------------------------
 
 def _save_plagiarism_result(submission_id, result):
-    """Sauvegarde le résultat de plagiat dans le fichier JSON."""
-    try:
-        with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
-            data = json.load(f)
-
-        for sub in data.get('submissions', []):
-            if sub['id'] == submission_id:
-                sub['plagiarism'] = result
-                break
-
-        with open('ulc_icam_data.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-
-    except Exception as e:
-        print(f"[Celery] Erreur sauvegarde plagiat: {e}")
+    raise RuntimeError('Worker persistence is disabled until relational storage is integrated')
 
 
 def _save_correction_result(submission_id, result):
-    """Sauvegarde le résultat de correction dans le fichier JSON."""
-    try:
-        with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
-            data = json.load(f)
-
-        for sub in data.get('submissions', []):
-            if sub['id'] == submission_id:
-                sub['correction'] = result
-                break
-
-        with open('ulc_icam_data.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-
-    except Exception as e:
-        print(f"[Celery] Erreur sauvegarde correction: {e}")
+    raise RuntimeError('Worker persistence is disabled until relational storage is integrated')

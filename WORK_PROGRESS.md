@@ -47,3 +47,13 @@ Cycle parcours utilisateurs : connexions réelles et rendu des pages essentielle
 Validation finale du code cd5df9e : CI GitHub Actions 38017470818, Linux/Python 3.11/PostgreSQL 16 : **100 passed in 4.19s**, puis **7 assertions PWA réussies**. Logs du job 114110851944 vérifiés. Branche ui contrôlée à nouveau : toujours 7699c614f0c9cdeadf407c232145844ff3b5b33c. Aucun déploiement.
 
 Statut de livraison : lot de sécurité et fondation de migration livré en PR brouillon #28 ; mission globale partiellement réalisée. Prochaine priorité : couche repository PostgreSQL et worker sans écritures JSON concurrentes, puis Web Push et validation navigateur/mobile.
+
+
+## Cycle repository et protection worker
+- Dernière CI précédente : 38017580727 réussie sur 9fb264e.
+- Première révision Alembic figée : indépendante des futurs modèles SQLAlchemy ; test de non-régression ajouté.
+- SubmissionRepository : lecture des soumissions et mise à jour transactionnelle des propositions/similarités ; verrou de ligne PostgreSQL, correction approuvée protégée. Couche isolée, pas encore branchée dans Flask.
+- Worker Celery bloqué explicitement avant import Flask tant que le stockage global reste JSON ; anciennes écritures directes retirées. Aucune activation en production.
+- Nettoyage périodique supprimé : conserver les pièces pédagogiques, même anciennes, jusqu’à politique de rétention approuvée.
+- Local : 105 passed, 1 skipped (PostgreSQL), 7 assertions PWA. Test PostgreSQL CI étendu au repository.
+- Restent : repository Flask complet avec gestion de concurrence des routes, tâches IA sans imports des globals, notifications/audit, Web Push, UX et navigateur/mobile.

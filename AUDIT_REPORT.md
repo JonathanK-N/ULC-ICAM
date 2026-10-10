@@ -36,3 +36,7 @@ GitHub `JonathanK-N/ULC-ICAM`, branche principale `develop`. Railway : projet `9
 Cycle groupes : persistance/restauration et contrôle des membres corrigés ; création de devoir réservée au cours assigné ; rôle session vérifié sur le compte existant. PostgreSQL staging validé par CI réelle sur données synthétiques. Les autres formats/configurations non persistés et la couche stockage complète restent à auditer.
 
 Cycle stockage des soumissions : code sauvegardé dans UPLOAD_FOLDER configuré avec noms sûrs et uniques ; pièces de devoir/corrections téléchargées en pièce jointe. Dernière vérification locale : 96 tests réussis, 1 PostgreSQL ignoré ; test de stockage sur répertoire temporaire ajouté.
+
+
+## Protection des tâches de fond
+Le worker est maintenant refusé avant import de Flask, et les helpers ne réécrivent plus le JSON. Le nettoyage aveugle des uploads de plus de 30 jours est désactivé et retiré du planning. La couche transactionnelle des résultats existe en isolation ; elle ne remplace pas encore les globals Flask. Ne pas activer les workers avant cette intégration. La première migration Alembic embarque désormais son propre schéma figé.

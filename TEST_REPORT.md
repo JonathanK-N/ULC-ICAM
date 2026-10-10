@@ -30,3 +30,7 @@ Cycle stockage des soumissions : code sauvegardé dans UPLOAD_FOLDER configuré 
 Cycle parcours utilisateurs : connexions réelles et rendu des pages essentielles des trois rôles validés avec données synthétiques (dashboard, utilisateurs/cours/devoirs admin, cours/résultats professeur, cours/notes/soumission étudiant). Dernière suite locale : **99 passed, 1 skipped in 25.47s** ; navigateur/mobile réel restant à vérifier. CI sur 6a86d53 réussie : run 38017352179.
 
 Validation finale du code cd5df9e : CI GitHub Actions 38017470818, Linux/Python 3.11/PostgreSQL 16 : **100 passed in 4.19s**, puis **7 assertions PWA réussies**. Logs du job 114110851944 vérifiés. Branche ui contrôlée à nouveau : toujours 7699c614f0c9cdeadf407c232145844ff3b5b33c. Aucun déploiement.
+
+
+## Cycle repository / worker
+Local : 105 tests réussis, 1 PostgreSQL ignoré (36.70s) ; 7 assertions service worker. Vérifications ajoutées : conservation des fichiers anciens, worker refusé, absence d’écriture JSON, migration indépendante des futurs modèles, proposition pending, protection d’une correction approuvée, soumission inconnue refusée. Le test PostgreSQL CI inclut maintenant les mises à jour du repository ; résultat du nouveau commit à vérifier. Aucun Redis réel ni calcul IA testé dans ce cycle.
