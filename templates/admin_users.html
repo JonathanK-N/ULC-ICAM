@@ -113,6 +113,7 @@
                                     </td>
                                     <td class="align-middle">
                                         {{ user.name or (user.get('prenom', '') + ' ' + user.get('nom', '')) }}
+                                        {% if user.disabled %}<span class="badge bg-secondary">Compte désactivé</span>{% endif %}
                                     </td>
                                     <td class="align-middle">
                                         {% if user.role == 'admin' %}
@@ -155,7 +156,7 @@
                                             {% if username != 'admin' %}
                                                 <form method="post" action="{{ url_for('delete_user', username=username) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit"
                                                    class="btn btn-outline-danger btn-sm" title="Supprimer"
-                                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer {{ username }} ?')">
+                                                   onclick="return confirm('Supprimer ou désactiver ce compte en conservant son historique académique ?')">
                                                     <i class="fas fa-trash"></i>
                                                 </button></form>
                                             {% endif %}

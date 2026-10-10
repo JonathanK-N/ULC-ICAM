@@ -156,12 +156,15 @@ def check_similarity(text, submission_id, submissions, upload_folder, read_docum
 
     max_similarity = 0.0
     sources = []  # liste de dict détaillés
+    target = next((item for item in submissions if item['id'] == submission_id), None)
 
     # -------------------------------------------------------
     # Niveau 1 & 2 : comparaison contre toutes les soumissions
     # -------------------------------------------------------
     for sub in submissions:
         if sub['id'] == submission_id:
+            continue
+        if target is not None and sub.get('assignment_id') != target.get('assignment_id'):
             continue
         if not sub.get('filename'):
             continue
@@ -221,7 +224,7 @@ def check_similarity(text, submission_id, submissions, upload_folder, read_docum
     # Niveau 3 : plagiat web (Google Custom Search)
     # -------------------------------------------------------
     web_score, web_source = (web_checker or check_web_plagiarism)(text)
-    if web_score > 0:
+    if web_source:
         max_similarity = max(max_similarity, web_score)
         sources.append({
             'label': f"Source web détectée — {web_score:.0f}% de similarité ({web_source})",
@@ -267,9 +270,8 @@ def check_web_plagiarism(text_sample: str) -> tuple:
 
     Retourne un tuple (score: float, source_label: str) :
       - score = 0    → rien trouvé ou API non configurée
-      - score = 60   → 1-2 résultats trouvés
-      - score = 80   → 3-4 résultats trouvés
-      - score = 95   → 5+ résultats trouvés (copie quasi-certaine)
+      - score measures an indexed excerpt match, never the number of hits
+      - indexed excerpts remain candidates for human examination
     """
     api_key = os.environ.get('GOOGLE_API_KEY', '').strip()
     search_engine_id = os.environ.get('GOOGLE_SEARCH_ENGINE_ID', '').strip()
@@ -323,14 +325,15 @@ def check_web_plagiarism(text_sample: str) -> tuple:
         first_url = items[0].get('link', '') if items else ''
         first_title = items[0].get('title', '') if items else ''
 
-        if nb_results >= 5:
-            score = 95
-        elif nb_results >= 3:
-            score = 80
-        else:
-            score = 60
+        normalized_query = re.sub(r'\s+', ' ', query.lower()).strip()
+        score = 0.0
+        for item in items:
+            snippet = re.sub(r'\s+', ' ', item.get('snippet', '').lower()).strip()
+            if snippet and len(normalized_query) >= 30:
+                match = SequenceMatcher(None, normalized_query, snippet, autojunk=False).find_longest_match()
+                score = max(score, round(match.size / len(normalized_query) * 100, 1))
 
-        label = f"{first_title} ({first_url})" if first_url else f"{nb_results} résultat(s) trouvé(s)"
+        label = f"Extrait indexé à examiner : {first_title} ({first_url})" if first_url else 'Source web à examiner'
         return score, label
 
     except requests.Timeout:

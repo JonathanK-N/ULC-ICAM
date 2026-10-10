@@ -3,6 +3,7 @@
 {% block title %}Dashboard Étudiant - ULC-ICAM{% endblock %}
 
 {% block content %}
+{% include "_academic_summary.html" %}
 <div class="container-fluid">
     <div class="row">
         <!-- Header -->
@@ -66,7 +67,7 @@
                         <div class="col-6">
                             <div class="d-flex align-items-center">
                                 <i class="fas fa-calendar-alt me-2 text-primary"></i>
-                                <small class="text-muted">{{ assignment.due_date }}</small>
+                                <small class="text-muted">{{ assignment.due_date }} {% set deadline = assignment.due_date | deadline_status %}<span class="badge {{ deadline['class'] }}">{{ deadline.label }}</span></small>
                             </div>
                         </div>
                         <div class="col-6">

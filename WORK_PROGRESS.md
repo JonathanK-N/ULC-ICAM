@@ -73,3 +73,6 @@ Validation CI e3e58b7 : run 38019074383, job 114115813826 réussi (PostgreSQL r�
 - Navigateur : deux délais d’attente CUA ; serveur local et ressources HTTP répondent 200, mais aucune validation visuelle des trois rôles n’est revendiquée.
 
 Cycle intégration : Flask peut fonctionner en mode relationnel explicite ; routes réparties en Blueprints avec alias historiques ; worker indépendant de Flask et PostgreSQL obligatoire ; file durable des soumissions, emails et notifications ; grille personnalisable et rapports CSV de fond. Local : 133 passed, 2 skipped (les services réels sont réservés à la CI), avant les derniers ajustements de rapports et UI. Rendu visuel toujours non validé à cause des délais CUA.
+
+## État actuel — activation préparée
+Routes extraites en Blueprints, stockage relationnel transactionnel branché, worker Celery indépendant, correction structurée avec validation professeur, rapports et notifications durables, Web Push volontaire, résumés par compte et cache Redis. CI 14330c9 : 135 tests réussis avec PostgreSQL/Redis réels et 10 assertions PWA. La transition conserve un verrou global et un remplacement du snapshot : optimisation relationnelle fine restant à planifier. Aucun déploiement ni migration réelle. Voir ACTIVATION_RUNBOOK.md.

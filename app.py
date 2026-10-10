@@ -970,6 +970,14 @@ if relational_repository is not None:
 else:
     install_json_storage(app, globals(), collect_storage_snapshot)
 
+from academic_cache import cached_summary
+
+@app.context_processor
+def academic_dashboard_context():
+    if request.endpoint == 'core.dashboard' and session.get('user'):
+        return {'academic_overview': cached_summary(collect_storage_snapshot(), session['user'])}
+    return {}
+
 from academic_metrics import deadline_status
 app.jinja_env.filters['deadline_status'] = deadline_status
 

@@ -36,6 +36,7 @@ services:
 
   # --- Worker Celery (tâches asynchrones IA / plagiat) ---
   celery:
+    profiles: [relational-worker]
     build: .
     command: celery -A celery_worker.celery worker --loglevel=info --concurrency=2
     env_file:
@@ -54,6 +55,7 @@ services:
 
   # --- Celery Beat (tâches planifiées) ---
   celery-beat:
+    profiles: [relational-worker]
     build: .
     command: celery -A celery_worker.celery beat --loglevel=info
     env_file:
@@ -71,7 +73,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -83,10 +85,11 @@ services:
 
   # --- Flower (monitoring Celery, optionnel) ---
   flower:
+    profiles: [worker-monitoring]
     build: .
     command: celery -A celery_worker.celery flower --port=5555
     ports:
-      - "5555:5555"
+      - "127.0.0.1:5555:5555"
     env_file:
       - .env
     environment:
