@@ -58,3 +58,7 @@ jobs:
           -e NOTIFICATIONS_ENABLED=false
           --entrypoint python cognito-ci:latest
           -c "from app import app; client = app.test_client(); assert client.get('/health').status_code == 200; assert client.get('/offline.html').status_code == 200"
+      - name: Audit complete image dependencies
+        run: >-
+          docker run --rm --entrypoint sh cognito-ci:latest
+          -c 'python -m pip install --quiet pip==26.2.1 pip-audit==2.10.1 && python -m pip_audit --progress-spinner off --timeout 30'

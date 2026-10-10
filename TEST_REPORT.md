@@ -48,3 +48,5 @@ Suite locale intermédiaire : 133 passed, 2 skipped in 469.77s. Cette machine a 
 
 ## Intégration validée en CI
 Commit 14330c9dc1a27a808fc040ff961656af39d5ef5b : run 38054836998, job 114221049787, **135 passed in 11.66s**, puis **10 assertions service worker réussies**. PostgreSQL 16 et Redis 7 réels, worker Celery et parcours étudiant/professeur inclus. Derniers tests ciblés cache/similarité : 2 réussis. Les versions corrigées des dépendances et la construction Docker sont vérifiées dans le prochain run. Appels IA, SMTP et push simulés ; aucun destinataire réel. Validation visuelle navigateur/mobile indisponible après dépassements de délai CUA.
+
+CI feea0b0 : run 38056091227, job 114224818000 : **137 passed in 7.64s**, **10 assertions PWA**. Job image-build 114224817932 : construction des dépendances complètes et smoke test `/health` / `/offline.html` réussis. Audit local après mise à jour : aucune vulnérabilité connue parmi les dépendances installées ; contrôle complet de l'image ajouté dans le prochain run.
