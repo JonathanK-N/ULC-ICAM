@@ -61,3 +61,5 @@ Statut de livraison : lot de sécurité et fondation de migration livré en PR b
 CI b9bd569 validée : run 38018904260, job 114115307716, 106 tests réussis en 5.51s et 7 assertions PWA. PostgreSQL réel inclut désormais le repository.
 
 Cycle sessions/publication : dates invalides, incompatibles ou futures entraînent une reconnexion ; la soumission de fichier IA ne publie plus automatiquement le devoir. Tests de régression ajoutés.
+
+Validation CI e3e58b7 : run 38019074383, job 114115813826 réussi (PostgreSQL réel, tests Python et PWA). Railway consulté en lecture : services ULC-ICAM et Redis en ligne ; déploiement ULC-ICAM toujours 92255766-777e-4e33-a61c-c9f23b516a70 ; aucune opération en attente. Prochaine action : intégrer le stockage relationnel aux routes Flask et extraire le calcul IA avant toute activation Celery.

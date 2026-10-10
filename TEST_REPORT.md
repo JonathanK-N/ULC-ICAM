@@ -36,4 +36,7 @@ Validation finale du code cd5df9e : CI GitHub Actions 38017470818, Linux/Python 
 Local : 105 tests réussis, 1 PostgreSQL ignoré (36.70s) ; 7 assertions service worker. Vérifications ajoutées : conservation des fichiers anciens, worker refusé, absence d’écriture JSON, migration indépendante des futurs modèles, proposition pending, protection d’une correction approuvée, soumission inconnue refusée. Le test PostgreSQL CI inclut maintenant les mises à jour du repository ; résultat du nouveau commit à vérifier. Aucun Redis réel ni calcul IA testé dans ce cycle.
 
 CI b9bd569 : 106 passed in 5.51s, 7 assertions PWA, PostgreSQL réel ; run 38018904260, logs du job 114115307716 vérifiés. Nouveau cycle : tests de sessions invalides et soumission IA sans publication.
-`nDernière suite locale sessions/publication : 110 passed, 1 skipped in 32.27s (PostgreSQL réservé à la CI).
+
+Dernière suite locale sessions/publication : 110 passed, 1 skipped in 32.27s (PostgreSQL réservé à la CI).
+
+Validation CI e3e58b7 : run 38019074383, job 114115813826 réussi (PostgreSQL réel, tests Python et PWA). Railway consulté en lecture : services ULC-ICAM et Redis en ligne ; déploiement ULC-ICAM toujours 92255766-777e-4e33-a61c-c9f23b516a70 ; aucune opération en attente. Prochaine action : intégrer le stockage relationnel aux routes Flask et extraire le calcul IA avant toute activation Celery.
