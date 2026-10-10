@@ -1,4 +1,5 @@
 import pytest
+from pypdf.errors import PdfReadError
 from reportlab.pdfgen import canvas
 from document_service import extract_document
 
@@ -16,5 +17,5 @@ def test_pdf_reader_preserves_text_and_enforces_extraction_limit(tmp_path):
 def test_invalid_pdf_is_not_accepted_as_an_answer(tmp_path):
     path = tmp_path / 'broken.pdf'
     path.write_bytes(b'not a PDF')
-    with pytest.raises(Exception):
+    with pytest.raises(PdfReadError):
         extract_document(path)

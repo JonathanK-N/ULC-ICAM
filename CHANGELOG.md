@@ -32,3 +32,11 @@ Cycle parcours utilisateurs : connexions réelles et rendu des pages essentielle
 - Reconnexion sur date de session invalide ou future ; publication automatique des devoirs lors des uploads IA supprimée.
 
 - Services documentaires, grille IA justifiée, similarité, emails, Web Push et rapports extraits ; repository relationnel de transition et export isolé de rollback préparés.
+# Modernisation préparée — octobre 2026
+
+- Blueprints Flask et stockage relationnel transactionnel explicite, import/export isolés et conservation des données historiques.
+- Worker Celery indépendant avec Redis, reprise des soumissions, rapports privés et notifications durables.
+- Propositions IA par critères, relecture professeur avant publication et indices de similarité réservés à un examen humain.
+- PWA privée, Web Push volontaire, tableaux de bord par rôle, échéances, moyennes validées et cache Redis par compte.
+- Correctifs des dépendances historiques Flask, Werkzeug, Requests, cryptography, python-dotenv et PDF ; audit de l'image en CI.
+- Procédure d'activation et de rollback documentée ; aucune migration ni mise en production effectuée.
