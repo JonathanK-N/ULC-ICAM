@@ -40,11 +40,11 @@ except ImportError:
     print("docx2txt non installé - lecture DOCX désactivée")
 
 try:
-    from PyPDF2 import PdfReader
+    from pypdf import PdfReader
     PDF_AVAILABLE = True
 except ImportError:
     PDF_AVAILABLE = False
-    print("PyPDF2 non installé - lecture PDF désactivée")
+    print("pypdf non installé - lecture PDF désactivée")
 
 # Nouveaux imports pour fonctionnalités avancées
 import zipfile

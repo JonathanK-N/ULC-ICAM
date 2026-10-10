@@ -9,3 +9,5 @@ alembic==1.20.0
 psycopg[binary]==3.3.6
 pytest==9.1.1
 celery==5.3.4
+pypdf==6.20.0
+reportlab==4.0.7
