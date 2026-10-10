@@ -9,3 +9,5 @@
 - Redis pour rate limiting lorsqu'il est configuré, limites de connexion et renouvellement des sessions.
 - Réponses privées non mises en cache, seed interdit en production et exigences de clé session/CSRF au démarrage production.
 - Tests isolés et documents de suivi.
+
+Cycle 3 : cache PWA limité aux ressources publiques, anciens caches privés purgés, export admin sans hashes, téléchargement des pièces de devoir contrôlé. Vérifications : 65 tests réussis (16.65s), test Node du service worker : 7 assertions réussies.

@@ -16,3 +16,5 @@ Base vérifiée le 9 octobre 2026 : production Railway `92255766-777e-4e33-a61c-
 - PostgreSQL en production, fusion vers `ui`, déploiement et ressources payantes restent soumis à approbation explicite.
 
 La mission complète n'est pas terminée. Ne pas déployer ce lot sans revue des risques et tests des parcours réels.
+
+Cycle 3 : cache PWA limité aux ressources publiques, anciens caches privés purgés, export admin sans hashes, téléchargement des pièces de devoir contrôlé. Vérifications : 65 tests réussis (16.65s), test Node du service worker : 7 assertions réussies.

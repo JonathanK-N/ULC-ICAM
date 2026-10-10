@@ -2061,6 +2061,14 @@ def create_assignment():
 def download_assignment_file(filename):
     if 'user' not in session:
         return redirect(url_for('login'))
+    user = users.get(session['user'])
+    allowed = any(filename in assignment.get('files', []) and (
+        user and (user.get('role') == 'admin'
+                  or (user.get('role') == 'teacher' and assignment.get('teacher') == session['user'])
+                  or (user.get('role') == 'student' and session['user'] in get_enrolled_students(assignment.get('course_id')))))
+        for assignment in assignments)
+    if not allowed:
+        return jsonify(error='Accès interdit'), 403
     filename = secure_filename(filename)
     if not filename:
         flash('Nom de fichier invalide')
@@ -3245,7 +3253,8 @@ def export_all_data():
         return redirect(url_for('login'))
     
     data = {
-        'users': users,
+        'users': {name: {k: v for k, v in user.items() if k not in ('password', 'temp_password')}
+                  for name, user in users.items()},
         'admin_courses': admin_courses,
         'course_assignments': course_assignments,
         'course_enrollments': course_enrollments,

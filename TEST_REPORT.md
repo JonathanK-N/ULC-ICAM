@@ -9,3 +9,5 @@
 - Tests d'exécution locale historiques retirés car ils imposaient le comportement vulnérable ; résultats distants testés avec doubles HTTP.
 
 Non exécuté : tests navigateur/mobile, sandbox Judge0 réelle, Redis réel, PostgreSQL réel, déploiement Railway et parcours complets IA/email/PWA. Les tests existants ne couvrent pas toutes les fonctionnalités.
+
+Cycle 3 : cache PWA limité aux ressources publiques, anciens caches privés purgés, export admin sans hashes, téléchargement des pièces de devoir contrôlé. Vérifications : 65 tests réussis (16.65s), test Node du service worker : 7 assertions réussies.
