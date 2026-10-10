@@ -17,3 +17,6 @@ Cycle 3 : cache PWA limité aux ressources publiques, anciens caches privés pur
 - JSON illisible : arrêt du démarrage pour prévenir un écrasement ; aucune réécriture de mots de passe au chargement.
 - Évaluations IA non disponibles sans score inventé ; nouvelles propositions publiables après validation manuelle uniquement.
 - Scripts de démonstration sans mot de passe admin connu ; image Web et logs simplifiés ; CI isolée PostgreSQL proposée.
+
+- Groupes persistés/restaurés ; validation des inscrits, doublons, taille et appartenance unique. Rôle de session relu depuis le compte et contrôle du cours lors de création de devoir.
+- Migration de staging vérifiée sur PostgreSQL 16 en CI synthétique isolée.

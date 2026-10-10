@@ -22,3 +22,5 @@ Commande d’essai exclusivement sur une COPIE SYNTHÉTIQUE :
 `python migrate_isolated.py tmp/synthetic.json --database-url sqlite:///tmp/migration.sqlite --confirm-isolated`
 
 Alembic exige `ISOLATED_DATABASE_URL`. Le schéma reste une fondation : groupes normalisés ; notifications et audit ont leurs tables mais les formats existants non mappés restent archivés dans application_state. Couche de stockage métier et bascule de Flask non réalisées.
+
+Validation PostgreSQL de la fondation : CI 38017055612 réussie avec PostgreSQL 16, import/relecture/second import d’un snapshot synthétique dans un schéma temporaire puis suppression du seul schéma de test. Aucune copie des données réelles, aucun accès à la base production. Les modèles métier complets et la bascule restent à réaliser.

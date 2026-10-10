@@ -19,3 +19,8 @@ Cycle 3 : cache PWA limité aux ressources publiques, anciens caches privés pur
 - Ajouts : aller-retour Alembic SQLite, refus des imports divergents et des orphelins, limites de connexion, stockage corrompu conservé avec démarrage refusé, panne sandbox HTTP 503, note IA invalide/panne sans score, publication des brouillons refusée et validation manuelle suivie de publication.
 - Une première vérification Alembic en sous-processus a échoué avec une erreur native du runtime Windows ; le test via l’API Alembic a ensuite validé l’upgrade et le downgrade réels sur SQLite. Des erreurs de montage de tests ont été corrigées avant la dernière suite réussie.
 - Image Docker non construite localement (Docker absent). Dépendances optionnelles IA/email/documents et serveur Redis réel non exercés par cette suite minimale.
+
+## CI PostgreSQL réellement exécutée
+GitHub Actions run 38017055612, commit 354a2f1 : **93 passed in 3.80s**, PostgreSQL 16 et Python 3.11, puis **7 assertions PWA réussies**. Source : https://github.com/JonathanK-N/ULC-ICAM/actions/runs/38017055612. Le résultat a été vérifié dans les logs du job 114109557356.
+
+Après le cycle groupes et sessions : **95 passed, 1 skipped in 14.29s** localement. Le test PostgreSQL est exécuté par CI, pas localement.

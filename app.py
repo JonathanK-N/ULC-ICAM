@@ -290,6 +290,13 @@ def add_security_headers(response):
 @app.before_request
 def check_session_timeout():
     if 'user' in session:
+        account = users.get(session['user'])
+        if not account:
+            session.clear()
+            if request.method == 'POST':
+                return jsonify(success=False, error='Authentification requise'), 401
+            return redirect(url_for('login'))
+        session['role'] = account.get('role')
         last_active = session.get('last_active')
         if last_active:
             elapsed = (datetime.now() - datetime.fromisoformat(last_active)).total_seconds()
@@ -363,6 +370,9 @@ def save_test_data():
                 'course_content': {str(k): v for k, v in globals().get('course_content', {}).items()},
                 'course_chapters': {str(k): v for k, v in globals().get('course_chapters', {}).items()},
                 'next_chapter_id': globals().get('next_chapter_id', 1),
+                'group_assignments': globals().get('group_assignments', {}),
+                'student_groups': globals().get('student_groups', {}),
+                'next_group_id': globals().get('next_group_id', 1),
             }
             # Écriture atomique via fichier temporaire
             tmp_path = DATA_FILE_TMP
@@ -481,9 +491,9 @@ for sub in submissions:
         plagiarism_results[sub['id']] = sub['plagiarism']
 
 # Gestion des groupes pour les devoirs
-group_assignments = {}  # {assignment_id: {'groups': [[student1, student2], [student3, student4]], 'type': 'manual/auto'}}
-student_groups = {}     # {assignment_id: {student_username: group_id}}
-next_group_id = 1
+group_assignments = {int(k): v for k, v in globals().get('data', {}).get('group_assignments', {}).items()}  # {assignment_id: {'groups': [[student1, student2], [student3, student4]], 'type': 'manual/auto'}}
+student_groups = {int(k): v for k, v in globals().get('data', {}).get('student_groups', {}).items()}  # {assignment_id: {student_username: group_id}}
+next_group_id = globals().get('data', {}).get('next_group_id', 1)
 
 # Gestion des cours
 courses = []
@@ -1954,6 +1964,12 @@ def create_assignment():
         return redirect(url_for('login'))
     
     if request.method == 'POST':
+        selected_course = request.form.get('course_id', type=int)
+        if selected_course is not None and session['user'] not in get_assigned_teachers(selected_course):
+            return jsonify(error='Accès interdit au cours'), 403
+        requested_group_size = request.form.get('group_size', '2') or '2'
+        if not requested_group_size.isdigit() or not 1 <= int(requested_group_size) <= 100:
+            return jsonify(error='Taille de groupe invalide'), 400
         global next_assignment_id
         current_id = next_assignment_id
         next_assignment_id += 1
@@ -2770,7 +2786,7 @@ def generate_automatic_groups(assignment_id, course_id, group_size):
     if not course_id:
         return
     
-    enrolled_students = ensure_course_enrollments(course_id)
+    enrolled_students = list(get_enrolled_students(course_id))
     if not enrolled_students:
         return
     import random
@@ -2829,6 +2845,17 @@ def join_group(assignment_id):
         selected_students = request.form.getlist('group_members')
         selected_students.append(session['user'])  # Ajouter l'étudiant actuel
 
+        if len(set(selected_students)) != len(selected_students):
+            return jsonify(error='Membres dupliqués'), 400
+        if not 1 <= len(selected_students) <= assignment.get('group_size', 2):
+            return jsonify(error='Taille de groupe invalide'), 400
+        enrolled = get_enrolled_students(course_id)
+        existing_members = student_groups.get(assignment_id, {})
+        if any(name not in enrolled or users.get(name, {}).get('role') != 'student' for name in selected_students):
+            return jsonify(error='Membres non autorisés'), 403
+        if any(name in existing_members for name in selected_students):
+            return jsonify(error='Un membre appartient déjà à un groupe'), 409
+
         # Créer le groupe
         if assignment_id not in group_assignments:
             group_assignments[assignment_id] = {'groups': [], 'type': 'manual'}
@@ -2841,6 +2868,7 @@ def join_group(assignment_id):
         for student in selected_students:
             student_groups[assignment_id][student] = group_id
         
+        save_test_data()
         flash('Groupe formé avec succès')
         return redirect(url_for('dashboard'))
     

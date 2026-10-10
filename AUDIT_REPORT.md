@@ -32,3 +32,5 @@ GitHub `JonathanK-N/ULC-ICAM`, branche principale `develop`. Railway : projet `9
 - `DATA_FILE` n’apparaît pas dans les noms de variables Railway lus ; le chemin réellement persistant du JSON doit être vérifié avant bascule. Le volume seul ne démontre pas que le JSON se trouve dedans.
 - Groupes et certaines configurations restent réinitialisés en mémoire au démarrage ; corrections de persistance et tests de groupes encore nécessaires.
 - PostgreSQL, notifications/audit entièrement normalisés, Web Push, UX et architecture complète : non terminés. Aucune déclaration de modernisation complète.
+
+Cycle groupes : persistance/restauration et contrôle des membres corrigés ; création de devoir réservée au cours assigné ; rôle session vérifié sur le compte existant. PostgreSQL staging validé par CI réelle sur données synthétiques. Les autres formats/configurations non persistés et la couche stockage complète restent à auditer.
