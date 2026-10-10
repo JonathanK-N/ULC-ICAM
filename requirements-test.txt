@@ -1,0 +1,10 @@
+Flask==2.3.3
+Werkzeug==2.3.7
+Flask-WTF==1.2.1
+Flask-Limiter==3.5.0
+requests==2.31.0
+redis==5.0.1
+SQLAlchemy==2.0.23
+alembic==1.20.0
+psycopg[binary]==3.3.6
+pytest==9.1.1

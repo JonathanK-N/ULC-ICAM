@@ -11,3 +11,14 @@ Statut : plan initial, aucune migration de production autorisée ou réalisée.
 7. Rollback : remettre la version et la sauvegarde vérifiées avant reprise des écritures. Après nouvelles écritures PostgreSQL, prévoir export différentiel validé ; ne pas restaurer aveuglément un ancien JSON.
 
 Le script `models.migrate_from_json()` actuel est incomplet et ne répond pas à ces critères. Ne pas l'exécuter sur les données réelles.
+
+## Fondation livrée dans cette branche
+
+`migration_schema.py` définit les tables relationnelles de staging et les contraintes. `migrate_isolated.py` valide les références, préserve les IDs et champs supplémentaires en JSON, hash les anciens mots de passe, rejette un snapshot différent sur une base remplie et garde l’empreinte SHA-256 du fichier source. Aucun import automatique depuis Flask.
+
+Tests isolés SQLite : import répété sans doublons, champs préservés, orphelins refusés, source inchangée et upgrade/downgrade Alembic. Un test PostgreSQL dédié est fourni et une CI avec PostgreSQL 16 est préparée. La réussite locale SQLite ne prouve pas la réussite PostgreSQL.
+
+Commande d’essai exclusivement sur une COPIE SYNTHÉTIQUE :
+`python migrate_isolated.py tmp/synthetic.json --database-url sqlite:///tmp/migration.sqlite --confirm-isolated`
+
+Alembic exige `ISOLATED_DATABASE_URL`. Le schéma reste une fondation : groupes normalisés ; notifications et audit ont leurs tables mais les formats existants non mappés restent archivés dans application_state. Couche de stockage métier et bascule de Flask non réalisées.
