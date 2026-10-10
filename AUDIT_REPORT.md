@@ -40,3 +40,5 @@ Cycle stockage des soumissions : code sauvegardé dans UPLOAD_FOLDER configuré 
 
 ## Protection des tâches de fond
 Le worker est maintenant refusé avant import de Flask, et les helpers ne réécrivent plus le JSON. Le nettoyage aveugle des uploads de plus de 30 jours est désactivé et retiré du planning. La couche transactionnelle des résultats existe en isolation ; elle ne remplace pas encore les globals Flask. Ne pas activer les workers avant cette intégration. La première migration Alembic embarque désormais son propre schéma figé.
+
+Soumission classique IA : publication automatique du devoir supprimée, validation professeur conservée. Dates de session invalides ou futures : session invalidée au lieu d’une erreur serveur.

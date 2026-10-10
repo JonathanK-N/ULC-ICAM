@@ -57,3 +57,7 @@ Statut de livraison : lot de sécurité et fondation de migration livré en PR b
 - Nettoyage périodique supprimé : conserver les pièces pédagogiques, même anciennes, jusqu’à politique de rétention approuvée.
 - Local : 105 passed, 1 skipped (PostgreSQL), 7 assertions PWA. Test PostgreSQL CI étendu au repository.
 - Restent : repository Flask complet avec gestion de concurrence des routes, tâches IA sans imports des globals, notifications/audit, Web Push, UX et navigateur/mobile.
+
+CI b9bd569 validée : run 38018904260, job 114115307716, 106 tests réussis en 5.51s et 7 assertions PWA. PostgreSQL réel inclut désormais le repository.
+
+Cycle sessions/publication : dates invalides, incompatibles ou futures entraînent une reconnexion ; la soumission de fichier IA ne publie plus automatiquement le devoir. Tests de régression ajoutés.

@@ -30,6 +30,33 @@ def test_assignment_file_requires_enrollment(academic_client):
     assert client.get('/download_assignment_file/exam.pdf').status_code == 403
 
 
+@pytest.mark.parametrize('timestamp', ['invalid', 42, '2026-01-01T00:00:00+00:00',
+                                     '2999-01-01T00:00:00'])
+def test_invalid_session_timestamp_requires_login(academic_client, timestamp):
+    _, client = academic_client
+    with client.session_transaction() as sess:
+        sess['last_active'] = timestamp
+    assert client.get('/dashboard').status_code == 302
+    with client.session_transaction() as sess:
+        assert 'user' not in sess
+
+
+def test_file_ai_submission_does_not_publish_assignment(academic_client, monkeypatch, tmp_path):
+    module, client = academic_client
+    assignment = module.assignments[0]
+    assignment['auto_correct'] = True
+    monkeypatch.setattr(module, 'course_enrollments', {'1': ['student']})
+    monkeypatch.setattr(module, 'submissions', [])
+    monkeypatch.setattr(module, 'save_test_data', lambda: None)
+    monkeypatch.setattr(module, 'process_submission_async', lambda *args: None)
+    monkeypatch.setitem(module.app.config, 'UPLOAD_FOLDER', str(tmp_path))
+    response = client.post('/submit/1', data={'file': (io.BytesIO(b'answer'), 'answer.txt')})
+    assert response.status_code == 302
+    assert len(module.submissions) == 1
+    assert module.submissions[0]['results_available'] is False
+    assert not assignment.get('results_published')
+
+
 def test_admin_export_excludes_credentials(academic_client):
     _, client = academic_client
     with client.session_transaction() as sess:

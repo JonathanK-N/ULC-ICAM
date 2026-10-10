@@ -28,3 +28,5 @@ Cycle parcours utilisateurs : connexions réelles et rendu des pages essentielle
 
 - Révision Alembic initiale figée ; repository transactionnel des résultats préparé en isolation, protection des corrections approuvées.
 - Worker JSON bloqué ; réécritures concurrentes retirées ; nettoyage destructif des uploads anciens désactivé.
+
+- Reconnexion sur date de session invalide ou future ; publication automatique des devoirs lors des uploads IA supprimée.

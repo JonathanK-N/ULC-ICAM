@@ -299,8 +299,11 @@ def check_session_timeout():
         session['role'] = account.get('role')
         last_active = session.get('last_active')
         if last_active:
-            elapsed = (datetime.now() - datetime.fromisoformat(last_active)).total_seconds()
-            if elapsed > 3600:  # 1 heure
+            try:
+                elapsed = (datetime.now() - datetime.fromisoformat(last_active)).total_seconds()
+            except (ValueError, TypeError):
+                elapsed = 3601
+            if elapsed > 3600 or elapsed < 0:  # 1 heure
                 session.clear()
                 flash('Votre session a expiré. Veuillez vous reconnecter.')
                 return redirect(url_for('login'))
@@ -1076,9 +1079,6 @@ def submit_assignment(assignment_id):
                 if assignment.get('plagiarism_check') or assignment.get('auto_correct'):
                     process_submission_async(file_path, assignment, submission['id'])
                     
-                if assignment.get('auto_correct'):
-                    assignment['results_published'] = True
-
                 save_test_data()
 
                 flash('Fichier soumis avec succès!')
