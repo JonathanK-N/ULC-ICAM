@@ -63,3 +63,11 @@ CI b9bd569 validée : run 38018904260, job 114115307716, 106 tests réussis en 5
 Cycle sessions/publication : dates invalides, incompatibles ou futures entraînent une reconnexion ; la soumission de fichier IA ne publie plus automatiquement le devoir. Tests de régression ajoutés.
 
 Validation CI e3e58b7 : run 38019074383, job 114115813826 réussi (PostgreSQL réel, tests Python et PWA). Railway consulté en lecture : services ULC-ICAM et Redis en ligne ; déploiement ULC-ICAM toujours 92255766-777e-4e33-a61c-c9f23b516a70 ; aucune opération en attente. Prochaine action : intégrer le stockage relationnel aux routes Flask et extraire le calcul IA avant toute activation Celery.
+
+## Reprise du 10 octobre — services et intégration
+- Services purs préparés : correction avec grille contrôlée, extraction documentaire, similarité, emails, Web Push et rapports ; aucun import Flask dans le calcul des soumissions.
+- Repository de transition : snapshot relationnel, transaction de requête et verrou commun PostgreSQL ; notifications et audit désormais normalisés. Export isolé de rollback sans écrasement.
+- Contrôleurs déplacés en Blueprints, URL et endpoints historiques conservés via règles de construction compatibles.
+- Intégration Flask et worker en cours de validation : JSON reste le mode par défaut, activation relationnelle explicite, worker PostgreSQL uniquement. Aucun changement Railway.
+- Validation locale du découpage avant les derniers ajouts : 128 passed, 2 skipped. Les deux tests PostgreSQL/Redis réels attendent la nouvelle CI. Tests grille/dates : 9 passed.
+- Navigateur : deux délais d’attente CUA ; serveur local et ressources HTTP répondent 200, mais aucune validation visuelle des trois rôles n’est revendiquée.

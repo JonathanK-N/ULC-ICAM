@@ -42,3 +42,8 @@ Cycle stockage des soumissions : code sauvegardé dans UPLOAD_FOLDER configuré 
 Le worker est maintenant refusé avant import de Flask, et les helpers ne réécrivent plus le JSON. Le nettoyage aveugle des uploads de plus de 30 jours est désactivé et retiré du planning. La couche transactionnelle des résultats existe en isolation ; elle ne remplace pas encore les globals Flask. Ne pas activer les workers avant cette intégration. La première migration Alembic embarque désormais son propre schéma figé.
 
 Soumission classique IA : publication automatique du devoir supprimée, validation professeur conservée. Dates de session invalides ou futures : session invalidée au lieu d’une erreur serveur.
+
+## Transition relationnelle et services
+La correction et la similarité sont séparées des globals Flask. Le traitement durable utilise un état de soumission et une tentative identifiable ; une correction professeur approuvée est conservée même si le calcul termine plus tard. Notifications, audit et transport Web Push sont préparés avec autorisations par compte, CSRF, services push HTTPS autorisés, absence de redirection et messages génériques. Emails : TLS, destinataires cachés, tentatives bornées. Les rapports worker ne renvoient pas leurs données académiques dans le résultat Celery.
+
+Limite assumée du repository de transition : verrou commun et réécriture transactionnelle du snapshot ; la cohérence prime durant la migration, mais ce mécanisme ne démontre pas une montée en charge élevée. La couverture réelle PostgreSQL/Redis et le rendu navigateur restent à confirmer pour ce lot. Aucune activation production.

@@ -40,3 +40,6 @@ CI b9bd569 : 106 passed in 5.51s, 7 assertions PWA, PostgreSQL réel ; run 38018
 Dernière suite locale sessions/publication : 110 passed, 1 skipped in 32.27s (PostgreSQL réservé à la CI).
 
 Validation CI e3e58b7 : run 38019074383, job 114115813826 réussi (PostgreSQL réel, tests Python et PWA). Railway consulté en lecture : services ULC-ICAM et Redis en ligne ; déploiement ULC-ICAM toujours 92255766-777e-4e33-a61c-c9f23b516a70 ; aucune opération en attente. Prochaine action : intégrer le stockage relationnel aux routes Flask et extraire le calcul IA avant toute activation Celery.
+
+## Lot services et transition
+128 tests réussis et 2 ignorés localement avant les derniers ajouts ; 9 tests grille et échéances réussis ensuite. Nouvelle couverture préparée : concurrence PostgreSQL, Flask relationnel sans écriture JSON, worker réel Redis/PostgreSQL jusqu’à validation professeur, idempotence, export de rollback, notifications et emails simulés. Pas d’appel IA payant, pas d’email ni push réel. CUA a dépassé ses délais à deux reprises ; seul le serveur local et ses réponses HTTP ont pu être vérifiés, pas le rendu visuel.

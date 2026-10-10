@@ -75,6 +75,13 @@ def validate_snapshot(data):
                 if users.get(name, {}).get('role') != 'student' or name in seen:
                     raise MigrationError('Invalid or duplicate group member')
                 seen.add(name)
+    for field in ('notifications', 'audit_logs'):
+        records = data.get(field, [])
+        if not isinstance(records, list) or any(not isinstance(item, dict) or not item.get('id')
+                                                for item in records):
+            raise MigrationError(f'Invalid {field} records')
+        if len({str(item['id']) for item in records}) != len(records):
+            raise MigrationError(f'Duplicate {field} identifiers')
     return data
 
 
@@ -93,45 +100,56 @@ def import_snapshot(path, engine):
             return dict(source_sha256=digest, counts=existing, already_imported=True)
         if any(connection.execute(select(func.count()).select_from(t)).scalar() for t in schema.metadata.sorted_tables):
             raise MigrationError('Destination must be empty or contain this exact snapshot; no merge or overwrite')
-        for role in ('admin', 'teacher', 'student'):
-            connection.execute(schema.roles.insert().values(name=role))
-        for name, user in data.get('users', {}).items():
-            password = user['password']
-            if not (password.startswith(('pbkdf2:', 'scrypt:')) or ':' in password):
-                password = generate_password_hash(password)
-            payload = {k: v for k, v in user.items() if k not in ('password', 'temp_password')}
-            connection.execute(schema.users.insert().values(username=name, role=user['role'], password_hash=password, payload=payload))
-        for course in data.get('admin_courses', []):
-            connection.execute(schema.courses.insert().values(id=course['id'], payload=course))
-        for field, table in [('course_assignments', schema.teachers), ('course_enrollments', schema.enrollments)]:
-            for cid, names in data.get(field, {}).items():
-                for name in names:
-                    connection.execute(table.insert().values(course_id=int(cid), username=name))
-        for cid, chapters in data.get('course_chapters', {}).items():
-            for chapter in chapters:
-                connection.execute(schema.chapters.insert().values(id=chapter['id'], course_id=int(cid), payload=chapter))
-        for assignment in data.get('assignments', []):
-            connection.execute(schema.assignments.insert().values(id=assignment['id'], course_id=assignment.get('course_id'), teacher=assignment['teacher'], payload=assignment))
-        for submission in data.get('submissions', []):
-            payload = {k: v for k, v in submission.items() if k not in ('correction', 'plagiarism')}
-            connection.execute(schema.submissions.insert().values(id=submission['id'], assignment_id=submission['assignment_id'], student=submission['student'], payload=payload))
-            for field, table in [('correction', schema.grades), ('plagiarism', schema.plagiarism)]:
-                value = submission.get(field, data.get(field + '_results', {}).get(str(submission['id'])))
-                if value is not None:
-                    connection.execute(table.insert().values(submission_id=submission['id'], payload=value))
-        for aid, definition in data.get('group_assignments', {}).items():
-            for gid, members in enumerate(definition.get('groups', [])):
-                connection.execute(schema.groups.insert().values(assignment_id=int(aid), group_id=str(gid), payload={'members': members, 'type': definition.get('type')}))
-                for name in members:
-                    connection.execute(schema.group_members.insert().values(assignment_id=int(aid), group_id=str(gid), username=name))
-        # Preserve all fields not yet mapped without activating them in the live application.
-        mapped = {'users', 'admin_courses', 'course_assignments', 'course_enrollments', 'course_chapters', 'assignments', 'submissions'}
-        for key, value in data.items():
-            if key not in mapped:
-                connection.execute(schema.state.insert().values(key=key, payload=value))
+        write_snapshot(connection, data)
         counts = {table.name: connection.execute(select(func.count()).select_from(table)).scalar() for table in schema.metadata.sorted_tables if table is not schema.imports}
         connection.execute(schema.imports.insert().values(source_sha256=digest, counts=counts))
     return dict(source_sha256=digest, counts=counts, already_imported=False)
+
+
+def write_snapshot(connection, data, include_roles=True):
+    """Write a validated snapshot into empty relational tables in one transaction."""
+    if include_roles:
+        for role in ('admin', 'teacher', 'student'):
+            connection.execute(schema.roles.insert().values(name=role))
+    for name, user in data.get('users', {}).items():
+        password = user['password']
+        if not (password.startswith(('pbkdf2:', 'scrypt:')) or ':' in password):
+            password = generate_password_hash(password)
+        payload = {k: v for k, v in user.items() if k not in ('password', 'temp_password')}
+        connection.execute(schema.users.insert().values(username=name, role=user['role'], password_hash=password, payload=payload))
+    for course in data.get('admin_courses', []):
+        connection.execute(schema.courses.insert().values(id=course['id'], payload=course))
+    for field, table in [('course_assignments', schema.teachers), ('course_enrollments', schema.enrollments)]:
+        for cid, names in data.get(field, {}).items():
+            for name in names:
+                connection.execute(table.insert().values(course_id=int(cid), username=name))
+    for cid, chapters in data.get('course_chapters', {}).items():
+        for chapter in chapters:
+            connection.execute(schema.chapters.insert().values(id=chapter['id'], course_id=int(cid), payload=chapter))
+    for assignment in data.get('assignments', []):
+        connection.execute(schema.assignments.insert().values(id=assignment['id'], course_id=assignment.get('course_id'), teacher=assignment['teacher'], payload=assignment))
+    for submission in data.get('submissions', []):
+        payload = {k: v for k, v in submission.items() if k not in ('correction', 'plagiarism')}
+        connection.execute(schema.submissions.insert().values(id=submission['id'], assignment_id=submission['assignment_id'], student=submission['student'], payload=payload))
+        for field, table in [('correction', schema.grades), ('plagiarism', schema.plagiarism)]:
+            value = submission.get(field, data.get(field + '_results', {}).get(str(submission['id'])))
+            if value is not None:
+                connection.execute(table.insert().values(submission_id=submission['id'], payload=value))
+    for aid, definition in data.get('group_assignments', {}).items():
+        for gid, members in enumerate(definition.get('groups', [])):
+            connection.execute(schema.groups.insert().values(assignment_id=int(aid), group_id=str(gid), payload={'members': members, 'type': definition.get('type')}))
+            for name in members:
+                connection.execute(schema.group_members.insert().values(assignment_id=int(aid), group_id=str(gid), username=name))
+    # Preserve all fields not yet mapped without activating them in the live application.
+    for field, table in [('notifications', schema.notifications), ('audit_logs', schema.audit_logs)]:
+        for record in data.get(field, []):
+            username = record.get('username')
+            connection.execute(table.insert().values(id=str(record['id']),
+                username=username if username in data.get('users', {}) else None, payload=record))
+    mapped = {'users', 'admin_courses', 'course_assignments', 'course_enrollments', 'course_chapters', 'assignments', 'submissions', 'notifications', 'audit_logs'}
+    for key, value in data.items():
+        if key not in mapped:
+            connection.execute(schema.state.insert().values(key=key, payload=value))
 
 
 if __name__ == '__main__':

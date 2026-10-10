@@ -30,3 +30,5 @@ Cycle parcours utilisateurs : connexions réelles et rendu des pages essentielle
 - Worker JSON bloqué ; réécritures concurrentes retirées ; nettoyage destructif des uploads anciens désactivé.
 
 - Reconnexion sur date de session invalide ou future ; publication automatique des devoirs lors des uploads IA supprimée.
+
+- Services documentaires, grille IA justifiée, similarité, emails, Web Push et rapports extraits ; repository relationnel de transition et export isolé de rollback préparés.

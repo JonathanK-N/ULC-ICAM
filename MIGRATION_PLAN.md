@@ -28,3 +28,8 @@ Validation PostgreSQL de la fondation : CI 38017055612 réussie avec PostgreSQL 
 
 ## Repository des résultats
 SubmissionRepository utilise les tables existantes, sans nouvelle migration : résultats séparés des soumissions, transaction et verrou de la soumission en PostgreSQL. Les propositions portent review_status=pending et ne remplacent jamais un enregistrement approved. SQLite valide la logique séquentielle ; il ne valide pas le verrou PostgreSQL. Flask utilise toujours le JSON. Avant activation, intégrer les lectures et toutes les écritures des routes dans une unité transactionnelle, assurer la concurrence avec la validation professeur, extraire le calcul IA des globals et tester le worker avec Redis isolé. Le worker actuel refuse de démarrer durant cette transition.
+
+## Mode de transition préparé
+`COGNITO_STORAGE=relational` et `DATABASE_URL` sélectionnent explicitement une base préalablement importée et vérifiée. Aucune création, migration ni bascule automatique au démarrage. JSON reste le défaut. Le worker impose PostgreSQL et utilise le même verrou de transaction que les routes.
+
+Le rollback doit préserver les nouvelles écritures : ne pas remettre simplement l’ancien JSON après utilisation de PostgreSQL. Arrêter les écritures et workers, exporter un snapshot frais, vérifier les comptes, IDs, notes, groupes et empreintes, puis changer le mode selon une procédure approuvée. `export_isolated.py` prépare ce test sur base locale uniquement, avec sortie créée exclusivement et sans écrasement. Les outils de migration et d’export refusent encore les hôtes de production : leur usage réel demande l’approbation et un cycle dédié.

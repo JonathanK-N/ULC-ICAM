@@ -40,6 +40,8 @@ class SubmissionRepository:
 
     def _save(self, submission_id, table, payload, protect_approved=False):
         with self.engine.begin() as connection:
+            connection.execute(select(schema.roles.c.name).where(
+                schema.roles.c.name == 'admin').with_for_update()).first()
             # Serialize concurrent results for this submission in PostgreSQL.
             parent = connection.execute(select(schema.submissions.c.id).where(
                 schema.submissions.c.id == submission_id).with_for_update()).first()
