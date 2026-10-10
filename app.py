@@ -28,6 +28,7 @@ import re
 from difflib import SequenceMatcher
 from pathlib import Path
 from functools import wraps
+from grading_service import parse_ai_response, requires_review
 from security_policy import can_access_course, owns_assignment
 from code_execution import CodeExecutor, save_code_submission
 # Imports optionnels pour traitement de fichiers
@@ -420,11 +421,7 @@ try:
             _udata['password'] = generate_password_hash(_pwd)
             _migrated += 1
     if _migrated:
-        logger.info(f"Migration mots de passe : {_migrated} compte(s) migré(s) vers hash sécurisé")
-        # Sauvegarder immédiatement la migration
-        with open(DATA_FILE_TMP, 'w', encoding='utf-8') as _f:
-            json.dump(data, _f, ensure_ascii=False, indent=2)
-        os.replace(DATA_FILE_TMP, DATA_FILE)
+        logger.info('Anciens mots de passe hashés en mémoire ; aucune réécriture au démarrage')
 
     if not users:
         _default = _build_default_data()
@@ -458,19 +455,8 @@ except FileNotFoundError:
         logger.error(f"Impossible de créer ulc_icam_data.json : {_e}")
 
 except Exception as e:
-    logger.error(f"Erreur chargement données : {e}")
-    _default = _build_default_data()
-    users                = _default['users']
-    admin_courses        = []
-    course_assignments   = {}
-    course_enrollments   = {}
-    assignments          = []
-    submissions          = []
-    next_course_admin_id = 1
-    next_assignment_id   = 1
-    course_content       = {}
-    course_chapters      = {}
-    next_chapter_id      = 1
+    logger.critical('Chargement des données impossible ; démarrage interrompu pour éviter leur écrasement')
+    raise RuntimeError('Données illisibles : restaurer ou corriger une copie vérifiée') from e
 
 for _user_data in users.values():
     _user_data.pop('temp_password', None)
@@ -720,6 +706,7 @@ def generate_course_report_csv(course_id):
             avg_score = 0
             if student_submissions:
                 scores = [correction_results.get(s['id'], {}).get('score', 0) for s in student_submissions]
+                scores = [score for score in scores if isinstance(score, (int, float))]
                 avg_score = sum(scores) / len(scores) if scores else 0
             
             writer.writerow([
@@ -957,7 +944,7 @@ def submit_assignment(assignment_id):
                 test_cases = assignment.get('test_cases', [])
                 execution_result = executor.execute_code(code, language, test_cases=test_cases)
                 if execution_result.get('error_code'):
-                    return jsonify(success=False, execution_result=execution_result), (503 if execution_result.get('retryable') else 400)
+                    return jsonify(success=False, error=execution_result['error'], execution_result=execution_result), (503 if execution_result.get('retryable') else 400)
                 
                 # Calculer la note basée sur les résultats réels d'exécution
                 max_score = assignment.get('max_score', 100)
@@ -1061,7 +1048,7 @@ def submit_assignment(assignment_id):
             if file:
                 filename = secure_filename(file.filename)
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                filename = f"{session['user']}_{assignment_id}_{timestamp}_{filename}"
+                filename = secure_filename(f"{session['user']}_{assignment_id}_{secrets.token_hex(8)}_{filename}")
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 
                 submission = {
@@ -1360,7 +1347,7 @@ def course_detail(course_id):
     return render_template('course_detail.html', course=course, 
                          eligible_students=eligible_students, enrolled_students=enrolled_data)
 
-@app.route('/teacher/enroll_student/<int:course_id>/<username>')
+@app.route('/teacher/enroll_student/<int:course_id>/<username>', methods=['POST'])
 def enroll_student(course_id, username):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
@@ -1384,7 +1371,7 @@ def enroll_student(course_id, username):
     
     return redirect(url_for('course_detail', course_id=course_id))
 
-@app.route('/teacher/unenroll_student/<int:course_id>/<username>')
+@app.route('/teacher/unenroll_student/<int:course_id>/<username>', methods=['POST'])
 def unenroll_student(course_id, username):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
@@ -1639,7 +1626,7 @@ def assign_teacher_to_course(course_id):
         assigned_teachers=assigned_teachers
     )
 
-@app.route('/admin/unassign_teacher/<int:course_id>/<teacher_username>')
+@app.route('/admin/unassign_teacher/<int:course_id>/<teacher_username>', methods=['POST'])
 def unassign_teacher_from_course(course_id, teacher_username):
     if 'user' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
@@ -2209,6 +2196,9 @@ def grade_submission(submission_id):
     if request.method == 'POST':
         score = request.form.get('score', type=float)
         max_score = request.form.get('max_score', type=float) or assignment.get('max_score', 100)
+        import math
+        if score is None or not math.isfinite(score) or not math.isfinite(max_score) or max_score <= 0 or not 0 <= score <= max_score:
+            return jsonify(error='Note invalide'), 400
         feedback_text = request.form.get('feedback', '')
         feedback_list = [line.strip() for line in feedback_text.splitlines() if line.strip()]
 
@@ -2217,7 +2207,7 @@ def grade_submission(submission_id):
         if feedback_file and feedback_file.filename:
             corrections_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'corrections')
             os.makedirs(corrections_folder, exist_ok=True)
-            filename = secure_filename(feedback_file.filename)
+            filename = secure_filename(f"correction_{submission_id}_{secrets.token_hex(8)}_{feedback_file.filename}")
             feedback_file.save(os.path.join(corrections_folder, filename))
 
         correction = {
@@ -2225,7 +2215,8 @@ def grade_submission(submission_id):
             'max_score': max_score,
             'feedback': feedback_list,
             'feedback_file': filename,
-            'auto_generated': False
+            'auto_generated': False,
+            'review_status': 'approved'
         }
 
         correction_results[submission_id] = correction
@@ -2234,6 +2225,7 @@ def grade_submission(submission_id):
         if 'publish_now' in request.form:
             submission['results_available'] = True
 
+        save_test_data()
         flash('Soumission corrigée')
         return redirect(url_for('assignment_results', assignment_id=submission['assignment_id']))
 
@@ -2247,6 +2239,10 @@ def publish_submissions(assignment_id):
         return redirect(url_for('login'))
     if not owns_assignment(session['user'], assignments, assignment_id):
         return jsonify(error='Accès interdit'), 403
+
+    if any(requires_review(sub.get('correction', correction_results.get(sub['id'], {})))
+           for sub in submissions if sub.get('assignment_id') == assignment_id):
+        return jsonify(error='Validez les corrections proposées avant publication'), 409
 
 
     for sub in submissions:
@@ -2548,6 +2544,8 @@ def check_plagiarism_local(text: str, submission_id: int) -> dict:
     result = {
         'similarity': sim,
         'sources': [s['label'] for s in sources[:5]],   # labels texte pour l'affichage
+        'requires_human_review': True,
+        'interpretation': 'La similarité est un indice à examiner, pas une preuve de fraude.',
         'sources_detail': sources[:5],                   # données complètes pour les APIs
         'status': status,
         'details': {
@@ -2690,6 +2688,7 @@ def openai_correction(text, assignment, submission_id):
             'max_score': assignment.get('max_score', 100),
             'feedback': feedback,
             'auto_generated': True,
+            'review_status': 'pending',
             'ai_model': 'OpenAI GPT-3.5'
         }
 
@@ -2701,48 +2700,8 @@ def openai_correction(text, assignment, submission_id):
         return huggingface_correction(text, assignment, submission_id)
 
 def huggingface_correction(text, assignment, submission_id):
-    """Correction avec Hugging Face (modèle local)"""
-    if not TRANSFORMERS_AVAILABLE:
-        return fallback_correction(assignment, submission_id)
-        
-    try:
-        # Utiliser un modèle de sentiment/qualité pour évaluation basique
-        classifier = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")
-        
-        # Analyser le sentiment/qualité du texte
-        chunks = [text[i:i+500] for i in range(0, len(text), 500)][:3]  # Premiers 1500 chars
-        scores = []
-        
-        for chunk in chunks:
-            if chunk.strip():
-                result = classifier(chunk)
-                # Convertir le score de sentiment en note
-                confidence = result[0]['score']
-                if result[0]['label'] in ['POSITIVE', '4 stars', '5 stars']:
-                    scores.append(confidence * 0.9)  # 90% max pour positif
-                else:
-                    scores.append(confidence * 0.6)  # 60% max pour négatif
-        
-        avg_score = sum(scores) / len(scores) if scores else 0.7
-        final_score = int(avg_score * assignment.get('max_score', 100))
-        
-        # Générer feedback basique
-        feedback = generate_basic_feedback(text, final_score, assignment.get('max_score', 100))
-        
-        correction = {
-            'score': final_score,
-            'max_score': assignment.get('max_score', 100),
-            'feedback': feedback,
-            'auto_generated': True,
-            'ai_model': 'Hugging Face BERT'
-        }
-        
-        correction_results[submission_id] = correction
-        return correction
-        
-    except Exception as e:
-        print(f"Erreur Hugging Face: {e}")
-        return fallback_correction(assignment, submission_id)
+    """Sentiment confidence is not an academic grading rubric."""
+    return fallback_correction(assignment, submission_id)
 
 def generate_basic_feedback(text, score, max_score):
     """Génère un feedback basique basé sur l'analyse du texte"""
@@ -2771,48 +2730,16 @@ def generate_basic_feedback(text, score, max_score):
     
     return feedback[:5]  # Limiter à 5 commentaires
 
-def parse_ai_response(response_text, max_score):
-    """Parse la réponse de l'IA pour extraire note et commentaires"""
-    try:
-        lines = response_text.split('\n')
-        score = max_score * 0.75  # Score par défaut
-        feedback = []
-        
-        for line in lines:
-            if 'NOTE:' in line.upper():
-                # Extraire la note
-                numbers = re.findall(r'\d+', line)
-                if numbers:
-                    score = min(int(numbers[0]), max_score)
-            elif line.strip().startswith('-'):
-                # Extraire les commentaires
-                feedback.append(line.strip()[1:].strip())
-        
-        if not feedback:
-            feedback = ["Travail évalué automatiquement", "Consultez votre professeur pour plus de détails"]
-        
-        return score, feedback[:5]
-    except:
-        return max_score * 0.75, ["Évaluation automatique effectuée"]
-
 def fallback_correction(assignment, submission_id):
-    """Correction de secours si les IA ne fonctionnent pas"""
-    import random
-    score = random.randint(int(assignment.get('max_score', 100) * 0.6), int(assignment.get('max_score', 100) * 0.9))
-    feedback = [
-        "Travail évalué automatiquement",
-        "Structure générale acceptable",
-        "Consultez votre professeur pour un feedback détaillé"
-    ]
-    
+    """Keep the submission for teacher review without assigning an invented score."""
     correction = {
-        'score': score,
+        'score': None,
         'max_score': assignment.get('max_score', 100),
-        'feedback': feedback,
+        'feedback': ['Évaluation automatique indisponible. Correction manuelle requise.'],
         'auto_generated': True,
-        'ai_model': 'Fallback'
+        'review_status': 'pending',
+        'ai_model': 'Unavailable'
     }
-    
     correction_results[submission_id] = correction
     return correction
 
@@ -3019,6 +2946,8 @@ def student_grades():
             results_available = submission.get('results_available') or is_results_published(assignment)
             
             correction = submission.get('correction', {})
+            if requires_review(correction or correction_results.get(submission['id'], {})):
+                results_available = False
             plagiarism = submission.get('plagiarism', {})
             if results_available:
                 if not correction and submission['id'] in correction_results:
@@ -3077,6 +3006,10 @@ def publish_results(assignment_id):
         return redirect(url_for('login'))
     if not owns_assignment(session['user'], assignments, assignment_id):
         return jsonify(error='Accès interdit'), 403
+
+    if any(requires_review(sub.get('correction', correction_results.get(sub['id'], {})))
+           for sub in submissions if sub.get('assignment_id') == assignment_id):
+        return jsonify(error='Validez les corrections proposées avant publication'), 409
 
     
     assignment = next((a for a in assignments if a['id'] == assignment_id and a.get('teacher') == session['user']), None)
@@ -3350,7 +3283,7 @@ def download_backup():
     response.headers['Content-Disposition'] = f'attachment; filename="sauvegarde_ulc_{timestamp}.json"'
     return response
 
-@app.route('/admin/check_all_plagiarism')
+@app.route('/admin/check_all_plagiarism', methods=['POST'])
 def check_all_plagiarism():
     """Vérifie le plagiat pour toutes les soumissions de code"""
     if 'user' not in session or session['role'] not in ['admin', 'teacher']:
@@ -3358,6 +3291,8 @@ def check_all_plagiarism():
     
     checked_count = 0
     for submission in submissions:
+        if session['role'] == 'teacher' and not owns_assignment(session['user'], assignments, submission.get('assignment_id')):
+            continue
         if submission.get('code_submission'):
             try:
                 code_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'code_submissions', submission['filename'])
@@ -3378,7 +3313,7 @@ def check_all_plagiarism():
     else:
         return redirect(url_for('teacher_submissions'))
 
-@app.route('/admin/recheck_plagiarism/<int:submission_id>')
+@app.route('/admin/recheck_plagiarism/<int:submission_id>', methods=['POST'])
 def recheck_plagiarism(submission_id):
     """Force la revérification du plagiat pour une soumission"""
     if 'user' not in session or session['role'] != 'admin':
@@ -3422,6 +3357,8 @@ def upload_analysis_files(assignment_id):
     if not assignment or not assignment.get('is_mixed_assignment'):
         return jsonify({'success': False, 'error': 'Devoir non trouvé ou pas un devoir mixte'})
     
+    if session['user'] not in get_enrolled_students(assignment.get('course_id')):
+        return jsonify(success=False, error='Accès interdit'), 403
     if 'analysis_files' not in request.files:
         return jsonify({'success': False, 'error': 'Aucun fichier fourni'})
     
@@ -3432,7 +3369,7 @@ def upload_analysis_files(assignment_id):
         if file and file.filename != '':
             filename = secure_filename(file.filename)
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            filename = f"analysis_{session['user']}_{assignment_id}_{timestamp}_{filename}"
+            filename = secure_filename(f"analysis_{session['user']}_{assignment_id}_{secrets.token_hex(8)}_{filename}")
             
             analysis_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'analysis')
             os.makedirs(analysis_folder, exist_ok=True)
@@ -3465,81 +3402,6 @@ def upload_analysis_files(assignment_id):
         'message': f'{len(uploaded_files)} fichier(s) d\'analyse téléversé(s) avec succès',
         'files': uploaded_files
     })
-
-@app.route('/test_submit', methods=['POST'])
-def test_submit():
-    user = users.get(session.get('user'))
-    if not user:
-        return jsonify(success=False, error='Authentification requise'), 401
-    if user.get('role') not in ('student', 'teacher', 'admin'):
-        return jsonify(success=False, error='Accès interdit'), 403
-    """Route de test pour la soumission"""
-    try:
-        code = request.form.get('code_content', '')
-        language = request.form.get('language', 'python')
-        
-        if not code.strip():
-            return jsonify({
-                'success': False,
-                'error': 'Code vide'
-            })
-        
-        # Test d'exécution simple
-        executor = CodeExecutor()
-        result = executor.execute_code(code, language)
-        if result.get('error_code'):
-            return jsonify(success=False, execution_result=result), (503 if result.get('retryable') else 400)
-        
-        # Note basée sur le résultat réel de compilation/exécution
-        max_score = 100
-        
-        # Vérifier si le code s'est exécuté sans erreur
-        has_compilation_error = bool(result.get('compile_output', '').strip())
-        has_runtime_error = bool(result.get('stderr', '').strip())
-        execution_success = result.get('success', False)
-        
-        # Déterminer la note selon les résultats réels
-        status = result.get('status', '')
-        is_system_error = 'non installé' in status or 'non trouvé' in status or 'non supporté' in status
-        
-        if execution_success and not has_compilation_error and not has_runtime_error:
-            score = max_score
-            feedback = [
-                "✅ Compilation réussie",
-                "✅ Exécution sans erreur", 
-                f"🎉 Félicitations ! Note maximale obtenue: {max_score}/{max_score}"
-            ]
-        elif is_system_error:
-            score = 0
-            feedback = [
-                f"⚠️ {status}",
-                "🔧 Contactez l'administrateur pour installer les outils nécessaires"
-            ]
-        else:
-            score = 0
-            feedback = []
-            if has_compilation_error:
-                feedback.append("❌ Erreurs de compilation détectées")
-            if has_runtime_error:
-                feedback.append("❌ Erreurs d'exécution détectées")
-            if not execution_success:
-                feedback.append("❌ Le programme ne s'exécute pas correctement")
-            feedback.append("🔧 Corrigez les erreurs pour obtenir des points")
-        
-        result['score'] = score
-        result['max_score'] = max_score
-        result['feedback'] = feedback
-        
-        return jsonify({
-            'success': True,
-            'execution_result': result
-        })
-        
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        })
 
 @app.route('/admin/seed', methods=['GET', 'POST'])
 def admin_seed():
@@ -3633,11 +3495,14 @@ def admin_seed():
     return redirect(url_for('admin_users'))
 
 
+from execution_routes import create_execution_blueprint
+app.register_blueprint(create_execution_blueprint(lambda username: users.get(username)))
+
 # Apply per-endpoint limits after route registration (all login variants included).
 if LIMITER_AVAILABLE:
     for _endpoint in ('student_login', 'teacher_login', 'admin_login'):
         app.view_functions[_endpoint] = limiter.limit('5 per minute; 30 per hour', methods=['POST'])(app.view_functions[_endpoint])
-    app.view_functions['test_submit'] = limiter.limit('10 per minute', methods=['POST'])(app.view_functions['test_submit'])
+    app.view_functions['execution.test_submit'] = limiter.limit('10 per minute', methods=['POST'])(app.view_functions['execution.test_submit'])
 
 if __name__ == '__main__':
     import os

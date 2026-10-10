@@ -21,3 +21,14 @@ GitHub `JonathanK-N/ULC-ICAM`, branche principale `develop`. Railway : projet `9
 - Permissions sur les autres routes, uploads, correction IA, notes et export : audit exhaustif restant.
 - Pas de test réel contre Judge0, Redis ou les comptes de production. Judge0 auto-hébergé HTTP serait volontairement refusé ; config HTTPS à vérifier avant déploiement sans exposer la clé.
 - Une installation vide requiert BOOTSTRAP_ADMIN_PASSWORD ; comptes existants préservés. Aucun changement de secret production demandé ou effectué.
+
+## Compléments de l’audit
+- Confirmé et corrigé : fallback IA aléatoire (60–90 %), notation par sentiment, note par défaut 75 % quand réponse IA invalide. Les nouvelles évaluations indisponibles n’ont aucune note et restent en attente de validation.
+- Confirmé et corrigé : inscriptions/plagiat déclenchés par GET, relance plagiat inter-professeur, analyse de devoir sans inscription, correction manuelle non sauvegardée et repli silencieux vers données vides après erreur JSON.
+- Export complet assaini et cache PWA privé corrigé dans le cycle 3.
+- Scripts de démonstration : admin initial fourni par environnement et opérations refusées en mode production ; leurs autres comptes de test restent réservés aux démonstrations isolées.
+- Voir ROUTE_INVENTORY.md pour l’inventaire statique complet ; cet inventaire n’est pas une preuve de couverture dynamique complète.
+- Celery actuel : tâches décorées sur une instance provisoire, fichiers JSON réécrits sans coordination inter-processus. Activation en production bloquée jusqu’à refonte du stockage et tests worker.
+- `DATA_FILE` n’apparaît pas dans les noms de variables Railway lus ; le chemin réellement persistant du JSON doit être vérifié avant bascule. Le volume seul ne démontre pas que le JSON se trouve dedans.
+- Groupes et certaines configurations restent réinitialisés en mémoire au démarrage ; corrections de persistance et tests de groupes encore nécessaires.
+- PostgreSQL, notifications/audit entièrement normalisés, Web Push, UX et architecture complète : non terminés. Aucune déclaration de modernisation complète.

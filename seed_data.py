@@ -15,6 +15,9 @@ import os, json, hashlib, random, shutil
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 
+from bootstrap_credentials import isolated_admin_hash
+_admin_hash = isolated_admin_hash()
+
 # ── Dossiers ────────────────────────────────────────────────────────────────
 UPLOAD   = 'uploads'
 CHAPTERS = os.path.join(UPLOAD, 'chapters')
@@ -1211,7 +1214,7 @@ print('\n=== Assemblage du fichier JSON ===')
 
 users_dict = {
     'admin': {
-        'password':  generate_password_hash('Admin@ULC2024'),
+        'password':  _admin_hash,
         'role':      'admin',
         'name':      'Administrateur ULC-ICAM',
         'email':     'admin@ulc-icam.cd',
@@ -1537,6 +1540,6 @@ total_files = sum(
 )
 print(f'   Fichiers cours : {total_files} fichiers dans uploads/')
 print('\n📋 Identifiants par défaut :')
-print('   Admin     → login: admin        | mdp: Admin@ULC2024')
+print('   Admin : mot de passe fourni par environnement (non affiché)')
 print('   Profs     → login: jb.mukendi   | mdp: Prof@2024')
 print('   Étudiants → login: grace.kasongo | mdp: Etudiant@2024')

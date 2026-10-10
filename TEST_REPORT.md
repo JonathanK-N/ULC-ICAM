@@ -11,3 +11,11 @@
 Non exécuté : tests navigateur/mobile, sandbox Judge0 réelle, Redis réel, PostgreSQL réel, déploiement Railway et parcours complets IA/email/PWA. Les tests existants ne couvrent pas toutes les fonctionnalités.
 
 Cycle 3 : cache PWA limité aux ressources publiques, anciens caches privés purgés, export admin sans hashes, téléchargement des pièces de devoir contrôlé. Vérifications : 65 tests réussis (16.65s), test Node du service worker : 7 assertions réussies.
+
+## Validation du dernier lot
+- `.venv/Scripts/python.exe -m pytest -q` : **92 passed, 1 skipped in 14.44s**. Test PostgreSQL réel explicitement ignoré faute de serveur local ; CI PostgreSQL ajoutée, résultat à suivre.
+- Test Node du service worker : **7 assertions réussies**.
+- `py_compile` : modules principaux, Blueprint, import relationnel et scripts de démonstration validés.
+- Ajouts : aller-retour Alembic SQLite, refus des imports divergents et des orphelins, limites de connexion, stockage corrompu conservé avec démarrage refusé, panne sandbox HTTP 503, note IA invalide/panne sans score, publication des brouillons refusée et validation manuelle suivie de publication.
+- Une première vérification Alembic en sous-processus a échoué avec une erreur native du runtime Windows ; le test via l’API Alembic a ensuite validé l’upgrade et le downgrade réels sur SQLite. Des erreurs de montage de tests ont été corrigées avant la dernière suite réussie.
+- Image Docker non construite localement (Docker absent). Dépendances optionnelles IA/email/documents et serveur Redis réel non exercés par cette suite minimale.

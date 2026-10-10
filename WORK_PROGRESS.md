@@ -18,3 +18,19 @@ Base vérifiée le 9 octobre 2026 : production Railway `92255766-777e-4e33-a61c-
 La mission complète n'est pas terminée. Ne pas déployer ce lot sans revue des risques et tests des parcours réels.
 
 Cycle 3 : cache PWA limité aux ressources publiques, anciens caches privés purgés, export admin sans hashes, téléchargement des pièces de devoir contrôlé. Vérifications : 65 tests réussis (16.65s), test Node du service worker : 7 assertions réussies.
+
+## Cycles 4 à 6 — branche prête pour revue partielle
+- PR brouillon : https://github.com/JonathanK-N/ULC-ICAM/pull/28 (base ui ; aucune fusion).
+- Commit c362b62 : fondation relationnelle isolée, import idempotent et Alembic ; SQLite validé, PostgreSQL réel à valider par CI.
+- Contrôles supplémentaires : actions d’inscription/plagiat POST, analyse réservée aux inscrits, corrections manuelles persistées, démarrage refusé sur JSON illisible, scripts admin sans mot de passe connu, premier Blueprint et validation des notes IA.
+- Note aléatoire de secours et notation par sentiment retirées ; nouveaux brouillons IA en attente de validation professeur. Similarité présentée comme indice à examiner.
+- Image Web débarrassée des compilateurs étudiants ; logs INFO et contexte Docker excluant données/secrets locaux. Build Docker restant à valider.
+- Dernière validation locale : 92 tests réussis, 1 PostgreSQL ignoré ; service worker : 7 assertions.
+
+## Prochaine reprise
+1. Lire les derniers commits, ces rapports et la PR ; vérifier le résultat de CI PostgreSQL.
+2. Achever l’audit des uploads/groupes, sessions/permissions et les tests navigateur des trois rôles.
+3. Compléter les modèles et l’import notifications/audit, figer les révisions Alembic et introduire le repository PostgreSQL dans Flask avec tests de parité.
+4. Corriger l’initialisation/enregistrement Celery et supprimer les écritures concurrentes directes JSON avant activation d’un worker. Ne pas lancer le worker actuel en production.
+5. Compléter grille IA, persistance des propositions, gestion Web Push et UX/accessibilité.
+6. Faire valider toute bascule, migration réelle et déploiement. Mission globale encore partiellement réalisée.

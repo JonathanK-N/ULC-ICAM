@@ -1,0 +1,16 @@
+.git
+.venv
+venv
+.env
+config_local.py
+api_keys.txt
+secrets.json
+ulc_icam_data*.json
+uploads
+logs
+tmp
+temp
+__pycache__
+*.pyc
+.pytest_cache
+docs_archive
