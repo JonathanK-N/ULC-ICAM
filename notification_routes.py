@@ -48,7 +48,11 @@ def create_notification_blueprint(state, save):
 
     @blueprint.get('/notifications')
     def preferences():
-        items = [item for item in state('notifications') if item.get('username') == session['user']]
+        items = [dict(item) for item in state('notifications') if item.get('username') == session['user']]
+        for item in items:
+            url = item.get('url', '')
+            if not isinstance(url, str) or not url.startswith('/') or url.startswith('//') or '\\' in url:
+                item['url'] = '/dashboard'
         return render_template('notifications.html', notifications=items[-100:][::-1],
                                push_enabled=push_configured())
 

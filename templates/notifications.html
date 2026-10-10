@@ -1,0 +1,28 @@
+{% extends "base_clean.html" %}
+{% block title %}Notifications — Cognito Web{% endblock %}
+{% block content %}
+<h1>Notifications</h1>
+<p>Retrouvez les informations liées à vos cours et à vos résultats.</p>
+<section aria-labelledby="push-title" class="card p-3 mb-3">
+  <h2 id="push-title">Sur cet appareil</h2>
+  <p>Les notifications restent discrètes : aucun résultat ni contenu de devoir n’apparaît sur l’écran verrouillé.</p>
+  <div>
+    <button type="button" id="enable-push" class="btn btn-primary" {% if not push_enabled %}disabled{% endif %}>Activer les notifications</button>
+    <button type="button" id="disable-push" class="btn btn-outline-secondary">Désactiver sur cet appareil</button>
+  </div>
+  <p id="push-status" role="status" aria-live="polite">{% if not push_enabled %}Les notifications navigateur ne sont pas encore disponibles.{% endif %}</p>
+</section>
+<ul class="list-group">
+{% for item in notifications %}
+  <li class="list-group-item">
+    <a href="{{ item.url if item.url and item.url.startswith('/') and not item.url.startswith('//') else '/dashboard' }}">{{ item.message }}</a>
+    {% if not item.read %}<span class="badge bg-primary">Nouveau</span>{% endif %}
+    <form method="post" action="{{ url_for('notifications.mark_read', identifier=item.id) }}" class="d-inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-sm btn-outline-secondary">Marquer comme lu</button>
+    </form>
+  </li>
+{% else %}<li class="list-group-item">Vous n’avez pas de notification.</li>{% endfor %}
+</ul>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>{% endblock %}

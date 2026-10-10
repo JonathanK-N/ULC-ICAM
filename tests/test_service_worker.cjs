@@ -5,13 +5,16 @@ const handlers = {};
 const removed = [];
 const fetched = [];
 const cached = [];
+const notifications = [], opened = [];
 const context = {
   URL, console,
   self: {
     location: {origin: 'https://cognito.test'},
     addEventListener: (name, fn) => handlers[name] = fn,
+    registration: {showNotification: async (title, options) => notifications.push({title, options})},
     skipWaiting: async () => {}, clients: {claim: async () => {}}
   },
+  clients: {openWindow: async url => opened.push(url)},
   caches: {
     keys: async () => ['ulc-icam-v1.0.1', 'unrelated-app', 'ulc-icam-public-v2'],
     delete: async name => removed.push(name),
@@ -38,5 +41,12 @@ vm.runInNewContext(fs.readFileSync('static/sw.js', 'utf8'), context);
   context.fetch = async () => {throw Error('offline');};
   handlers.fetch({request, respondWith: p => promise = p});
   assert.equal((await promise).offline, true);
-  console.log('Service worker: 7 assertions passed');
+  handlers.push({data: {json: () => ({body: 'Private grade 80', tag: 'n'})}, waitUntil: p => promise = p});
+  await promise;
+  assert(!notifications[0].options.body.includes('80'));
+  assert.equal(notifications[0].options.data.url, '/notifications');
+  handlers.notificationclick({notification: {data: {url: 'https://untrusted.test/'}, close() {}}, waitUntil: p => promise = p});
+  await promise;
+  assert.equal(opened[0], 'https://cognito.test/notifications');
+  console.log('Service worker: 10 assertions passed');
 })().catch(error => {console.error(error); process.exitCode = 1;});

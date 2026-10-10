@@ -43,3 +43,5 @@ Validation CI e3e58b7 : run 38019074383, job 114115813826 réussi (PostgreSQL r�
 
 ## Lot services et transition
 128 tests réussis et 2 ignorés localement avant les derniers ajouts ; 9 tests grille et échéances réussis ensuite. Nouvelle couverture préparée : concurrence PostgreSQL, Flask relationnel sans écriture JSON, worker réel Redis/PostgreSQL jusqu’à validation professeur, idempotence, export de rollback, notifications et emails simulés. Pas d’appel IA payant, pas d’email ni push réel. CUA a dépassé ses délais à deux reprises ; seul le serveur local et ses réponses HTTP ont pu être vérifiés, pas le rendu visuel.
+
+Suite locale intermédiaire : 133 passed, 2 skipped in 469.77s. Cette machine a émis des exceptions Windows de manque de ressources pendant certains imports, mais cette suite a terminé avec succès. Les derniers ajustements et PostgreSQL/Redis restent à confirmer en CI.

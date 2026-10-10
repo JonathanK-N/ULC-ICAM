@@ -34,54 +34,20 @@ self.addEventListener('fetch', event => {
   }
 });
 
-// Gestion des notifications push
+// Notifications remain generic on the lock screen.
 self.addEventListener('push', event => {
-  console.log('[SW] Push reçu:', event);
-  
-  const options = {
-    body: event.data ? event.data.text() : 'Nouvelle notification ULC-ICAM',
-    icon: '/static/images/pwa-icon-192.png',
-    badge: '/static/images/pwa-icon-192.png',
-    vibrate: [100, 50, 100],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1
-    },
-    actions: [
-      {
-        action: 'explore',
-        title: 'Voir',
-        icon: '/static/images/pwa-icon-192.png'
-      },
-      {
-        action: 'close',
-        title: 'Fermer',
-        icon: '/static/images/pwa-icon-192.png'
-      }
-    ]
-  };
-
-  event.waitUntil(
-    self.registration.showNotification('ULC-ICAM Turnin', options)
-  );
+  let payload = {};
+  try { payload = event.data ? event.data.json() : {}; } catch (_) {}
+  event.waitUntil(self.registration.showNotification('Cognito Web', {
+    body: 'Une nouvelle information est disponible dans votre espace.',
+    icon: '/static/images/pwa-icon-192.png', badge: '/static/images/pwa-icon-192.png',
+    tag: String(payload.tag || 'cognito-notification').slice(0, 80),
+    data: { url: '/notifications' }
+  }));
 });
-
-// Gestion des clics sur notifications
 self.addEventListener('notificationclick', event => {
-  console.log('[SW] Clic notification:', event);
-  
   event.notification.close();
-
-  if (event.action === 'explore') {
-    event.waitUntil(
-      clients.openWindow('/dashboard')
-    );
-  } else if (event.action === 'close') {
-    // Fermer la notification
-  } else {
-    // Clic par défaut
-    event.waitUntil(
-      clients.openWindow('/')
-    );
-  }
+  const destination = new URL(event.notification.data?.url || '/notifications', self.location.origin);
+  const safeUrl = destination.origin === self.location.origin ? destination.href : self.location.origin + '/notifications';
+  event.waitUntil(clients.openWindow(safeUrl));
 });

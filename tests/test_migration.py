@@ -97,6 +97,171 @@ def test_transactional_results_preserve_submissions_and_teacher_approval(snapsho
     engine.dispose()
 
 
+def test_snapshot_transaction_round_trip_and_rollback(snapshot):
+    from snapshot_repository import SnapshotRepository
+    engine = isolated_engine('sqlite://')
+    import_snapshot(snapshot[0], engine)
+    repository = SnapshotRepository(engine)
+    with repository.transaction() as connection:
+        data = repository.load(connection)
+        data['admin_courses'][0]['name'] = 'Updated'
+        repository.save(connection, data)
+    with pytest.raises(RuntimeError, match='rollback'):
+        with repository.transaction() as connection:
+            data = repository.load(connection)
+            data['admin_courses'][0]['name'] = 'Lost'
+            repository.save(connection, data)
+            raise RuntimeError('rollback')
+    with repository.transaction() as connection:
+        data = repository.load(connection)
+    assert data['admin_courses'][0]['name'] == 'Updated'
+    assert data['submissions'][0]['correction']['score'] == 90
+    assert data['course_content'] == snapshot[1]['course_content']
+    assert data['group_assignments'] == snapshot[1]['group_assignments']
+    engine.dispose()
+
+
+def test_relational_rollback_export_is_consistent_and_never_overwrites(snapshot, tmp_path):
+    from export_isolated import export_snapshot
+    engine = isolated_engine('sqlite://')
+    import_snapshot(snapshot[0], engine)
+    output = tmp_path / 'rollback.json'
+    result = export_snapshot(engine, output)
+    loaded = json.loads(output.read_text(encoding='utf-8'))
+    assert result['submissions'] == 1
+    assert loaded['submissions'][0]['id'] == 30
+    assert check_password_hash(loaded['users']['s']['password'], 'student-secret')
+    before = output.read_bytes()
+    with pytest.raises(FileExistsError):
+        export_snapshot(engine, output)
+    assert output.read_bytes() == before
+    restored = isolated_engine('sqlite://')
+    assert import_snapshot(output, restored)['counts']['submissions'] == 1
+    restored.dispose()
+    engine.dispose()
+
+
+def test_worker_proposals_are_durable_idempotent_and_preserve_teacher_review(snapshot, tmp_path):
+    from snapshot_repository import SnapshotRepository
+    from submission_processor import SubmissionProcessor
+    path, data = snapshot
+    data['assignments'][0]['auto_correct'] = True
+    data['submissions'][0].update(filename='answer.txt', processing_status='pending')
+    path.write_text(json.dumps(data))
+    (tmp_path / 'answer.txt').write_text('My academic work')
+    engine = isolated_engine('sqlite://')
+    import_snapshot(path, engine)
+    repository = SnapshotRepository(engine)
+    def grade(text, assignment):
+        assert text == 'My academic work'
+        # Simulate a teacher approving while the slow calculation is outside the lock.
+        with repository.transaction() as connection:
+            current = repository.load(connection)
+            current['submissions'][0]['correction'] = {'score': 95, 'review_status': 'approved'}
+            repository.save(connection, current)
+        return {'score': 30, 'review_status': 'pending'}
+    processor = SubmissionProcessor(repository, tmp_path, grader=grade)
+    assert processor.process(30)['status'] == 'completed'
+    assert processor.process(30)['status'] == 'already_processed'
+    with repository.transaction() as connection:
+        current = repository.load(connection)
+    assert current['submissions'][0]['correction']['score'] == 95
+    assert len(current['notifications']) == 1
+    assert len(current['audit_logs']) == 1
+    engine.dispose()
+
+
+def test_push_delivery_removes_expired_device_and_hides_grades(snapshot, monkeypatch):
+    from snapshot_repository import SnapshotRepository
+    from push_service import deliver_notifications
+    from tests.test_notifications import subscription
+    path, data = snapshot
+    data['notifications'] = [{'id': 'n', 'username': 't', 'message': 'Private grade 80'}]
+    data['push_subscriptions'] = [{'id': 'device', 'username': 't', 'subscription': subscription()}]
+    path.write_text(json.dumps(data))
+    engine = isolated_engine('sqlite://')
+    import_snapshot(path, engine)
+    repository = SnapshotRepository(engine)
+    for key in ('VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_SUBJECT'):
+        monkeypatch.setenv(key, 'isolated-only')
+    calls = []
+    def sender(device, payload):
+        calls.append(payload)
+        return 'expired'
+    assert deliver_notifications(repository, sender)['sent'] == 1
+    assert '80' not in calls[0]['body']
+    assert deliver_notifications(repository, sender)['sent'] == 0
+    assert len(calls) == 1
+    with repository.transaction() as connection:
+        assert repository.load(connection)['push_subscriptions'] == []
+    engine.dispose()
+
+
+def test_durable_email_retry_is_bounded(snapshot, monkeypatch):
+    from snapshot_repository import SnapshotRepository
+    from email_service import deliver_emails
+    path, data = snapshot
+    data['email_jobs'] = [{'id': 'job', 'subject': 'Test', 'recipients': ['fake@example.test'],
+                           'html': 'Test', 'status': 'pending'}]
+    path.write_text(json.dumps(data))
+    engine = isolated_engine('sqlite://')
+    import_snapshot(path, engine)
+    repository = SnapshotRepository(engine)
+    monkeypatch.setenv('NOTIFICATIONS_ENABLED', 'true')
+    calls = []
+    def sender(job):
+        calls.append(job['id'])
+        raise RuntimeError('Simulated delivery failure')
+    for _ in range(4):
+        deliver_emails(repository, sender)
+    assert calls == ['job', 'job', 'job']
+    with repository.transaction() as connection:
+        assert repository.load(connection)['email_jobs'][0]['status'] == 'failed'
+    engine.dispose()
+
+
+def test_flask_relational_startup_and_routes_without_json(snapshot, tmp_path, monkeypatch):
+    import importlib.util
+    import sys
+    path, data = snapshot
+    data['users']['a'] = {'role': 'admin', 'password': 'admin-secret', 'name': 'Admin'}
+    data['users']['t']['name'] = 'Teacher'
+    data['users']['s']['name'] = 'Student'
+    data['assignments'][0].update(title='Exam', max_score=100, description='Review')
+    path.write_text(json.dumps(data))
+    url = 'sqlite:///' + (tmp_path / 'application.sqlite').as_posix()
+    engine = isolated_engine(url)
+    import_snapshot(path, engine)
+    monkeypatch.setenv('COGNITO_STORAGE', 'relational')
+    monkeypatch.setenv('DATABASE_URL', url)
+    sentinel = tmp_path / 'must-not-create.json'
+    monkeypatch.setenv('DATA_FILE', str(sentinel))
+    spec = importlib.util.spec_from_file_location('relational_test_app', 'app.py')
+    module = importlib.util.module_from_spec(spec)
+    monkeypatch.setitem(sys.modules, spec.name, module)
+    spec.loader.exec_module(module)
+    module.app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
+    with module.app.test_client() as client:
+        assert client.post('/login/admin', data={'username': 'a', 'password': 'admin-secret'}).status_code == 302
+        assert client.get('/admin/users').status_code == 200
+        # Exercise an existing modifying route, then verify relational persistence.
+        response = client.post('/admin/add_student', data={'username': 'new', 'name': 'New Student',
+                                                          'email': 'new@example.test', 'cip': '1',
+                                                          'nom': 'Student', 'postnom': '', 'prenom': 'New',
+                                                          'sexe': 'M', 'date_naissance': '2000-01-01',
+                                                          'promotion': 'L1', 'faculte': 'Science',
+                                                          'departement': 'Maths', 'telephone': '', 'adresse': ''})
+        assert response.status_code == 200
+        assert client.get('/admin/users').status_code == 200
+    from snapshot_repository import SnapshotRepository
+    with SnapshotRepository(engine).transaction() as connection:
+        loaded = SnapshotRepository(engine).load(connection)
+    assert 'new' in loaded['users']
+    assert not sentinel.exists()
+    module.relational_repository.engine.dispose()
+    engine.dispose()
+
+
 def test_alembic_upgrade_and_rollback_in_isolation(tmp_path, monkeypatch):
     from alembic import command
     from alembic.config import Config
@@ -139,6 +304,18 @@ def test_postgresql_round_trip_when_available(snapshot):
         with isolated.connect() as connection:
             assert connection.execute(select(schema.submissions.c.id)).scalar_one() == 30
             assert connection.execute(select(schema.grades.c.payload)).scalar_one()['score'] == 85
+        from snapshot_repository import SnapshotRepository
+        from concurrent.futures import ThreadPoolExecutor
+        repository = SnapshotRepository(isolated)
+        def increment():
+            with repository.transaction() as connection:
+                data = repository.load(connection)
+                data['request_counter'] = data.get('request_counter', 0) + 1
+                repository.save(connection, data)
+        with ThreadPoolExecutor(max_workers=2) as workers:
+            list(workers.map(lambda _: increment(), range(4)))
+        with repository.transaction() as connection:
+            assert repository.load(connection)['request_counter'] == 4
     finally:
         with engine.begin() as connection:
             connection.execute(text('DROP SCHEMA ' + schema_name + ' CASCADE'))

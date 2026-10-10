@@ -71,3 +71,5 @@ Validation CI e3e58b7 : run 38019074383, job 114115813826 réussi (PostgreSQL r�
 - Intégration Flask et worker en cours de validation : JSON reste le mode par défaut, activation relationnelle explicite, worker PostgreSQL uniquement. Aucun changement Railway.
 - Validation locale du découpage avant les derniers ajouts : 128 passed, 2 skipped. Les deux tests PostgreSQL/Redis réels attendent la nouvelle CI. Tests grille/dates : 9 passed.
 - Navigateur : deux délais d’attente CUA ; serveur local et ressources HTTP répondent 200, mais aucune validation visuelle des trois rôles n’est revendiquée.
+
+Cycle intégration : Flask peut fonctionner en mode relationnel explicite ; routes réparties en Blueprints avec alias historiques ; worker indépendant de Flask et PostgreSQL obligatoire ; file durable des soumissions, emails et notifications ; grille personnalisable et rapports CSV de fond. Local : 133 passed, 2 skipped (les services réels sont réservés à la CI), avant les derniers ajustements de rapports et UI. Rendu visuel toujours non validé à cause des délais CUA.

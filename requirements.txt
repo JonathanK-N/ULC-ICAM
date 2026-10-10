@@ -20,6 +20,8 @@ cryptography>=41.0.0,<46.0.0
 # --- ORM & Base de données ---
 Flask-SQLAlchemy==3.1.1
 SQLAlchemy==2.0.23
+psycopg[binary]==3.3.6
+alembic==1.20.0
 
 # --- Cache ---
 Flask-Caching==2.1.0
@@ -39,6 +41,7 @@ requests==2.31.0
 
 # --- Tâches asynchrones ---
 celery==5.3.4
+pywebpush>=2.0,<3
 redis==5.0.1
 
 # --- IA et correction automatique ---
