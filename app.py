@@ -28,6 +28,7 @@ import re
 from difflib import SequenceMatcher
 from pathlib import Path
 from functools import wraps
+from security_policy import can_access_course, owns_assignment
 from code_execution import CodeExecutor, save_code_submission
 # Imports optionnels pour traitement de fichiers
 try:
@@ -145,6 +146,8 @@ app = Flask(__name__)
 # Clé secrète robuste : toujours depuis l'environnement en production
 # -----------------------------------------------------------------------
 _secret = os.environ.get("FLASK_SECRET_KEY")
+if not _secret and os.environ.get('FLASK_ENV') == 'production':
+    raise RuntimeError('FLASK_SECRET_KEY obligatoire en production')
 if not _secret:
     _secret = secrets.token_hex(32)
     logging.warning("FLASK_SECRET_KEY non définie — clé aléatoire générée. "
@@ -202,6 +205,8 @@ try:
 
 except Exception as _e:
     CSRF_AVAILABLE = False
+    if os.environ.get('FLASK_ENV') == 'production':
+        raise RuntimeError('Protection CSRF indisponible') from _e
     logging.warning(f"Flask-WTF désactivé : {_e}")
 
 # -----------------------------------------------------------------------
@@ -214,7 +219,7 @@ try:
         get_remote_address,
         app=app,
         default_limits=["200 per day", "50 per hour"],
-        storage_uri="memory://",
+        storage_uri=os.environ.get("REDIS_URL", "memory://"),
     )
     LIMITER_AVAILABLE = True
 except Exception as _e:
@@ -268,6 +273,8 @@ os.makedirs('logs', exist_ok=True)
 # -----------------------------------------------------------------------
 @app.after_request
 def add_security_headers(response):
+    if 'user' in session or request.endpoint in ('add_student', 'add_teacher', 'import_csv'):
+        response.headers['Cache-Control'] = 'no-store'
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     response.headers['X-XSS-Protection'] = '1; mode=block'
@@ -343,7 +350,8 @@ def save_test_data():
     with _data_lock:
         try:
             data = {
-                'users': globals().get('users', {}),
+                'users': {name: {k: v for k, v in user.items() if k != 'temp_password'}
+                          for name, user in globals().get('users', {}).items()},
                 'admin_courses': globals().get('admin_courses', []),
                 'course_assignments': {str(k): v for k, v in globals().get('course_assignments', {}).items()},
                 'course_enrollments': {str(k): v for k, v in globals().get('course_enrollments', {}).items()},
@@ -366,19 +374,19 @@ def save_test_data():
 # -----------------------------------------------------------------------
 # Chargement des données depuis le fichier JSON
 # -----------------------------------------------------------------------
-_DEFAULT_ADMIN_PASSWORD = 'Admin@ULC2024'   # mot de passe initial (hashé)
+_DEFAULT_ADMIN_PASSWORD = os.environ.get('BOOTSTRAP_ADMIN_PASSWORD')
 
 def _build_default_data():
     """Crée le jeu de données initial avec un admin dont le mot de passe est hashé."""
     return {
-        'users': {
+        'users': ({
             'admin': {
                 'password': generate_password_hash(_DEFAULT_ADMIN_PASSWORD),
                 'role': 'admin',
                 'name': 'Administrateur ULC-ICAM',
                 'email': ''
             }
-        },
+        } if _DEFAULT_ADMIN_PASSWORD else {}),
         'admin_courses': [],
         'course_assignments': {},
         'course_enrollments': {},
@@ -422,7 +430,7 @@ try:
         _default = _build_default_data()
         users = _default['users']
         logger.warning(f"Aucun utilisateur trouvé — compte admin créé. "
-                       f"Mot de passe initial : {_DEFAULT_ADMIN_PASSWORD}")
+                       "Initialisation via BOOTSTRAP_ADMIN_PASSWORD uniquement.")
 
     print("Données chargées depuis ulc_icam_data.json")
 
@@ -445,7 +453,7 @@ except FileNotFoundError:
         with open(DATA_FILE, 'w', encoding='utf-8') as _f:
             json.dump(_default, _f, ensure_ascii=False, indent=2)
         logger.info(f"ulc_icam_data.json créé. Compte admin initial — "
-                    f"identifiant: admin / mot de passe: {_DEFAULT_ADMIN_PASSWORD}")
+                    "Initialisation administrateur configurée par environnement.")
     except Exception as _e:
         logger.error(f"Impossible de créer ulc_icam_data.json : {_e}")
 
@@ -463,6 +471,9 @@ except Exception as e:
     course_content       = {}
     course_chapters      = {}
     next_chapter_id      = 1
+
+for _user_data in users.values():
+    _user_data.pop('temp_password', None)
 
 # Résultats de correction et plagiat
 correction_results = {}  # {submission_id: {'score': 85, 'feedback': 'Bon travail'}}
@@ -611,7 +622,7 @@ def send_email_notification(subject, recipients, html_body):
 
 def generate_temp_password():
     """Génère un mot de passe temporaire"""
-    length = 8
+    length = 16
     characters = string.ascii_letters + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
 
@@ -764,6 +775,7 @@ def student_login():
                     break
 
         if user_found:
+            session.clear()
             session.permanent = True
             session['user'] = username_found
             session['role'] = user_found['role']
@@ -797,6 +809,7 @@ def teacher_login():
                     break
 
         if user_found:
+            session.clear()
             session.permanent = True
             session['user'] = username_found
             session['role'] = user_found['role']
@@ -820,6 +833,7 @@ def admin_login():
         if (username in users and
                 _verify_password(password, users[username]['password']) and
                 users[username]['role'] == 'admin'):
+            session.clear()
             session.permanent = True
             session['user'] = username
             session['role'] = users[username]['role']
@@ -942,6 +956,8 @@ def submit_assignment(assignment_id):
                 executor = CodeExecutor()
                 test_cases = assignment.get('test_cases', [])
                 execution_result = executor.execute_code(code, language, test_cases=test_cases)
+                if execution_result.get('error_code'):
+                    return jsonify(success=False, execution_result=execution_result), (503 if execution_result.get('retryable') else 400)
                 
                 # Calculer la note basée sur les résultats réels d'exécution
                 max_score = assignment.get('max_score', 100)
@@ -1094,7 +1110,6 @@ def add_student():
             student_data = {
                 'username': username,
                 'password': generate_password_hash(temp_password),  # Hashé
-                'temp_password': temp_password,  # Affiché une seule fois à l'admin
                 'role': 'student',
                 'must_change_password': True,
                 'cip': request.form['cip'].strip(),
@@ -1114,8 +1129,7 @@ def add_student():
             users[username] = student_data
             save_test_data()
             logger.info(f"Nouvel étudiant créé: {username}")
-            flash(f'Étudiant {username} ajouté avec mot de passe temporaire: {temp_password}')
-            return redirect(url_for('admin_users'))
+            return render_template('account_credentials.html', credentials=[(username, temp_password)])
     
     return render_template('add_student.html', system_config=system_config)
 
@@ -1134,7 +1148,6 @@ def add_teacher():
             teacher_data = {
                 'username': username,
                 'password': generate_password_hash(temp_password),  # Hashé
-                'temp_password': temp_password,  # Affiché une seule fois à l'admin
                 'role': 'teacher',
                 'must_change_password': True,
                 'cip': request.form['cip'].strip(),
@@ -1154,8 +1167,7 @@ def add_teacher():
             users[username] = teacher_data
             save_test_data()
             logger.info(f"Nouvel enseignant créé: {username}")
-            flash(f'Enseignant {username} ajouté avec mot de passe temporaire: {temp_password}')
-            return redirect(url_for('admin_users'))
+            return render_template('account_credentials.html', credentials=[(username, temp_password)])
     
     return render_template('add_teacher.html', system_config=system_config)
 
@@ -1182,6 +1194,7 @@ def import_csv():
             header = next(csv_input)  # Lire l'en-tête
             
             added_count = 0
+            credentials = []
             errors = []
             
             for row_num, row in enumerate(csv_input, start=2):
@@ -1206,7 +1219,6 @@ def import_csv():
                         user_data = {
                             'username': username,
                             'password': generate_password_hash(temp_password),  # Hashé
-                            'temp_password': temp_password,
                             'role': 'student',
                             'must_change_password': True,
                             'cip': row[2].strip(),
@@ -1227,7 +1239,6 @@ def import_csv():
                         user_data = {
                             'username': username,
                             'password': generate_password_hash(temp_password),  # Hashé
-                            'temp_password': temp_password,
                             'role': 'teacher',
                             'must_change_password': True,
                             'cip': row[2].strip(),
@@ -1250,6 +1261,7 @@ def import_csv():
                         continue
                     
                     users[username] = user_data
+                    credentials.append((username, temp_password))
                     added_count += 1
                     
                 except Exception as e:
@@ -1265,13 +1277,15 @@ def import_csv():
                 if len(errors) > 5:
                     flash(f'... et {len(errors) - 5} autres erreurs', 'warning')
             
+            if credentials:
+                return render_template('account_credentials.html', credentials=credentials)
             return redirect(url_for('admin_users'))
         else:
             flash('Format de fichier non valide. Utilisez un fichier CSV.')
     
     return render_template('import_csv.html')
 
-@app.route('/admin/delete_user/<username>')
+@app.route('/admin/delete_user/<username>', methods=['POST'])
 def delete_user(username):
     if 'user' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
@@ -1712,6 +1726,10 @@ def upload_syllabus(course_id):
 def download_syllabus(course_id, filename):
     if 'user' not in session:
         return redirect(url_for('login'))
+    if not can_access_course(session['user'], users.get(session['user']), course_id, course_assignments, course_enrollments):
+        return jsonify(error='Accès interdit'), 403
+    if course_content.get(course_id, {}).get('syllabus_file') != filename:
+        return jsonify(error='Fichier introuvable'), 404
     filename = secure_filename(filename)
     if not filename:
         flash('Nom de fichier invalide')
@@ -1886,6 +1904,12 @@ def upload_chapter_document(course_id, chapter_id):
 def download_chapter_document(filename):
     if 'user' not in session:
         return redirect(url_for('login'))
+    authorized = any(
+        can_access_course(session['user'], users.get(session['user']), cid, course_assignments, course_enrollments)
+        and any(doc.get('filename') == filename for chapter in chapters for doc in chapter.get('documents', []))
+        for cid, chapters in course_chapters.items())
+    if not authorized:
+        return jsonify(error='Accès interdit'), 403
     filename = secure_filename(filename)
     if not filename:
         flash('Nom de fichier invalide')
@@ -2209,28 +2233,36 @@ def grade_submission(submission_id):
     return render_template('grade_submission.html', submission=submission, assignment=assignment, correction=correction)
 
 
-@app.route('/teacher/publish_submissions/<int:assignment_id>')
+@app.route('/teacher/publish_submissions/<int:assignment_id>', methods=['POST'])
 def publish_submissions(assignment_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
+    if not owns_assignment(session['user'], assignments, assignment_id):
+        return jsonify(error='Accès interdit'), 403
+
 
     for sub in submissions:
         if sub.get('assignment_id') == assignment_id:
             sub['results_available'] = True
 
+    save_test_data()
     flash('Notes publiées pour toutes les soumissions')
     return redirect(url_for('assignment_results', assignment_id=assignment_id))
 
 
-@app.route('/teacher/unpublish_submissions/<int:assignment_id>')
+@app.route('/teacher/unpublish_submissions/<int:assignment_id>', methods=['POST'])
 def unpublish_submissions(assignment_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
+    if not owns_assignment(session['user'], assignments, assignment_id):
+        return jsonify(error='Accès interdit'), 403
+
 
     for sub in submissions:
         if sub.get('assignment_id') == assignment_id:
             sub['results_available'] = False
 
+    save_test_data()
     flash('Notes masquées pour toutes les soumissions')
     return redirect(url_for('assignment_results', assignment_id=assignment_id))
 
@@ -3031,10 +3063,13 @@ def student_course_detail(course_id):
 
     return render_template('student_course_detail.html', course=course, content=content, chapters=chapters)
 
-@app.route('/teacher/publish_results/<int:assignment_id>')
+@app.route('/teacher/publish_results/<int:assignment_id>', methods=['POST'])
 def publish_results(assignment_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
+    if not owns_assignment(session['user'], assignments, assignment_id):
+        return jsonify(error='Accès interdit'), 403
+
     
     assignment = next((a for a in assignments if a['id'] == assignment_id and a.get('teacher') == session['user']), None)
     if assignment:
@@ -3043,12 +3078,16 @@ def publish_results(assignment_id):
     else:
         flash('Devoir non trouvé')
     
+    save_test_data()
     return redirect(url_for('assignment_results', assignment_id=assignment_id))
 
-@app.route('/teacher/unpublish_results/<int:assignment_id>')
+@app.route('/teacher/unpublish_results/<int:assignment_id>', methods=['POST'])
 def unpublish_results(assignment_id):
     if 'user' not in session or session['role'] != 'teacher':
         return redirect(url_for('login'))
+    if not owns_assignment(session['user'], assignments, assignment_id):
+        return jsonify(error='Accès interdit'), 403
+
     
     assignment = next((a for a in assignments if a['id'] == assignment_id and a.get('teacher') == session['user']), None)
     if assignment:
@@ -3057,6 +3096,7 @@ def unpublish_results(assignment_id):
     else:
         flash('Devoir non trouvé')
     
+    save_test_data()
     return redirect(url_for('assignment_results', assignment_id=assignment_id))
 
 def is_results_published(assignment):
@@ -3419,6 +3459,11 @@ def upload_analysis_files(assignment_id):
 
 @app.route('/test_submit', methods=['POST'])
 def test_submit():
+    user = users.get(session.get('user'))
+    if not user:
+        return jsonify(success=False, error='Authentification requise'), 401
+    if user.get('role') not in ('student', 'teacher', 'admin'):
+        return jsonify(success=False, error='Accès interdit'), 403
     """Route de test pour la soumission"""
     try:
         code = request.form.get('code_content', '')
@@ -3433,6 +3478,8 @@ def test_submit():
         # Test d'exécution simple
         executor = CodeExecutor()
         result = executor.execute_code(code, language)
+        if result.get('error_code'):
+            return jsonify(success=False, execution_result=result), (503 if result.get('retryable') else 400)
         
         # Note basée sur le résultat réel de compilation/exécution
         max_score = 100
@@ -3488,6 +3535,8 @@ def test_submit():
 @app.route('/admin/seed', methods=['GET', 'POST'])
 def admin_seed():
     """Injecte les données de démonstration (une seule fois, admin uniquement)."""
+    if os.environ.get('FLASK_ENV') == 'production':
+        return jsonify(error='Données de démonstration interdites en production'), 403
     if 'user' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
 
@@ -3574,6 +3623,12 @@ def admin_seed():
 
     return redirect(url_for('admin_users'))
 
+
+# Apply per-endpoint limits after route registration (all login variants included).
+if LIMITER_AVAILABLE:
+    for _endpoint in ('student_login', 'teacher_login', 'admin_login'):
+        app.view_functions[_endpoint] = limiter.limit('5 per minute; 30 per hour', methods=['POST'])(app.view_functions[_endpoint])
+    app.view_functions['test_submit'] = limiter.limit('10 per minute', methods=['POST'])(app.view_functions['test_submit'])
 
 if __name__ == '__main__':
     import os

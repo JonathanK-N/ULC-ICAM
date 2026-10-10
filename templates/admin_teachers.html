@@ -107,11 +107,11 @@
                             <a href="{{ url_for('user_profile', username=username) }}" class="btn btn-info btn-sm">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ url_for('delete_user', username=username) }}" 
+                            <form method="post" action="{{ url_for('delete_user', username=username) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit"
                                class="btn btn-danger btn-sm"
                                onclick="return confirm('Supprimer ce professeur ?')">
                                 <i class="fas fa-trash"></i>
-                            </a>
+                            </button></form>
                         </td>
                     </tr>
                     {% endfor %}

@@ -1,0 +1,11 @@
+# Changements
+
+## Branche de modernisation — 9 octobre 2026
+- Exécution distante seule pour le code étudiant, panne sans note ni soumission artificielle.
+- Contrôle du compte, CSRF et limites pour les essais de code.
+- Bootstrap admin sans mot de passe connu ; suppression des mots de passe temporaires persistés et des secrets dans les flashes.
+- POST, droits de propriété et persistance pour publication/masquage des notes ; suppression utilisateur POST.
+- Contrôles d'accès aux syllabus et documents de chapitre.
+- Redis pour rate limiting lorsqu'il est configuré, limites de connexion et renouvellement des sessions.
+- Réponses privées non mises en cache, seed interdit en production et exigences de clé session/CSRF au démarrage production.
+- Tests isolés et documents de suivi.

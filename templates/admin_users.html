@@ -27,7 +27,7 @@
                     </a>
                 </div>
             </div>
-            
+
             <!-- Statistiques rapides -->
             <div class="row mb-4">
                 <div class="col-md-4">
@@ -58,7 +58,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Table des utilisateurs -->
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-0 py-3">
@@ -84,14 +84,14 @@
                                 <tr>
                                     <td class="align-middle">
                                         <div class="d-flex align-items-center">
-                                            <div class="avatar-circle me-3" 
-                                                 style="width: 40px; height: 40px; border-radius: 50%; 
-                                                        background: {% if user.role == 'admin' %}linear-gradient(135deg, #4facfe 0%, #00f2fe 100%){% elif user.role == 'teacher' %}linear-gradient(135deg, #f093fb 0%, #f5576c 100%){% else %}linear-gradient(135deg, #667eea 0%, #764ba2 100%){% endif %}; 
+                                            <div class="avatar-circle me-3"
+                                                 style="width: 40px; height: 40px; border-radius: 50%;
+                                                        background: {% if user.role == 'admin' %}linear-gradient(135deg, #4facfe 0%, #00f2fe 100%){% elif user.role == 'teacher' %}linear-gradient(135deg, #f093fb 0%, #f5576c 100%){% else %}linear-gradient(135deg, #667eea 0%, #764ba2 100%){% endif %};
                                                         display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
                                                 {{ username[0].upper() }}
                                             </div>
                                             <div>
-                                                <a href="{{ url_for('user_profile', username=username) }}" 
+                                                <a href="{{ url_for('user_profile', username=username) }}"
                                                    class="text-decoration-none fw-bold text-dark">
                                                     {{ username }}
                                                 </a>
@@ -144,20 +144,20 @@
                                     </td>
                                     <td class="align-middle">
                                         <div class="d-flex gap-1">
-                                            <a href="{{ url_for('user_profile', username=username) }}" 
+                                            <a href="{{ url_for('user_profile', username=username) }}"
                                                class="btn btn-outline-primary btn-sm" title="Voir le profil">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="{{ url_for('edit_user', username=username) }}" 
+                                            <a href="{{ url_for('edit_user', username=username) }}"
                                                class="btn btn-outline-secondary btn-sm" title="Modifier">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             {% if username != 'admin' %}
-                                                <a href="{{ url_for('delete_user', username=username) }}" 
+                                                <form method="post" action="{{ url_for('delete_user', username=username) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit"
                                                    class="btn btn-outline-danger btn-sm" title="Supprimer"
                                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer {{ username }} ?')">
                                                     <i class="fas fa-trash"></i>
-                                                </a>
+                                                </button></form>
                                             {% endif %}
                                         </div>
                                     </td>
@@ -168,7 +168,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Actions -->
             <div class="mt-4 d-flex justify-content-between align-items-center">
                 <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
