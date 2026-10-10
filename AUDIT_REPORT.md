@@ -34,3 +34,5 @@ GitHub `JonathanK-N/ULC-ICAM`, branche principale `develop`. Railway : projet `9
 - PostgreSQL, notifications/audit entièrement normalisés, Web Push, UX et architecture complète : non terminés. Aucune déclaration de modernisation complète.
 
 Cycle groupes : persistance/restauration et contrôle des membres corrigés ; création de devoir réservée au cours assigné ; rôle session vérifié sur le compte existant. PostgreSQL staging validé par CI réelle sur données synthétiques. Les autres formats/configurations non persistés et la couche stockage complète restent à auditer.
+
+Cycle stockage des soumissions : code sauvegardé dans UPLOAD_FOLDER configuré avec noms sûrs et uniques ; pièces de devoir/corrections téléchargées en pièce jointe. Dernière vérification locale : 96 tests réussis, 1 PostgreSQL ignoré ; test de stockage sur répertoire temporaire ajouté.

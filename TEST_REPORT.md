@@ -24,3 +24,5 @@ Cycle 3 : cache PWA limité aux ressources publiques, anciens caches privés pur
 GitHub Actions run 38017055612, commit 354a2f1 : **93 passed in 3.80s**, PostgreSQL 16 et Python 3.11, puis **7 assertions PWA réussies**. Source : https://github.com/JonathanK-N/ULC-ICAM/actions/runs/38017055612. Le résultat a été vérifié dans les logs du job 114109557356.
 
 Après le cycle groupes et sessions : **95 passed, 1 skipped in 14.29s** localement. Le test PostgreSQL est exécuté par CI, pas localement.
+
+Cycle stockage des soumissions : code sauvegardé dans UPLOAD_FOLDER configuré avec noms sûrs et uniques ; pièces de devoir/corrections téléchargées en pièce jointe. Dernière vérification locale : 96 tests réussis, 1 PostgreSQL ignoré ; test de stockage sur répertoire temporaire ajouté.

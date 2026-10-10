@@ -2,8 +2,6 @@ name: Security and isolated migration tests
 on:
   pull_request:
     branches: [ui, develop]
-  push:
-    branches: [codex/cognito-modernisation]
 permissions:
   contents: read
 jobs:

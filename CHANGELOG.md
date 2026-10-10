@@ -20,3 +20,5 @@ Cycle 3 : cache PWA limité aux ressources publiques, anciens caches privés pur
 
 - Groupes persistés/restaurés ; validation des inscrits, doublons, taille et appartenance unique. Rôle de session relu depuis le compte et contrôle du cours lors de création de devoir.
 - Migration de staging vérifiée sur PostgreSQL 16 en CI synthétique isolée.
+
+Cycle stockage des soumissions : code sauvegardé dans UPLOAD_FOLDER configuré avec noms sûrs et uniques ; pièces de devoir/corrections téléchargées en pièce jointe. Dernière vérification locale : 96 tests réussis, 1 PostgreSQL ignoré ; test de stockage sur répertoire temporaire ajouté.

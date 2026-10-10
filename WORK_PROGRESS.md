@@ -39,3 +39,5 @@ Cycle 3 : cache PWA limité aux ressources publiques, anciens caches privés pur
 - CI Linux/Python 3.11/PostgreSQL 16 réussie sur 354a2f1 : 93 tests réussis en 3.80s et 7 assertions PWA (run 38017055612). La migration de staging a été validée sur PostgreSQL réel avec données synthétiques ; aucune migration production.
 - Groupes : contrôle des inscrits, doublons, taille et appartenance unique, persistance JSON et restauration au chargement ; rôle de session relu depuis le compte. Création de devoir réservée aux cours assignés.
 - Dernière suite locale : 95 tests réussis, 1 PostgreSQL ignoré (14.29s). Une nouvelle CI doit confirmer le dernier commit.
+
+Cycle stockage des soumissions : code sauvegardé dans UPLOAD_FOLDER configuré avec noms sûrs et uniques ; pièces de devoir/corrections téléchargées en pièce jointe. Dernière vérification locale : 96 tests réussis, 1 PostgreSQL ignoré ; test de stockage sur répertoire temporaire ajouté.

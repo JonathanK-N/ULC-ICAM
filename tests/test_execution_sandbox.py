@@ -80,3 +80,14 @@ def test_test_submit_csrf_enforced():
             assert client.post('/test_submit').status_code == 400
     finally:
         app.config['WTF_CSRF_ENABLED'] = False
+
+
+def test_submission_storage_uses_configured_folder_and_safe_unique_paths(monkeypatch, tmp_path):
+    monkeypatch.setenv('UPLOAD_FOLDER', str(tmp_path))
+    first = engine.save_code_submission('../../outsider', 1, 'print(1)', 'python', {'success': True})
+    second = engine.save_code_submission('../../outsider', 1, 'print(2)', 'python', {'success': True})
+    assert first['code_file'] != second['code_file']
+    for key in ('code_file', 'result_file'):
+        assert '/' not in first[key] and '\\' not in first[key]
+        assert (tmp_path / 'code_submissions' / first[key]).is_file()
+    assert (tmp_path / 'code_submissions' / first['code_file']).read_text() == 'print(1)'

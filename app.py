@@ -2076,7 +2076,7 @@ def download_assignment_file(filename):
     if not filename:
         flash('Nom de fichier invalide')
         return redirect(url_for('dashboard'))
-    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], 'assignments'), filename)
+    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], 'assignments'), filename, as_attachment=True)
 
 @app.route('/offline.html')
 def offline():
@@ -2161,7 +2161,7 @@ def download_correction_file(filename):
         flash('Nom de fichier invalide')
         return redirect(url_for('dashboard'))
     corrections_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'corrections')
-    return send_from_directory(corrections_folder, filename)
+    return send_from_directory(corrections_folder, filename, as_attachment=True)
 
 
 @app.route('/teacher/assignment_results/<int:assignment_id>')

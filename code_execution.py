@@ -13,6 +13,8 @@ import requests
 import time
 import json
 import os
+import secrets
+from werkzeug.utils import secure_filename
 from datetime import datetime
 
 # Configuration Judge0
@@ -196,11 +198,12 @@ class CodeExecutor:
 
 def save_code_submission(student, assignment_id, code, language, execution_result):
     """Sauvegarde la soumission de code"""
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f"code_{student}_{assignment_id}_{timestamp}.{language}"
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S') + '_' + secrets.token_hex(8)
+    filename = secure_filename(f"code_{student}_{assignment_id}_{timestamp}.{language}")
+    result_filename = secure_filename(f"result_{student}_{assignment_id}_{timestamp}.json")
     
     # Créer le répertoire s'il n'existe pas
-    code_dir = os.path.join('uploads', 'code_submissions')
+    code_dir = os.path.join(os.environ.get('UPLOAD_FOLDER', 'uploads'), 'code_submissions')
     os.makedirs(code_dir, exist_ok=True)
     
     # Sauvegarder le code
@@ -209,12 +212,12 @@ def save_code_submission(student, assignment_id, code, language, execution_resul
         f.write(code)
     
     # Sauvegarder les résultats
-    result_path = os.path.join(code_dir, f"result_{student}_{assignment_id}_{timestamp}.json")
+    result_path = os.path.join(code_dir, result_filename)
     with open(result_path, 'w', encoding='utf-8') as f:
         json.dump(execution_result, f, indent=2, ensure_ascii=False)
     
     return {
         'code_file': filename,
-        'result_file': f"result_{student}_{assignment_id}_{timestamp}.json",
+        'result_file': result_filename,
         'timestamp': timestamp
     }
