@@ -76,11 +76,11 @@
                                         <span class="fw-bold">{{ users[teacher_username].name }}</span>
                                         <br><small class="text-muted">{{ users[teacher_username].specialite }}</small>
                                     </div>
-                                    <a href="{{ url_for('unassign_teacher_from_course', course_id=course.id, teacher_username=teacher_username) }}" 
+                                    <form method="post" action="{{ url_for('unassign_teacher_from_course', course_id=course.id, teacher_username=teacher_username) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit"
                                        class="btn btn-outline-danger btn-sm" title="Désassigner"
-                                       onclick="return confirm('Désassigner {{ users[teacher_username].name }} ?')">
+                                       onclick="return confirm('Désassigner ce professeur du cours ?')">
                                         <i class="fas fa-times"></i>
-                                    </a>
+                                    </button></form>
                                 </div>
                                 {% endif %}
                             {% endfor %}

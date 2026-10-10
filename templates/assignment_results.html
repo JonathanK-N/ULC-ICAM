@@ -1,6 +1,10 @@
 {% extends "base_clean.html" %}
 
 {% block content %}
+<form method="post" action="{{ url_for('queue_assignment_report', assignment_id=assignment.id) }}" class="mb-3">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="btn btn-outline-primary">Préparer un rapport CSV en arrière-plan</button>
+</form>
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="fas fa-chart-bar"></i> Résultats : {{ assignment.title }}</h2>
     <div>
@@ -12,29 +16,29 @@
         {% endif %}
         {% if assignment.results_published %}
             <span class="badge bg-info me-2">Résultats Publiés</span>
-            <a href="{{ url_for('unpublish_results', assignment_id=assignment.id) }}"
+            <form method="post" action="{{ url_for('unpublish_results', assignment_id=assignment.id) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit"
                class="btn btn-warning btn-sm"
                onclick="return confirm('Masquer les résultats aux étudiants ?')">
                 <i class="fas fa-eye-slash"></i> Masquer
-            </a>
+            </button></form>
         {% else %}
             <span class="badge bg-secondary me-2">Résultats Privés</span>
-            <a href="{{ url_for('publish_results', assignment_id=assignment.id) }}"
+            <form method="post" action="{{ url_for('publish_results', assignment_id=assignment.id) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit"
                class="btn btn-success btn-sm"
                onclick="return confirm('Publier les résultats aux étudiants ?')">
                 <i class="fas fa-eye"></i> Publier
-            </a>
+            </button></form>
         {% endif %}
-        <a href="{{ url_for('publish_submissions', assignment_id=assignment.id) }}"
+        <form method="post" action="{{ url_for('publish_submissions', assignment_id=assignment.id) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit"
            class="btn btn-outline-success btn-sm ms-2"
            onclick="return confirm('Publier les résultats pour toutes les soumissions ?')">
             <i class="fas fa-bullhorn"></i> Publier notes
-        </a>
-        <a href="{{ url_for('unpublish_submissions', assignment_id=assignment.id) }}"
+        </button></form>
+        <form method="post" action="{{ url_for('unpublish_submissions', assignment_id=assignment.id) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit"
            class="btn btn-outline-warning btn-sm ms-1"
            onclick="return confirm('Masquer les résultats pour toutes les soumissions ?')">
             <i class="fas fa-eye-slash"></i> Masquer notes
-        </a>
+        </button></form>
     </div>
 </div>
 
@@ -49,7 +53,7 @@
                     </div>
                     <div class="col-md-3 text-center">
                         <h4 class="text-success">
-                            {% set corrected = submissions|selectattr('correction.score', 'defined')|list|length %}
+                            {% set corrected = submissions|selectattr('correction.score', 'number')|list|length %}
                             {{ corrected }}
                         </h4>
                         <p class="text-muted">Corrigées</p>
@@ -64,7 +68,7 @@
                     <div class="col-md-3 text-center">
                         <h4 class="text-info">
                             {% if submissions %}
-                                {% set scored_submissions = submissions|selectattr('correction.score', 'defined')|list %}
+                                {% set scored_submissions = submissions|selectattr('correction.score', 'number')|list %}
                                 {% if scored_submissions %}
                                     {% set total_score = scored_submissions|map(attribute='correction.score')|sum %}
                                     {{ (total_score / scored_submissions|length)|round(1) }}
@@ -110,10 +114,10 @@
                             <td>
                                 {% if submission.correction %}
                                     <span class="badge bg-success">
-                                        {{ submission.correction.score }}/{{ submission.correction.max_score }}
+                                        {% if submission.correction.score is number %}{{ submission.correction.score }}/{{ submission.correction.max_score }}{% else %}En attente de correction{% endif %}
                                     </span>
                                     {% if submission.correction.auto_generated %}
-                                        <small class="text-muted">(Auto)</small>
+                                        <small class="text-muted">(Proposition à valider)</small>
                                     {% endif %}
                                 {% else %}
                                     <span class="badge bg-secondary">Non corrigé</span>
@@ -174,7 +178,15 @@
                 {% if submission.correction %}
                 <div class="mb-3">
                     <h6><i class="fas fa-check-circle text-success"></i> Correction</h6>
-                    <p><strong>Note :</strong> {{ submission.correction.score }}/{{ submission.correction.max_score }}</p>
+                    <p><strong>Note :</strong> {% if submission.correction.score is number %}{{ submission.correction.score }}/{{ submission.correction.max_score }}{% else %}En attente de correction{% endif %}</p>
+                    {% if submission.correction.criteria %}
+                    <table class="table table-sm"><caption>Grille de la proposition IA à valider</caption>
+                      <thead><tr><th scope="col">Critère</th><th scope="col">Points proposés</th><th scope="col">Justification</th></tr></thead>
+                      <tbody>{% for criterion in submission.correction.criteria %}
+                      <tr><th scope="row">{{ criterion.label }}</th><td>{{ criterion.score }}/{{ criterion.max_score }}</td><td>{{ criterion.justification }}</td></tr>
+                      {% endfor %}</tbody>
+                    </table>
+                    {% endif %}
                     <p><strong>Commentaires :</strong></p>
                     <ul>
                         {% for comment in submission.correction.feedback %}
@@ -228,7 +240,7 @@
             <div class="modal-body">
                 <div class="mb-3">
                     <label for="score{{ submission.id }}" class="form-label">Score</label>
-                    <input type="number" step="any" class="form-control" id="score{{ submission.id }}" name="score" required value="{{ submission.correction.score if submission.correction and submission.correction.score is defined else '' }}">
+                    <input type="number" step="any" class="form-control" id="score{{ submission.id }}" name="score" required value="{{ submission.correction.score if submission.correction and submission.correction.score is number else '' }}">
                 </div>
                 <div class="mb-3">
                     <label for="max_score{{ submission.id }}" class="form-label">Score max</label>

@@ -58,13 +58,19 @@
             transform: translateY(-3px);
             color: white;
         }
+    .skip-link {position:fixed;top:-100px;left:12px;z-index:3000;background:white;padding:12px;}
+        .skip-link:focus {top:12px;}
+        :focus-visible {outline:3px solid #2563eb;outline-offset:3px;}
+        @media(max-width:767px) { .sidebar {position:fixed;left:-280px;top:0;width:270px;z-index:2000;overflow-y:auto;height:100vh;} .sidebar.open {left:0;} .navbar-brand {font-size:1rem;} }
+        @media(prefers-reduced-motion:reduce) {* {animation:none!important;transition:none!important;}}
     </style>
 </head>
 <body>
+<a class="skip-link" href="#admin-content">Aller au contenu</a>
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar p-0">
+            <div class="col-md-3 col-lg-2 sidebar p-0" id="admin-sidebar">
                 <div class="p-4">
                     <h4 class="mb-4">
                         <img src="{{ url_for('static', filename='images/ulc-icam-logo.png') }}" alt="ULC-ICAM" height="40">
@@ -109,12 +115,14 @@
             </div>
             
             <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 main-content p-0">
+            <div class="col-md-9 col-lg-10 main-content p-0" id="admin-content" role="main" tabindex="-1">
                 <!-- Top Navbar -->
                 <nav class="navbar navbar-expand-lg navbar-custom px-4">
                     <div class="container-fluid">
+                        <button type="button" class="btn btn-outline-primary d-md-none" id="admin-menu" aria-controls="admin-sidebar" aria-expanded="false" aria-label="Menu">☰</button>
                         <h2 class="navbar-brand mb-0 fw-bold">Dashboard Administrateur</h2>
                         <div class="navbar-nav ms-auto">
+                            <a class="nav-link" href="{{ url_for('notifications.preferences') }}">Notifications</a>
                             <span class="nav-link">
                                 <i class="fas fa-calendar me-2"></i>
                                 <span id="current-date"></span>
@@ -125,17 +133,7 @@
                 
                 <!-- Content -->
                 <div class="p-4">
-                    <!-- DEBUG INFO -->
-                    <div class="alert alert-info mb-4">
-                        <strong>DEBUG:</strong> 
-                        Users: {{ users_count or 'UNDEFINED' }} | 
-                        Students: {{ students_count or 'UNDEFINED' }} | 
-                        Teachers: {{ teachers_count or 'UNDEFINED' }} | 
-                        Courses: {{ courses_count or 'UNDEFINED' }} | 
-                        Assignments: {{ assignments_count or 'UNDEFINED' }} | 
-                        Submissions: {{ submissions_count or 'UNDEFINED' }}
-                    </div>
-                    
+                    {% include "_academic_summary.html" %}
                     <!-- Statistiques -->
                     <div class="row mb-4">
                         <div class="col-md-3 mb-3">
@@ -328,5 +326,19 @@
         setInterval(updateDateTime, 60000);
         updateDateTime();
     </script>
+<script>
+const adminMenu = document.getElementById('admin-menu');
+adminMenu.addEventListener('click', () => {
+  const open = document.getElementById('admin-sidebar').classList.toggle('open');
+  adminMenu.setAttribute('aria-expanded', String(open));
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') {
+    document.getElementById('admin-sidebar').classList.remove('open');
+    adminMenu.setAttribute('aria-expanded', 'false');
+    adminMenu.focus();
+  }
+});
+</script>
 </body>
 </html>

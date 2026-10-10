@@ -11,7 +11,7 @@ class ULCICAMPwa {
     init() {
         this.registerServiceWorker();
         this.setupInstallPrompt();
-        this.setupNotifications();
+        // Notification permission is requested only from the preferences button.
         this.setupOfflineSync();
         this.checkInstallStatus();
     }
@@ -119,15 +119,6 @@ class ULCICAMPwa {
     }
 
     // Configuration des notifications
-    async setupNotifications() {
-        if ('Notification' in window && 'serviceWorker' in navigator) {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                console.log('[PWA] Notifications autorisées');
-            }
-        }
-    }
-
     // Configuration de la synchronisation hors ligne
     setupOfflineSync() {
         // Écouter les événements de connexion

@@ -139,26 +139,6 @@ class TestFileUploadSecurity:
 class TestCodeExecution:
     """Tests pour l'exécution sécurisée de code."""
 
-    def test_python_execution_simple(self):
-        from code_execution import CodeExecutor
-        executor = CodeExecutor()
-        result = executor.execute_code('print("Hello, World!")', 'python')
-        assert result.get('success') is True
-        assert 'Hello, World!' in result.get('stdout', '')
-
-    def test_python_syntax_error(self):
-        from code_execution import CodeExecutor
-        executor = CodeExecutor()
-        result = executor.execute_code('def broken(:', 'python')
-        assert result.get('success') is False
-
-    def test_python_timeout(self):
-        from code_execution import CodeExecutor
-        executor = CodeExecutor()
-        result = executor.execute_code('while True: pass', 'python')
-        assert result.get('success') is False
-        assert result.get('status') in ('Timeout', 'Erreur d\'exécution')
-
     def test_unsupported_language(self):
         from code_execution import CodeExecutor
         executor = CodeExecutor()
@@ -180,5 +160,5 @@ class TestDataIntegrity:
         """Le mot de passe temporaire doit avoir la bonne longueur."""
         from app import generate_temp_password
         pwd = generate_temp_password()
-        assert len(pwd) == 8
+        assert len(pwd) == 16
         assert pwd.isalnum()

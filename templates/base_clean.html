@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#1d4ed8">
   <title>{% block title %}ULC-ICAM Turnin{% endblock %}</title>
@@ -21,6 +22,7 @@
   {% block head %}{% endblock %}
 </head>
 <body>
+<a class="skip-link" href="#main-content">Aller au contenu</a>
 
 <!-- Sidebar Overlay (mobile) -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
@@ -138,7 +140,7 @@
 
     <!-- Topbar -->
     <header class="topbar">
-      <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Menu">
+      <button class="sidebar-toggle" id="sidebar-toggle" type="button" onclick="toggleSidebar()" aria-label="Menu" aria-controls="sidebar" aria-expanded="false">
         <i class="fas fa-bars"></i>
       </button>
       <div class="topbar-title">
@@ -146,6 +148,7 @@
       </div>
       <div class="topbar-actions">
         {% if session.user %}
+        <a class="topbar-btn" href="{{ url_for('notifications.preferences') }}" aria-label="Notifications" title="Notifications"><i class="fas fa-bell" aria-hidden="true"></i></a>
         <button class="topbar-btn" title="Tableau de bord" onclick="window.location.href='{{ url_for('dashboard') }}'">
           <i class="fas fa-home"></i>
         </button>
@@ -157,7 +160,7 @@
     </header>
 
     <!-- Flash messages -->
-    <div class="flash-container" id="flashContainer"></div>
+    <div class="flash-container" id="flashContainer" role="status" aria-live="polite"></div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -177,7 +180,7 @@
     {% endwith %}
 
     <!-- Page Content -->
-    <main class="page-content">
+    <main class="page-content" id="main-content" tabindex="-1">
       {% block content %}{% endblock %}
     </main>
 
@@ -203,23 +206,44 @@ function showFlash(msg, type, icon) {
   const container = document.getElementById('flashContainer');
   const el = document.createElement('div');
   el.className = `flash-msg ${type}`;
-  el.innerHTML = `<i class="fas ${icon}"></i><span>${msg}</span><span class="flash-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></span>`;
+  const symbol = document.createElement('i');
+  symbol.className = 'fas ' + icon;
+  symbol.setAttribute('aria-hidden', 'true');
+  const text = document.createElement('span');
+  text.textContent = msg;
+  const close = document.createElement('button');
+  close.className = 'flash-close';
+  close.type = 'button';
+  close.setAttribute('aria-label', 'Fermer le message');
+  close.textContent = '×';
+  close.addEventListener('click', () => el.remove());
+  el.append(symbol, text, close);
   container.appendChild(el);
   setTimeout(() => { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 4500);
 }
 
 /* ── Sidebar ─────────────────────────────────────────────────── */
 function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
+  const opened = document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-toggle').setAttribute('aria-expanded', String(opened));
   document.getElementById('sidebarOverlay').classList.toggle('show');
 }
 function closeSidebar() {
   document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-toggle').setAttribute('aria-expanded', 'false');
   document.getElementById('sidebarOverlay').classList.remove('show');
 }
 
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') { closeSidebar(); document.getElementById('sidebar-toggle').focus(); }
+});
+
 /* ── Animated counters ───────────────────────────────────────── */
 function animateCounters() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('[data-count]').forEach(el => el.textContent = el.dataset.count);
+    return;
+  }
   document.querySelectorAll('[data-count]').forEach(el => {
     const target = +el.getAttribute('data-count');
     const duration = 900;

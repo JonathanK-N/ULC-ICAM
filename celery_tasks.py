@@ -1,205 +1,119 @@
-"""
-Tâches asynchrones Celery pour traitement IA
-Correction: instance Celery initialisée correctement via make_celery()
-"""
-
-from celery import Celery
+"""Pure worker tasks, registered on one Celery application."""
 import os
-import json
-from datetime import datetime
+from celery import Celery
+from storage_bridge import repository_from_environment
+from submission_processor import SubmissionProcessor, due_for_processing
 
-# ---------------------------------------------------------------
-# Factory : crée et configure l'instance Celery
-# Appelée depuis app.py APRÈS la création de l'app Flask
-# ---------------------------------------------------------------
-def make_celery(app):
-    """Crée une instance Celery liée à l'application Flask."""
-    celery_instance = Celery(
-        app.import_name,
-        backend=os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0'),
-        broker=os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
-    )
-
-    celery_instance.conf.update(
-        task_serializer='json',
-        result_serializer='json',
-        accept_content=['json'],
-        timezone='Africa/Kinshasa',
-        enable_utc=True,
-        task_track_started=True,
-        task_acks_late=True,
-        worker_prefetch_multiplier=1,
-        beat_schedule=BEAT_SCHEDULE,
-    )
-
-    class ContextTask(celery_instance.Task):
-        """Tâche qui s'exécute toujours dans le contexte Flask."""
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return self.run(*args, **kwargs)
-
-    celery_instance.Task = ContextTask
-    return celery_instance
+celery = Celery('cognito')
+BEAT_SCHEDULE = {'pending-submissions': {
+    'task': 'celery_tasks.dispatch_pending_submissions', 'schedule': 30.0},
+    'pending-notifications': {'task': 'celery_tasks.send_pending_notifications', 'schedule': 60.0},
+    'pending-emails': {'task': 'celery_tasks.send_pending_emails', 'schedule': 60.0}}
 
 
-# ---------------------------------------------------------------
-# Planning des tâches périodiques
-# ---------------------------------------------------------------
-from celery.schedules import crontab
-
-BEAT_SCHEDULE = {
-    'cleanup-files': {
-        'task': 'celery_tasks.cleanup_old_files',
-        'schedule': crontab(hour=2, minute=0),   # Tous les jours à 2h
-    },
-    'generate-stats': {
-        'task': 'celery_tasks.generate_statistics',
-        'schedule': crontab(minute=0),             # Toutes les heures
-    },
-}
-
-
-# ---------------------------------------------------------------
-# Référence globale (remplie par app.py via make_celery)
-# Usage : from celery_tasks import celery; @celery.task
-# ---------------------------------------------------------------
-celery = Celery(__name__)   # instance temporaire, remplacée dans app.py
-
-
-# ---------------------------------------------------------------
-# Déclaration des tâches
-# NOTE: Les tâches utilisent 'celery' qui sera remplacé par
-#       l'instance réelle une fois make_celery() appelé.
-# ---------------------------------------------------------------
-
-def _get_task_app():
-    """Récupère l'instance Celery active (après initialisation)."""
+def configure_celery():
+    celery.conf.update(broker_url=os.environ.get('CELERY_BROKER_URL'),
+                       result_backend=os.environ.get('CELERY_RESULT_BACKEND'),
+                       task_serializer='json', result_serializer='json', accept_content=['json'],
+                       timezone='UTC', enable_utc=True, task_track_started=True,
+                       task_acks_late=True, worker_prefetch_multiplier=1,
+                       task_soft_time_limit=180, task_time_limit=240,
+                       result_expires=3600,
+                       broker_connection_timeout=3, broker_transport_options={'socket_connect_timeout': 3,
+                                                                            'socket_timeout': 3},
+                       beat_schedule=BEAT_SCHEDULE)
     return celery
 
 
-@celery.task(bind=True, name='celery_tasks.process_plagiarism_async')
-def process_plagiarism_async(self, submission_id, file_path):
-    """Traitement asynchrone de la détection de plagiat."""
+def make_celery(app):
+    return configure_celery()
+
+
+def worker_repository():
+    repository = repository_from_environment(os.environ)
+    if repository is None:
+        raise RuntimeError('Worker persistence is disabled for JSON storage')
+    if repository.engine.dialect.name != 'postgresql':
+        repository.engine.dispose()
+        raise RuntimeError('Concurrent workers require PostgreSQL')
+    return repository
+
+
+@celery.task(name='celery_tasks.process_submission')
+def process_submission(submission_id):
+    repository = worker_repository()
     try:
-        from app import extract_text_from_file, check_plagiarism_local
-
-        self.update_state(state='PROGRESS', meta={'status': 'Extraction du texte...'})
-        text = extract_text_from_file(file_path)
-
-        self.update_state(state='PROGRESS', meta={'status': 'Analyse de plagiat...'})
-        result = check_plagiarism_local(text, submission_id)
-
-        _save_plagiarism_result(submission_id, result)
-        return {'status': 'completed', 'result': result}
-
-    except Exception as e:
-        self.update_state(state='FAILURE', meta={'error': str(e)})
-        raise
+        return SubmissionProcessor(repository, os.environ.get('UPLOAD_FOLDER', 'uploads')).process(submission_id)
+    finally:
+        repository.engine.dispose()
 
 
-@celery.task(bind=True, name='celery_tasks.process_correction_async')
-def process_correction_async(self, submission_id, file_path, assignment_data):
-    """Traitement asynchrone de la correction automatique."""
+@celery.task(name='celery_tasks.dispatch_pending_submissions')
+def dispatch_pending_submissions():
+    repository = worker_repository()
     try:
-        from app import extract_text_from_file, ai_auto_correction
-
-        self.update_state(state='PROGRESS', meta={'status': 'Extraction du texte...'})
-        text = extract_text_from_file(file_path)
-
-        self.update_state(state='PROGRESS', meta={'status': 'Correction IA en cours...'})
-        result = ai_auto_correction(text, assignment_data, submission_id)
-
-        _save_correction_result(submission_id, result)
-        return {'status': 'completed', 'result': result}
-
-    except Exception as e:
-        self.update_state(state='FAILURE', meta={'error': str(e)})
-        raise
-
-
-@celery.task(name='celery_tasks.cleanup_old_files')
-def cleanup_old_files():
-    """Nettoyage automatique des anciens fichiers (> 30 jours)."""
-    import time
-
-    cleaned = 0
-    uploads_dir = os.environ.get('UPLOAD_FOLDER', 'uploads')
-
-    if os.path.exists(uploads_dir):
-        for root, dirs, files in os.walk(uploads_dir):
-            for filename in files:
-                filepath = os.path.join(root, filename)
-                try:
-                    if time.time() - os.path.getmtime(filepath) > 30 * 24 * 3600:
-                        os.remove(filepath)
-                        cleaned += 1
-                except OSError:
-                    pass
-
-    return f"Nettoyage terminé: {cleaned} fichiers supprimés"
+        with repository.transaction() as connection:
+            snapshot = repository.load(connection)
+        identifiers = [s['id'] for s in snapshot['submissions'] if due_for_processing(s)]
+        for identifier in identifiers:
+            process_submission.delay(identifier)
+        return {'queued': len(identifiers)}
+    finally:
+        repository.engine.dispose()
 
 
 @celery.task(name='celery_tasks.generate_statistics')
 def generate_statistics():
-    """Génération des statistiques système (JSON)."""
+    repository = worker_repository()
     try:
-        with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
-            data = json.load(f)
-
-        users = data.get('users', {})
-        stats = {
-            'users_total': len(users),
-            'students_total': sum(1 for u in users.values() if u.get('role') == 'student'),
-            'teachers_total': sum(1 for u in users.values() if u.get('role') == 'teacher'),
-            'assignments_total': len(data.get('assignments', [])),
-            'submissions_total': len(data.get('submissions', [])),
-            'generated_at': datetime.utcnow().isoformat(),
-        }
-
-        with open('stats.json', 'w', encoding='utf-8') as f:
-            json.dump(stats, f, indent=2, ensure_ascii=False)
-
-        return stats
-
-    except Exception as e:
-        return {'error': str(e)}
+        with repository.transaction() as connection:
+            data = repository.load(connection)
+        return {'users_total': len(data['users']), 'assignments_total': len(data['assignments']),
+                'submissions_total': len(data['submissions'])}
+    finally:
+        repository.engine.dispose()
 
 
-# ---------------------------------------------------------------
-# Helpers (sauvegarde des résultats)
-# ---------------------------------------------------------------
+@celery.task(name='celery_tasks.send_pending_notifications')
+def send_pending_notifications():
+    from push_service import deliver_notifications
+    repository = worker_repository()
+    try:
+        return deliver_notifications(repository)
+    finally:
+        repository.engine.dispose()
+
+
+@celery.task(name='celery_tasks.send_pending_emails')
+def send_pending_emails():
+    from email_service import deliver_emails
+    repository = worker_repository()
+    try:
+        return deliver_emails(repository)
+    finally:
+        repository.engine.dispose()
+
+
+@celery.task(name='celery_tasks.generate_assignment_report')
+def generate_assignment_report(assignment_id, requested_by):
+    from report_service import store_assignment_report
+    repository = worker_repository()
+    try:
+        return store_assignment_report(repository, os.environ.get('UPLOAD_FOLDER', 'uploads'),
+                                       assignment_id, requested_by)
+    finally:
+        repository.engine.dispose()
+
+
+@celery.task(name='celery_tasks.cleanup_old_files')
+def cleanup_old_files():
+    return {'status': 'disabled', 'deleted': 0,
+            'reason': 'An approved retention policy is required'}
+
 
 def _save_plagiarism_result(submission_id, result):
-    """Sauvegarde le résultat de plagiat dans le fichier JSON."""
-    try:
-        with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
-            data = json.load(f)
-
-        for sub in data.get('submissions', []):
-            if sub['id'] == submission_id:
-                sub['plagiarism'] = result
-                break
-
-        with open('ulc_icam_data.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-
-    except Exception as e:
-        print(f"[Celery] Erreur sauvegarde plagiat: {e}")
+    raise RuntimeError('Direct JSON worker writes are disabled')
 
 
 def _save_correction_result(submission_id, result):
-    """Sauvegarde le résultat de correction dans le fichier JSON."""
-    try:
-        with open('ulc_icam_data.json', 'r', encoding='utf-8') as f:
-            data = json.load(f)
-
-        for sub in data.get('submissions', []):
-            if sub['id'] == submission_id:
-                sub['correction'] = result
-                break
-
-        with open('ulc_icam_data.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-
-    except Exception as e:
-        print(f"[Celery] Erreur sauvegarde correction: {e}")
+    raise RuntimeError('Direct JSON worker writes are disabled')

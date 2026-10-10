@@ -8,7 +8,7 @@
     <form method="post">
         <div class="mb-3">
             <label for="score" class="form-label">Note</label>
-            <input type="number" class="form-control" id="score" name="score" value="{{ correction.score if correction }}" required>
+            <input type="number" class="form-control" id="score" name="score" value="{{ correction.score if correction and correction.score is number else '' }}" required>
         </div>
         <div class="mb-3">
             <label for="max_score" class="form-label">Note maximale</label>

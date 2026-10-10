@@ -1,0 +1,11 @@
+{% if academic_overview %}
+<section aria-label="Suivi académique" class="card p-3 mb-4">
+  <h2 class="h5">Votre suivi académique</h2>
+  <div class="row g-3">
+    <div class="col-6 col-lg-3"><strong>{{ academic_overview.assignments }}</strong><br>Devoirs</div>
+    <div class="col-6 col-lg-3"><strong>{{ academic_overview.submissions }}</strong><br>Soumissions</div>
+    {% if academic_overview.pending is not none %}<div class="col-6 col-lg-3"><strong>{{ academic_overview.pending }}</strong><br>Propositions à examiner</div>{% endif %}
+    <div class="col-6 col-lg-3"><strong>{% if academic_overview.average is not none %}{{ academic_overview.average }} %{% else %}—{% endif %}</strong><br>Moyenne des notes validées{% if session.role == 'student' %} et publiées{% endif %}</div>
+  </div>
+</section>
+{% endif %}

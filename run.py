@@ -55,7 +55,7 @@ def display_startup_info():
     
     # Afficher les comptes de test
     print("\nCOMPTES DE TEST:")
-    print("   Admin: admin / admin123")
+    print("   Admin : identifiants configurés lors de l’initialisation")
     print("   Enseignant: prof_mukendi / prof123")
     print("   Étudiant: etudiant_marie / etud123")
     print("   Étudiant: etudiant_paul / etud123")

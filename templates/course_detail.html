@@ -61,11 +61,11 @@
                                     <td>{{ student.data.get('prenom', '') }} {{ student.data.get('nom', '') }}</td>
                                     <td><span class="badge bg-info">{{ student.data.get('promotion', 'N/A') }}</span></td>
                                     <td>
-                                        <a href="{{ url_for('unenroll_student', course_id=course.id, username=student.username) }}" 
+                                        <form method="post" action="{{ url_for('unenroll_student', course_id=course.id, username=student.username) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit"
                                            class="btn btn-danger btn-sm"
                                            onclick="return confirm('Désinscrire cet étudiant ?')">
                                             <i class="fas fa-times"></i>
-                                        </a>
+                                        </button></form>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -106,10 +106,10 @@
                                         <td><span class="badge bg-info">{{ student.data.get('promotion', 'N/A') }}</span></td>
                                         <td><span class="badge bg-secondary">{{ student.data.get('faculte', 'N/A') }}</span></td>
                                         <td>
-                                            <a href="{{ url_for('enroll_student', course_id=course.id, username=student.username) }}" 
+                                            <form method="post" action="{{ url_for('enroll_student', course_id=course.id, username=student.username) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit"
                                                class="btn btn-success btn-sm">
                                                 <i class="fas fa-plus"></i>
-                                            </a>
+                                            </button></form>
                                         </td>
                                     </tr>
                                     {% endif %}

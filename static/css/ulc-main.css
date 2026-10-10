@@ -571,3 +571,12 @@ body {
   z-index: 999;
 }
 .sidebar-overlay.show { display: block; }
+
+/* Keyboard access and motion preferences */
+.skip-link { position: fixed; top: -100px; left: 16px; z-index: 10000; padding: 12px; background: white; color: #1d4ed8; }
+.skip-link:focus { top: 12px; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+@media (max-width: 576px) { .table-responsive { overflow-x: auto; } }

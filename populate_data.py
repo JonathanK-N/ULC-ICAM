@@ -5,6 +5,7 @@ Script de population de données de test pour ULC-ICAM
 Crée 20 utilisateurs, des cours, et des devoirs avec logique de promotion
 """
 
+from bootstrap_credentials import isolated_admin_hash
 import sys
 import os
 sys.path.append('ulc-turnin-web')
@@ -17,6 +18,7 @@ from datetime import datetime, timedelta
 import random
 
 def populate_test_data():
+    admin_hash = isolated_admin_hash()
     print("Debut de la population des donnees de test...")
     
     # Charger les données existantes
@@ -25,7 +27,7 @@ def populate_test_data():
             data = json.load(f)
     except:
         data = {
-            'users': {'admin': {'password': 'admin123', 'role': 'admin', 'name': 'Administrateur ULC-ICAM'}},
+            'users': {'admin': {'password': admin_hash, 'role': 'admin', 'name': 'Administrateur ULC-ICAM'}},
             'admin_courses': [],
             'course_assignments': {},
             'course_enrollments': {},

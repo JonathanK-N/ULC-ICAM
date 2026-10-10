@@ -8,19 +8,14 @@ ENV FLASK_ENV=production
 # Répertoire de travail
 WORKDIR /app
 
-# Dépendances système (gcc/g++ pour compilation de code étudiants)
-RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    default-jdk \
-    nodejs \
-    npm \
-    curl \
+# Le serveur Web ne compile et n’exécute plus le code étudiant.
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Dépendances Python
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir pip==26.2.1 setuptools==84.0.0 \
+    && pip install --no-cache-dir -r requirements.txt
 
 # Copier le code
 COPY . .
@@ -37,4 +32,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
     CMD curl -f http://localhost:8080/health || exit 1
 
 # Commande de démarrage
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "4", "--timeout", "300", "--log-level", "debug", "wsgi:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "4", "--timeout", "300", "--log-level", "info", "wsgi:app"]

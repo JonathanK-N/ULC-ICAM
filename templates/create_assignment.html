@@ -31,6 +31,9 @@
                         <div class="col-md-4 mb-3">
                             <label for="max_score" class="form-label">Note maximale</label>
                             <input type="number" class="form-control" id="max_score" name="max_score" value="100" min="1">
+                            <label for="rubric" class="form-label mt-3">Grille personnalisée (facultatif)</label>
+                            <textarea id="rubric" name="rubric" class="form-control" rows="4" aria-describedby="rubric-help" placeholder="Exactitude | 40&#10;Raisonnement | 30&#10;Organisation | 20&#10;Clarté | 10"></textarea>
+                            <small id="rubric-help" class="form-text">Un critère et ses points par ligne, séparés par |. Le total doit correspondre à la note maximale. Sinon, laissez vide pour utiliser la grille standard.</small>
                         </div>
                     </div>
 

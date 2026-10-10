@@ -4,6 +4,7 @@ Script de réinitialisation complète du système ULC-ICAM
 Efface toutes les données : utilisateurs, cours, devoirs, soumissions, etc.
 """
 
+from bootstrap_credentials import isolated_admin_hash
 import json
 import os
 import shutil
@@ -11,11 +12,12 @@ from datetime import datetime
 
 def reset_data_file():
     """Réinitialise le fichier de données JSON"""
+    admin_hash = isolated_admin_hash()
     # Données par défaut avec seulement l'admin
     default_data = {
         'users': {
             'admin': {
-                'password': 'admin123',
+                'password': admin_hash,
                 'role': 'admin',
                 'name': 'Administrateur ULC-ICAM'
             }
@@ -103,7 +105,7 @@ def main():
     print("   - Fichiers: supprimés")
     print("\n🔑 Compte administrateur:")
     print("   - Utilisateur: admin")
-    print("   - Mot de passe: admin123")
+    print("   - Mot de passe fourni par environnement (non affiché)")
     print("\n🚀 Le système est prêt pour une nouvelle utilisation!")
 
 if __name__ == '__main__':

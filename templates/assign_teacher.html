@@ -57,11 +57,11 @@
                                                 <strong>{{ teacher.name }}</strong><br>
                                                 <small class="text-muted">{{ teacher.get('departement', 'N/A') }}</small>
                                             </div>
-                                            <a href="{{ url_for('unassign_teacher_from_course', course_id=course.id, teacher_username=teacher_username) }}" 
+                                            <form method="post" action="{{ url_for('unassign_teacher_from_course', course_id=course.id, teacher_username=teacher_username) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit"
                                                class="btn btn-danger btn-sm"
                                                onclick="return confirm('Désassigner ce professeur ?')">
                                                 <i class="fas fa-times"></i>
-                                            </a>
+                                            </button></form>
                                         </div>
                                         <hr>
                                         {% endif %}
