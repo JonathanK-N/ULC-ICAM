@@ -1,5 +1,15 @@
 # Cognito Web — progression
 
+## État actuel — prêt pour examen de la PR
+
+Travaux livrés : correctifs de sécurité, Blueprints, migration isolée PostgreSQL, liaison transactionnelle Flask/worker, Celery/Redis, propositions IA avec approbation professeur, rapports, Web Push volontaire, PWA privée et tableaux de bord. PR 28 sur codex/cognito-modernisation, sans fusion.
+
+Validation du code b6dc6e8 : CI 38056481365, **139 tests Python réussis**, **10 assertions PWA**, image Docker construite, smoke test réussi et audit complet des dépendances de l'image sans vulnérabilité connue. Tests PostgreSQL et Redis réels ; IA, SMTP et push simulés. La suite locale précédente : 135 réussis, 2 intégrations réservées à la CI ignorées, en 422.33s.
+
+Partiellement terminé : architecture relationnelle encore fondée sur un snapshot avec verrou commun, navigation mobile modifiée mais rendu visuel non validé après délais CUA. Non réalisé : migration réelle, configuration des secrets, intégrations payantes/envois réels, fusion et déploiement. Prochaine étape : revue de la PR et validation visuelle ; activation seulement après accord explicite et vérification du chemin réel des données Railway. Procédure : ACTIVATION_RUNBOOK.md.
+
+Railway relu le 10 octobre : services web et Redis en ligne, déploiement web toujours 92255766-777e-4e33-a61c-c9f23b516a70, aucune opération en attente. Les sections suivantes sont l'historique des cycles, pas une liste des tâches actuelles.
+
 Base vérifiée le 9 octobre 2026 : production Railway `92255766-777e-4e33-a61c-c9f23b516a70`, branche `ui`, commit `7699c614f0c9cdeadf407c232145844ff3b5b33c`. Branche de travail : `codex/cognito-modernisation`. Identité Git : Jonathan Kakesa <jkakesa9@gmail.com>.
 
 ## Cycle sécurité 1 et 2

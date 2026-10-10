@@ -1,5 +1,9 @@
 # Migration PostgreSQL — préparation
 
+## État actuel
+
+Migration et rollback isolés validés ; routes Flask et worker intégrés explicitement au stockage relationnel. CI 38056481365 : PostgreSQL réel, concurrence, conservation des données, worker Redis et parcours de publication validés. Aucune migration réelle. Le repository de transition utilise encore un snapshot verrouillé ; activation et limites décrites dans ACTIVATION_RUNBOOK.md. Les sections suivantes retracent les étapes précédentes.
+
 Statut : plan initial, aucune migration de production autorisée ou réalisée.
 
 1. Après approbation seulement : sauvegarde cohérente du JSON et des fichiers du volume, manifeste SHA-256, restauration vérifiée sur stockage isolé.

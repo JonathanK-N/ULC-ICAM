@@ -1,5 +1,11 @@
 # Audit initial confirmé
 
+## Dernier état de l'audit
+
+Les dépendances historiques vulnérables trouvées par pip-audit ont été corrigées : Flask 3.1.3, Werkzeug 3.1.9, Requests 2.34.2, cryptography 50.0.2, python-dotenv 1.2.4, remplacement de PyPDF2 par pypdf 6.20.0, pip 26.2.1 et setuptools 84.0.0 dans l'image. CI 38056481365 : audit des dépendances complètes sans vulnérabilité connue. Aucun avis n'a été ignoré pour faire passer le contrôle. Le contrôle dépend du catalogue d'avis et ne prouve pas l'absence générale de vulnérabilités.
+
+Risques restants : débit limité par le verrou commun du repository de transition ; validation visuelle mobile non réalisée ; chemin réel du JSON et persistance du volume Railway à confirmer avant bascule ; intégrations externes à valider avec comptes autorisés. Aucune preuve de certification réglementaire fournie. Voir ACTIVATION_RUNBOOK.md. Les sections suivantes conservent les constats et étapes historiques.
+
 ## Environnement
 GitHub `JonathanK-N/ULC-ICAM`, branche principale `develop`. Railway : projet `9f836aa4-d149-49b1-a116-ed43192cbd87`, environnement `production`, service ULC-ICAM. Volume `/app/data`, Redis et domaines `ulc-cognito-web.com` et `cognitoweb.up.railway.app` confirmés via connecteur. Aucun changement de configuration effectué, aucune valeur de secret lue.
 

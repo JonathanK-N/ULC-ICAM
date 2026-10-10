@@ -4,7 +4,7 @@ La branche prépare une activation ; elle ne migre et ne déploie rien en produc
 
 ## État vérifié
 
-La CI du commit 14330c9 a réussi : 135 tests Python avec PostgreSQL 16 et Redis 7 réels, puis 10 assertions du service worker. Le parcours couvre dépôt étudiant, worker, relecture professeur et publication. Les appels IA, SMTP et Web Push sont simulés. Le navigateur CUA a dépassé ses délais : la validation visuelle mobile reste à réaliser.
+La CI du commit b6dc6e8 (run 38056481365) a réussi : 139 tests Python avec PostgreSQL 16 et Redis 7 réels, puis 10 assertions du service worker, construction Docker, smoke test et audit complet des dépendances sans vulnérabilité connue. Le parcours couvre dépôt étudiant, worker, relecture professeur et publication. Les appels IA, SMTP et Web Push sont simulés. Le navigateur CUA a dépassé ses délais : la validation visuelle mobile reste à réaliser.
 
 ## Environnement de validation
 

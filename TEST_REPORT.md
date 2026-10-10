@@ -1,5 +1,11 @@
 # Tests exécutés
 
+## Dernière validation complète
+
+Code b6dc6e84f1bb6fac21f41ab2abbbb31a045a693d : [CI 38056481365](https://github.com/JonathanK-N/ULC-ICAM/actions/runs/38056481365), logs vérifiés des jobs 114225940841 et 114225940757 : **139 passed in 8.53s**, **10 assertions service worker**, construction Docker, smoke test et **aucune vulnérabilité connue dans l'audit des dépendances complètes de l'image**. PostgreSQL 16 et Redis 7 réels, données synthétiques isolées. Les nouvelles vérifications PDF couvrent extraction et limites.
+
+Dernière suite locale complète avant migration du lecteur PDF : **135 passed, 2 skipped in 422.33s** ; PostgreSQL/Redis couverts en CI. Les appels IA, SMTP et Web Push sont simulés. Aucun test ni écriture sur données réelles. Le navigateur CUA n'a pas fourni de capture après ses dépassements de délai : contrôle visuel mobile restant. Les résultats suivants sont historiques.
+
 9 octobre 2026, Windows, Python 3.12 du runtime local, environnement `.venv`.
 
 - `python -m py_compile app.py code_execution.py` : réussi.
